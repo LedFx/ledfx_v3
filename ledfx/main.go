@@ -12,10 +12,9 @@ func main() {
 	helloHandler := func(w http.ResponseWriter, req *http.Request) {
 		io.WriteString(w, "Hello, LedFx Go!!\n")
 		io.WriteString(w, "Have a good life!\n")
-		
 	}
 
 	http.HandleFunc("/hello", helloHandler)
-    log.Println("Listing for requests at http://localhost:8000/hello")
+	log.Println("Listing for requests at http://localhost:8000/hello")
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }

@@ -54,5 +54,8 @@ func ParseString(c string) (col [3]float64, err error) {
 	default:
 		err = errInvalid
 	}
+	if err != nil {
+		col = [3]float64{}
+	}
 	return col, err
 }

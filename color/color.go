@@ -13,7 +13,7 @@ Only at the final step of effect processing, before pixels
 are sent to the device, are they multiplied up to 256.
 */
 
-var errInvalid = errors.New("Invalid color")
+var errInvalid = errors.New("invalid color")
 
 func ParseString(c string) (col [3]float64, err error) {
 	c = strings.ToLower(c)
@@ -43,13 +43,13 @@ func ParseString(c string) (col [3]float64, err error) {
 
 		switch len(c) {
 		case 7:
-			col[0] = float64(hexToByte(c[1])<<4 + hexToByte(c[2]))
-			col[1] = float64(hexToByte(c[3])<<4 + hexToByte(c[4]))
-			col[2] = float64(hexToByte(c[5])<<4 + hexToByte(c[6]))
+			col[0] = float64(hexToByte(c[1])<<4+hexToByte(c[2])) / 255
+			col[1] = float64(hexToByte(c[3])<<4+hexToByte(c[4])) / 255
+			col[2] = float64(hexToByte(c[5])<<4+hexToByte(c[6])) / 255
 		case 4:
-			col[0] = float64(hexToByte(c[1]) * 17)
-			col[1] = float64(hexToByte(c[2]) * 17)
-			col[2] = float64(hexToByte(c[3]) * 17)
+			col[0] = float64(hexToByte(c[1])*17) / 255
+			col[1] = float64(hexToByte(c[2])*17) / 255
+			col[2] = float64(hexToByte(c[3])*17) / 255
 		}
 	default:
 		err = errInvalid

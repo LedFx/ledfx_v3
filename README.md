@@ -23,5 +23,4 @@ GLOBAL OPTIONS:
 ## References
 - [Building a CLI in Go](https://tutorialedge.net/golang/building-a-cli-in-go/)
 - [image2ascii](https://github.com/qeesung/image2ascii)
-- [project-layout](https://github.com/golang-standards/project-layout)
 - [cli](https://github.com/urfave/cli)

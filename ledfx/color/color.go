@@ -13,7 +13,7 @@ Only at the final step of effect processing, before pixels
 are sent to the device, are they multiplied up to 256.
 */
 
-var errInvalid = errors.New("invalid color")
+var errInvalidColor = errors.New("invalid color")
 
 // Parses string to ledfx color. "#ff00ff" / "rgb(255,0,255)" -> [1., 0., 1.]
 func NewColor(c string) (col [3]float64, err error) {
@@ -27,12 +27,12 @@ func NewColor(c string) (col [3]float64, err error) {
 			col[i], err = strconv.ParseFloat(val, 64)
 			col[i] /= 255
 			if col[i] < 0 || col[i] > 1 {
-				err = errInvalid
+				err = errInvalidColor
 			}
 		}
 	case "#": // "#0088ff"
 		if len(c) != 7 {
-			err = errInvalid
+			err = errInvalidColor
 			break
 		}
 		hexToByte := func(b byte) byte {
@@ -42,14 +42,14 @@ func NewColor(c string) (col [3]float64, err error) {
 			case b >= 'a' && b <= 'f':
 				return b - 'a' + 10
 			}
-			err = errInvalid
+			err = errInvalidColor
 			return 0
 		}
 		col[0] = float64(hexToByte(c[1])<<4+hexToByte(c[2])) / 255
 		col[1] = float64(hexToByte(c[3])<<4+hexToByte(c[4])) / 255
 		col[2] = float64(hexToByte(c[5])<<4+hexToByte(c[6])) / 255
 	default:
-		err = errInvalid
+		err = errInvalidColor
 	}
 	if err != nil {
 		col = [3]float64{}

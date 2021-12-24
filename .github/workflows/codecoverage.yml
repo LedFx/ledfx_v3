@@ -18,16 +18,6 @@ jobs:
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash)
   staticcheck:
-    name: Run Staticcheck for Code Reivew
+    name: Reviewdog Go CI Linter
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: reviewdog/action-staticcheck@v1
-        with:
-          github_token: ${{ secrets.github_token }}
-          # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].
-          reporter: github-pr-review
-          # Report all results.
-          filter_mode: nofilter
-          # Exit with 1 when it find at least one finding.
-          fail_on_error: false
+    uses: reviewdog/action-golangci-lint@v2

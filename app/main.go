@@ -2,7 +2,7 @@ package main
 
 import (
 	"io"
-	"ledfx/color"
+	"ledfx/ledfx/color"
 	"log"
 	"net/http"
 )
@@ -16,7 +16,7 @@ func main() {
 	}
 
 	c := "#FF55FF"
-	log.Println(color.ParseString(c))
+	log.Println(color.NewColor(c))
 
 	http.HandleFunc("/hello", helloHandler)
 	log.Println("Listing for requests at http://localhost:8000/hello")

@@ -81,7 +81,7 @@ func main() {
 			&cli.StringFlag{
 				Name:    "config",
 				Aliases: []string{"c"},
-				Value:   CONFIG_DIR,
+				Value:   getOsConfigDir(),
 				Usage:   "Directory that contains the configuration files",
 			},
 		},

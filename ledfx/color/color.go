@@ -15,7 +15,8 @@ are sent to the device, are they multiplied up to 256.
 
 var errInvalid = errors.New("invalid color")
 
-func ParseString(c string) (col [3]float64, err error) {
+// Parses string to ledfx color. "#ff00ff" / "rgb(255,0,255)" -> [1., 0., 1.]
+func NewColor(c string) (col [3]float64, err error) {
 	c = strings.ToLower(c)
 	switch c[0:1] {
 	case "r": // "rgb(0, 127, 255)"
@@ -30,6 +31,10 @@ func ParseString(c string) (col [3]float64, err error) {
 			}
 		}
 	case "#": // "#0088ff"
+		if len(c) != 7 {
+			err = errInvalid
+			break
+		}
 		hexToByte := func(b byte) byte {
 			switch {
 			case b >= '0' && b <= '9':
@@ -40,17 +45,9 @@ func ParseString(c string) (col [3]float64, err error) {
 			err = errInvalid
 			return 0
 		}
-
-		switch len(c) {
-		case 7:
-			col[0] = float64(hexToByte(c[1])<<4+hexToByte(c[2])) / 255
-			col[1] = float64(hexToByte(c[3])<<4+hexToByte(c[4])) / 255
-			col[2] = float64(hexToByte(c[5])<<4+hexToByte(c[6])) / 255
-		case 4:
-			col[0] = float64(hexToByte(c[1])*17) / 255
-			col[1] = float64(hexToByte(c[2])*17) / 255
-			col[2] = float64(hexToByte(c[3])*17) / 255
-		}
+		col[0] = float64(hexToByte(c[1])<<4+hexToByte(c[2])) / 255
+		col[1] = float64(hexToByte(c[3])<<4+hexToByte(c[4])) / 255
+		col[2] = float64(hexToByte(c[5])<<4+hexToByte(c[6])) / 255
 	default:
 		err = errInvalid
 	}

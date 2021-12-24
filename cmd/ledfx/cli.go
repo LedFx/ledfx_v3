@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"sort"
+  "ledfx/constants"
 )
 
 func main() {
@@ -70,7 +71,7 @@ func main() {
 			&cli.StringFlag{
 				Name: "config",
 				Aliases: []string{"c"},
-				Value: getOsConfigDir(),
+				Value: constants.GetOsConfigDir(),
 				Usage: "Directory that contains the configuration files",
 			},
 			&cli.BoolFlag{

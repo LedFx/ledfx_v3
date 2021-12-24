@@ -1,4 +1,4 @@
-package main
+package constants
 
 import (
 	"os"
@@ -8,7 +8,7 @@ import (
 
 var CONFIG_DIR = ".ledfx"
 
-func getOsConfigDir() string {
+func GetOsConfigDir() string {
 	if runtime.GOOS == "windows" {
 		home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
 		if home == "" {

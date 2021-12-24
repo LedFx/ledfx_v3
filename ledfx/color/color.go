@@ -20,7 +20,7 @@ func NewColor(c string) (col [3]float64, err error) {
 	c = strings.ToLower(c)
 	switch c[0:1] {
 	case "r": // "rgb(0, 127, 255)"
-		c = strings.Replace(c, " ", "", -1)
+		c = strings.ReplaceAll(c, " ", "")
 		c = strings.TrimLeft(c, "rgb(")
 		c = strings.TrimRight(c, ")")
 		for i, val := range strings.Split(c, ",") {

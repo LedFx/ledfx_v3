@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2" // imports as package "cli"
 	"log"
 	"os"
 	"sort"
@@ -71,11 +71,19 @@ func main() {
 
 	app := &cli.App{
 		Name:  "LedFx",
-		Usage: "A CLI for LedFx",
+		Usage: "A Networked LED Effect Controller",
 		Action: func(c *cli.Context) error {
 			fmt.Println(logo)
 			fmt.Println("Coming Soon!")
 			return nil
+		},
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "config",
+				Aliases: []string{"c"},
+				Value:   CONFIG_DIR,
+				Usage:   "Directory that contains the configuration files",
+			},
 		},
 		Version: "0.0.1",
 	}

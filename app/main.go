@@ -2,8 +2,13 @@ package main
 
 import (
 	"ledfx/ledfx/cli"
+	"log"
 )
 
 func main() {
-	cli.InitCli()
+	err := cli.InitCli()
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }

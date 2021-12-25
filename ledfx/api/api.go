@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func InitApi(port int) {
+func InitApi(port int) error {
 	// Hello world, the web server
 
 	helloHandler := func(w http.ResponseWriter, req *http.Request) {
@@ -21,5 +21,5 @@ func InitApi(port int) {
 
 	http.HandleFunc("/hello", helloHandler)
 	log.Println("Listing for requests at http://localhost:8000/hello")
-	log.Fatal(http.ListenAndServe(fmt.Sprint(":", port), nil))
+	return http.ListenAndServe(fmt.Sprint(":", port), nil)
 }

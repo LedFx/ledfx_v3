@@ -5,12 +5,11 @@ import (
 	"github.com/urfave/cli/v2" // imports as package "cli"
 	"ledfx/constants"
 	"ledfx/ledfx/api"
-	"log"
 	"os"
 	"sort"
 )
 
-func InitCli() {
+func InitCli() error {
 
 	// LedFx Logo
 	logo := `
@@ -53,7 +52,7 @@ func InitCli() {
 		Action: func(c *cli.Context) error {
 			fmt.Print(logo)
 
-			api.InitApi(c.Int("port"))
+			return api.InitApi(c.Int("port"))
 
 			// TODO: Unused flags
 			// fmt.Println("config =", c.String("config"))
@@ -63,7 +62,6 @@ func InitCli() {
 			// fmt.Println("host", c.String("host"))
 			// fmt.Println("offline", c.Bool("offline"))
 			// fmt.Println("sentry-crash-test", c.Bool("sentry-crash-test"))
-			return nil
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -116,8 +114,5 @@ func InitCli() {
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
 
-	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
-	}
+	return app.Run(os.Args)
 }

@@ -1,0 +1,24 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+    -   id: check-toml
+    -   id: pretty-format-json
+# In order for these to work, you need to install these packages:
+# go get -u github.com/lietu/go-pre-commit
+# go install golang.org/x/tools/cmd/goimports@latest
+- repo: https://github.com/lietu/go-pre-commit
+  rev: 8600d4e364570c909592d11ae28ef2a45c2970ad
+  hooks:
+    - id: go-fmt-goimports
+    - id: go-test
+    - id: go-vet
+    - id: golangci-lint
+    - id: golint
+    - id: staticcheck

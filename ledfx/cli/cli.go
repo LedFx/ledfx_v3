@@ -1,15 +1,18 @@
-package main
+package cli
 
 import (
 	"fmt"
 	"github.com/urfave/cli/v2" // imports as package "cli"
+	"ledfx/constants"
+	"ledfx/ledfx/api"
 	"log"
 	"os"
 	"sort"
-  "ledfx/constants"
 )
 
-func main() {
+func InitCli() {
+
+	// LedFx Logo
 	logo := `
   [38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;201m [0;00m[38;5;129m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;164m.[0;00m[38;5;165m,[0;00m[38;5;164m;[0;00m[38;5;164mi[0;00m[38;5;20m:[0;00m[38;5;164mt[0;00m[38;5;164mf[0;00m[38;5;200mf[0;00m[38;5;200mL[0;00m[38;5;200mf[0;00m[38;5;199mf[0;00m[38;5;199mf[0;00m[38;5;199mf[0;00m[38;5;199mf[0;00m[38;5;199mf[0;00m[38;5;198mt[0;00m[38;5;198mt[0;00m[38;5;198mt[0;00m[38;5;198mt[0;00m[38;5;198mt[0;00m[38;5;197mt[0;00m[38;5;197m1[0;00m[38;5;197m1[0;00m[38;5;197m1[0;00m[38;5;197m1[0;00m[38;5;197m1[0;00m[38;5;196mi[0;00m[38;5;196mi[0;00m[38;5;196mi[0;00m[38;5;196mi[0;00m[38;5;196mi[0;00m[38;5;196mi[0;00m[38;5;196mi[0;00m[38;5;196mi[0;00m[38;5;196mi[0;00m[38;5;196mi[0;00m[38;5;196m1[0;00m[38;5;202m1[0;00m[38;5;202m1[0;00m[38;5;202m1[0;00m[38;5;202m1[0;00m[38;5;202mt[0;00m[38;5;208mt[0;00m[38;5;208mt[0;00m[38;5;208mt[0;00m[38;5;208mt[0;00m[38;5;214mf[0;00m[38;5;214mf[0;00m[38;5;214mf[0;00m[38;5;214mf[0;00m[38;5;220mL[0;00m[38;5;184mL[0;00m[38;5;184mL[0;00m[38;5;184mL[0;00m[38;5;184mL[0;00m[38;5;160m;[0;00m[38;5;160m;[0;00m[38;5;160m;[0;00m[38;5;160m;[0;00m[38;5;124m;[0;00m[38;5;124m;[0;00m[38;5;124m:[0;00m[38;5;124m:[0;00m[38;5;124m:[0;00m[38;5;88m:[0;00m[38;5;88m,[0;00m[38;5;88m,[0;00m[38;5;88m,[0;00m[38;5;52m.[0;00m[38;5;52m.[0;00m[38;5;76m,[0;00m[38;5;76m.[0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;46m [0;00m[38;5;46m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m
   [38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;201m [0;00m[38;5;93m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;164m [0;00m[38;5;165m,[0;00m[38;5;165mi[0;00m[38;5;165mt[0;00m[38;5;164mf[0;00m[38;5;165mL[0;00m[38;5;201mC[0;00m[38;5;201mC[0;00m[38;5;201mC[0;00m[38;5;206mC[0;00m[38;5;206mG[0;00m[38;5;206mG[0;00m[38;5;170mC[0;00m[38;5;170mC[0;00m[38;5;206mC[0;00m[38;5;169mC[0;00m[38;5;205mC[0;00m[38;5;205mC[0;00m[38;5;205mC[0;00m[38;5;205mC[0;00m[38;5;205mC[0;00m[38;5;205mL[0;00m[38;5;205mL[0;00m[38;5;204mL[0;00m[38;5;204mL[0;00m[38;5;204mL[0;00m[38;5;204mL[0;00m[38;5;204mL[0;00m[38;5;204mL[0;00m[38;5;204mL[0;00m[38;5;204mf[0;00m[38;5;204mf[0;00m[38;5;204mf[0;00m[38;5;203mf[0;00m[38;5;203mf[0;00m[38;5;203mf[0;00m[38;5;203mf[0;00m[38;5;203mf[0;00m[38;5;203mf[0;00m[38;5;209mf[0;00m[38;5;209mf[0;00m[38;5;209mL[0;00m[38;5;209mL[0;00m[38;5;209mL[0;00m[38;5;209mL[0;00m[38;5;209mL[0;00m[38;5;209mL[0;00m[38;5;215mL[0;00m[38;5;215mL[0;00m[38;5;215mC[0;00m[38;5;215mC[0;00m[38;5;215mC[0;00m[38;5;179mC[0;00m[38;5;185mC[0;00m[38;5;185mC[0;00m[38;5;221mG[0;00m[38;5;221mG[0;00m[38;5;227mG[0;00m[38;5;191mG[0;00m[38;5;185mC[0;00m[38;5;149mL[0;00m[38;5;143mf[0;00m[38;5;106mt[0;00m[38;5;106m1[0;00m[38;5;100mi[0;00m[38;5;64mi[0;00m[38;5;64mi[0;00m[38;5;64mi[0;00m[38;5;70mi[0;00m[38;5;70mi[0;00m[38;5;70m1[0;00m[38;5;76m1[0;00m[38;5;76m1[0;00m[38;5;82m1[0;00m[38;5;82m1[0;00m[38;5;52m.[0;00m[38;5;16m.[0;00m[38;5;16m [0;00m[38;5;40m.[0;00m[38;5;70m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;46m [0;00m[38;5;46m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m[38;5;16m [0;00m
@@ -49,63 +52,63 @@ func main() {
 		Usage: "A Networked LED Effect Controller",
 		Action: func(c *cli.Context) error {
 			fmt.Print(logo)
-			fmt.Println("Coming Soon!")
-			fmt.Println("")
-			fmt.Println("Flags:")
-			fmt.Println("config =", c.String("config"))
-			fmt.Println("open-ui =", c.Bool("open-ui"))
-			fmt.Println("verbose", c.Bool("verbose"))
-			fmt.Println("very verbose", c.Bool("very-verbose"))
-			fmt.Println("port", c.Int("port"))
-			fmt.Println("host", c.String("host"))
-      fmt.Println("offline", c.Bool("offline"))
-      fmt.Println("sentry-crash-test", c.Bool("sentry-crash-test"))
+
+			api.InitApi(c.Int("port"))
+
+			// TODO: Unused flags
+			// fmt.Println("config =", c.String("config"))
+			// fmt.Println("open-ui =", c.Bool("open-ui"))
+			// fmt.Println("verbose", c.Bool("verbose"))
+			// fmt.Println("very verbose", c.Bool("very-verbose"))
+			// fmt.Println("host", c.String("host"))
+			// fmt.Println("offline", c.Bool("offline"))
+			// fmt.Println("sentry-crash-test", c.Bool("sentry-crash-test"))
 			return nil
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name: "config",
+				Name:    "config",
 				Aliases: []string{"c"},
-				Value: constants.GetOsConfigDir(),
-				Usage: "Directory that contains the configuration files",
+				Value:   constants.GetOsConfigDir(),
+				Usage:   "Directory that contains the configuration files",
 			},
 			&cli.BoolFlag{
-				Name: "open-ui",
+				Name:  "open-ui",
 				Value: false,
 				Usage: "Automatically open the web interface",
 			},
 			&cli.BoolFlag{
-				Name: "verbose",
+				Name:    "verbose",
 				Aliases: []string{"v"},
-				Value: false,
-				Usage: "Set log level to INFO",
+				Value:   false,
+				Usage:   "Set log level to INFO",
 			},
 			&cli.BoolFlag{
-				Name: "very-verbose",
+				Name:    "very-verbose",
 				Aliases: []string{"vv"},
-				Value: false,
-				Usage: "Set log level to DEBUG",
+				Value:   false,
+				Usage:   "Set log level to DEBUG",
 			},
 			&cli.IntFlag{
-				Name:  "port",
+				Name:    "port",
 				Aliases: []string{"p"},
-				Value: 8000,
-				Usage: "Web interface port",
+				Value:   8000,
+				Usage:   "Web interface port",
 			},
 			&cli.StringFlag{
-				Name: "host",
+				Name:  "host",
 				Usage: "The hostname of the web interface",
 			},
 			&cli.BoolFlag{
-				Name:	"offline",
+				Name:  "offline",
 				Value: false,
 				Usage: "Disable automated updates and sentry crash logger",
-      },
+			},
 			&cli.BoolFlag{
-				Name:	"sentry-crash-test",
+				Name:  "sentry-crash-test",
 				Value: false,
 				Usage: "This crashes LedFx to test the sentry crash logger",
-      },
+			},
 		},
 		Version: "0.0.1",
 	}

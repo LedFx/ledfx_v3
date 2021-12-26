@@ -37,6 +37,10 @@ func main() {
 	  SentryCrash
 	*/
 
+	err = constants.PrintLogo()
+	if err != nil {
+		log.Fatal(err)
+	}
 	err = api.InitApi(conf.Port)
 	if err != nil {
 		log.Fatal(err)

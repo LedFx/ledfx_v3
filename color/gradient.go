@@ -9,7 +9,7 @@ import (
 
 var errInvalidGradient = errors.New("invalid gradient")
 
-type gradient struct {
+type Gradient struct {
 	mode      string
 	angle     int64
 	colors    [][3]float64
@@ -22,10 +22,10 @@ Parses gradient from string of format eg.
 where each color is associated with a % value for its position in the gradient
 each color can be hex or rgb format
 */
-func NewGradient(gs string) (g gradient, err error) {
+func NewGradient(gs string) (g Gradient, err error) {
 	var splits []string
 	gs = strings.ToLower(gs)
-	gs = strings.Replace(gs, " ", "", -1)
+	gs = strings.ReplaceAll(gs, " ", "")
 	splits = strings.SplitN(gs, "(", 2)
 	mode := splits[0]
 	mode = strings.TrimSuffix(mode, "-gradient")
@@ -34,7 +34,7 @@ func NewGradient(gs string) (g gradient, err error) {
 	splits = strings.SplitN(angleColorPos, ",", 2)
 	if (len(splits) != 2) || !strings.HasSuffix(splits[0], "deg") {
 		err = errInvalidGradient
-		return gradient{}, err
+		return Gradient{}, err
 	}
 	angleStr := splits[0]
 	angleStr = strings.TrimSuffix(angleStr, "deg")
@@ -75,9 +75,9 @@ func NewGradient(gs string) (g gradient, err error) {
 	}
 	if err != nil {
 		err = errInvalidGradient
-		return gradient{}, err
+		return Gradient{}, err
 	}
-	g = gradient{
+	g = Gradient{
 		mode:      mode,
 		angle:     angle,
 		colors:    colors,

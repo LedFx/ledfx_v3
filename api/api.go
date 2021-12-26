@@ -12,8 +12,14 @@ func InitApi(port int) error {
 	// Hello world, the web server
 
 	helloHandler := func(w http.ResponseWriter, req *http.Request) {
-		io.WriteString(w, "Hello, LedFx Go!!\n")
-		io.WriteString(w, "Have a good life!\n")
+		_, err := io.WriteString(w, "Hello, LedFx Go!!\n")
+		if err != nil {
+			log.Println(err)
+		}
+		_, err = io.WriteString(w, "Have a good life!\n")
+		if err != nil {
+			log.Println(err)
+		}
 	}
 
 	c := "#FF55FF"

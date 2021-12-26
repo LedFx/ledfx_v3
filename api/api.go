@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 	"io"
-	"ledfx/ledfx/color"
+	"ledfx/color"
 	"log"
 	"net/http"
 )

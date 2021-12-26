@@ -32,7 +32,6 @@ func main() {
 	  SentryCrash
 	*/
 
-	constants.PrintLogo()
 	err = api.InitApi(conf.Port)
 	if err != nil {
 		return

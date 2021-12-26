@@ -5,10 +5,15 @@ import (
 	"ledfx/api"
 	"ledfx/config"
 	"ledfx/constants"
+	"log"
 )
 
 func init() {
-	config.InitFlags()
+	err := config.InitFlags()
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
@@ -34,7 +39,7 @@ func main() {
 
 	err = api.InitApi(conf.Port)
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
 
 }

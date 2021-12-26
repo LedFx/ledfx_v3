@@ -22,19 +22,19 @@ type Config struct {
 
 var configPath string
 
-func InitFlags() {
+func InitFlags() error {
 	pflag.StringVarP(&configPath, "config", "c", constants.GetOsConfigDir(), "Directory that contains the configuration files")
 	pflag.IntP("port", "p", 8000, "Web interface port")
 	pflag.BoolP("version", "v", false, "Print the version of ledfx")
 	pflag.BoolP("open-ui", "u", false, "Automatically open the web interface")
 	pflag.BoolP("verbose", "i", false, "Set log level to INFO")
 	pflag.BoolP("very-verbose", "d", false, "Set log level to DEBUG")
-	pflag.StringP("host", "h", "", "The hostname of the web interface")
+	pflag.String("host", "", "The hostname of the web interface")
 	pflag.BoolP("offline", "o", false, "Disable automated updates and sentry crash logger")
 	pflag.BoolP("sentry-crash-test", "s", false, "This crashes LedFx to test the sentry crash logger")
 
 	pflag.Parse()
-	viper.BindPFlags(pflag.CommandLine)
+	return viper.BindPFlags(pflag.CommandLine)
 }
 
 // LoadConfig reads in config file and ENV variables if set.

@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"ledfx/api"
 	"ledfx/config"
 	"ledfx/constants"
+	"ledfx/devices"
 	"log"
 )
 
@@ -41,9 +41,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err = api.InitApi(conf.Port)
+	// err = api.InitApi(conf.Port)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// REMOVEME: testing only
+	devices.SendUdpPacket()
 
 }

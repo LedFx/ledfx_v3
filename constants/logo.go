@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-var LOGO_FILENAME = "logo.txt"
+const LOGO_FILENAME = "logo.txt"
 
 func getLogoPath() (file string, err error) {
 	wd, err := os.Getwd()

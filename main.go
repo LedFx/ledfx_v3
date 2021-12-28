@@ -90,7 +90,7 @@ func main() {
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}
-	err = device.SendData(data[:])
+	err = device.SendData(data)
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}

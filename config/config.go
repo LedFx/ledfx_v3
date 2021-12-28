@@ -55,9 +55,10 @@ type Config struct {
 }
 
 var configPath string
+var GlobalConfig Config
 
 func InitFlags() error {
-	pflag.StringVarP(&configPath, "config", "c", constants.GetOsConfigDir(), "Directory that contains the configuration files")
+	pflag.StringVarP(&configPath, "config", "c", "", "Directory that contains the configuration files")
 	pflag.IntP("port", "p", 8000, "Web interface port")
 	pflag.BoolP("version", "v", false, "Print the version of ledfx")
 	pflag.BoolP("open-ui", "u", false, "Automatically open the web interface")
@@ -72,7 +73,7 @@ func InitFlags() error {
 }
 
 // LoadConfig reads in config file and ENV variables if set.
-func LoadConfig() (config Config, err error) {
+func LoadConfig() (err error) {
 	viper.SetConfigName("config")
 	viper.AutomaticEnv()
 	if configPath != "" {
@@ -85,9 +86,9 @@ func LoadConfig() (config Config, err error) {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Println("Config file not found; using defaults")
 		}
-		return
+		return nil
 	}
 
-	err = viper.Unmarshal(&config)
+	err = viper.Unmarshal(&GlobalConfig)
 	return
 }

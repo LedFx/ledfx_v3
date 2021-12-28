@@ -3,6 +3,7 @@ package device
 import (
 	"errors"
 	"ledfx/color"
+	"ledfx/config"
 	"ledfx/logger"
 	"net"
 	"strconv"
@@ -28,6 +29,7 @@ type UdpDevice struct {
 	Port       int
 	Connection net.Conn
 	Protocol   byte
+	Config     config.DeviceConfig
 }
 
 // Flatten array and convert to bytes
@@ -43,7 +45,7 @@ func ColorsToBytes(colors []color.Color) []byte {
 
 // Need to store the connection on the device struct
 func (d *UdpDevice) Init() error {
-	hostName := "wled.local"
+	hostName := d.Config.IpAddress
 
 	service := hostName + ":" + strconv.Itoa(d.Port)
 
@@ -91,7 +93,6 @@ func (d *UdpDevice) SendData(colors []color.Color) error {
 
 func (d *UdpDevice) BuildPacket(colors []color.Color) []byte {
 	// TODO: read from config
-	logger.Logger.Debug("Device", d.Name)
 	var protocol byte
 	if d.Protocol == 0x00 {
 		// use default protocol

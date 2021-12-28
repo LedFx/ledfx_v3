@@ -15,10 +15,7 @@ jobs:
     strategy:
       matrix:
         goosarch:
-          - 'aix/ppc64'
-          # - 'android/386'
-          - 'android/amd64'
-          # - 'android/arm'
+
           - 'android/arm64'
           - 'darwin/amd64'
           - 'darwin/arm64'

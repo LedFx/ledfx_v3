@@ -68,7 +68,7 @@ jobs:
           GOOSARCH=${{matrix.goosarch}}
           GOOS=${GOOSARCH%/*}
           GOARCH=${GOOSARCH#*/}
-          BINARY_NAME=${{github.repository}}-$GOOS-$GOARCH
+          BINARY_NAME=ledfx-go-$GOOS-$GOARCH
           echo "BINARY_NAME=$BINARY_NAME" >> $GITHUB_ENV
           echo "GOOS=$GOOS" >> $GITHUB_ENV
           echo "GOARCH=$GOARCH" >> $GITHUB_ENV
@@ -77,3 +77,5 @@ jobs:
           go build -o "$BINARY_NAME" -v
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
+        with:
+          name: $BINARY_NAME

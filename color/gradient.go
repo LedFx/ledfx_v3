@@ -10,9 +10,10 @@ import (
 var errInvalidGradient = errors.New("invalid gradient")
 
 type Gradient struct {
-	mode      string
-	angle     int64
-	colors    [][3]float64
+	mode  string
+	angle int64
+	// TODO: Do we want this exported or do we want a getter?
+	Colors    []Color
 	positions []float64
 }
 
@@ -42,10 +43,10 @@ func NewGradient(gs string) (g Gradient, err error) {
 	colorPos := splits[1]
 	splits = strings.SplitAfter(colorPos, "%,")
 
-	var colors = make([][3]float64, len(splits))
+	var colors = make([]Color, len(splits))
 	var positions = make([]float64, len(splits))
 	var cp_split []string
-	var c [3]float64
+	var c Color
 	var p float64
 	for i, cp := range splits {
 		cp = strings.TrimRight(cp, "%,")
@@ -80,7 +81,7 @@ func NewGradient(gs string) (g Gradient, err error) {
 	g = Gradient{
 		mode:      mode,
 		angle:     angle,
-		colors:    colors,
+		Colors:    colors,
 		positions: positions,
 	}
 	return g, err

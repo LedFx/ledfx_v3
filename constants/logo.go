@@ -3,7 +3,6 @@ package constants
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -24,7 +23,6 @@ func PrintLogo() error {
 	if err != nil {
 		return err
 	}
-	log.Println(path)
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -37,6 +35,7 @@ func PrintLogo() error {
 	if err == nil {
 		s := string(b)
 		fmt.Print(s)
+		fmt.Println()
 	}
 	return nil
 }

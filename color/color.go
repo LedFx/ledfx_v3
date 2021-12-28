@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+type Color [3]float64
+
 /*
 LedFx colors internally are all [3]float64 with values 0-1.
 Only at the final step of effect processing, before pixels
@@ -16,7 +18,7 @@ are sent to the device, are they multiplied up to 256.
 var errInvalidColor = errors.New("invalid color")
 
 // Parses string to ledfx color. "#ff00ff" / "rgb(255,0,255)" -> [1., 0., 1.]
-func NewColor(c string) (col [3]float64, err error) {
+func NewColor(c string) (col Color, err error) {
 	c = strings.ToLower(c)
 	switch c[0:1] {
 	case "r": // "rgb(0, 127, 255)"
@@ -52,7 +54,7 @@ func NewColor(c string) (col [3]float64, err error) {
 		err = errInvalidColor
 	}
 	if err != nil {
-		col = [3]float64{}
+		col = Color{}
 	}
 	return col, err
 }

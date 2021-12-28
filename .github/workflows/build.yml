@@ -75,7 +75,10 @@ jobs:
       - name: Build
         run: |
           go build -o "$BINARY_NAME" -v
+          ls -l
+          pwd
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.BINARY_NAME }}
+          path: .

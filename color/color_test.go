@@ -33,16 +33,16 @@ func TestNewColor(t *testing.T) {
 func TestNewGradient(t *testing.T) {
 	cases := []struct {
 		q string
-		a gradient
+		a Gradient
 		e bool
 	}{
-		{"linear-gradient(#ffFf00 10%, )", gradient{}, true},
-		{"linear-gradient(180deg, #ffgh00 10%)", gradient{}, true},
-		{"linear-gradient(180deg, rgb(299,0,299) 10%)", gradient{}, true},
-		{"linear-gradient(180deg, useless color 10%)", gradient{}, true},
+		{"linear-gradient(#ffFf00 10%, )", Gradient{}, true},
+		{"linear-gradient(180deg, #ffgh00 10%)", Gradient{}, true},
+		{"linear-gradient(180deg, rgb(299,0,299) 10%)", Gradient{}, true},
+		{"linear-gradient(180deg, useless color 10%)", Gradient{}, true},
 		{
 			"linear-gradient(90deg, #ffFf00 10%, rgb(255, 0, 255) 30%)",
-			gradient{mode: "linear", angle: 90},
+			Gradient{mode: "linear", angle: 90},
 			false,
 		},
 	}

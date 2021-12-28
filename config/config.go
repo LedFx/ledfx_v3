@@ -8,16 +8,50 @@ import (
 	"github.com/spf13/viper"
 )
 
+type DeviceConfig struct {
+	CenterOffset   int    `mapstructure:"center_offset"`
+	ForceRefresh   bool   `mapstructure:"force_refresh"`
+	IconName       string `mapstructure:"icon_name"`
+	IncludeIndexes bool   `mapstructure:"include_indexes"`
+	IpAddress      string `mapstructure:"ip_address"`
+	MaxBrightness  int    `mapstructure:"max_brightness"`
+	Name           string `mapstructure:"name"`
+	PixelCount     int    `mapstructure:"pixel_count"`
+	Port           int    `mapstructure:"port"`
+	PreviewOnly    bool   `mapstructure:"preview_only"`
+	RefreshRate    int    `mapstructure:"refresh_rate"`
+	Type           string `mapstructure:"type"`
+	UdpPacketType  string `mapstructure:"udp_packet_type"`
+}
+
+type EffectConfig struct {
+	BackgroundColor string `mapstructure:"background_color"`
+	GradientName    string `mapstructure:"gradient_name"`
+}
+
+type Effect struct {
+	Config EffectConfig `mapstructure:"config"`
+	Type   string       `mapstructure:"type"`
+}
+
+type Device struct {
+	Config DeviceConfig `mapstructure:"config"`
+	Effect Effect       `mapstructure:"effect"`
+	Id     string       `mapstructure:"id"`
+	Type   string       `mapstructure:"type"`
+}
+
 type Config struct {
-	Config      string `mapstructure:"config"`
-	Port        int    `mapstructure:"port"`
-	Version     bool   `mapstructure:"version"`
-	OpenUi      bool   `mapstructure:"open-ui"`
-	Verbose     bool   `mapstructure:"verbose"`
-	VeryVerbose bool   `mapstructure:"very-verbose"`
-	Host        string `mapstructure:"host"`
-	Offline     bool   `mapstructure:"offline"`
-	SentryCrash bool   `mapstructure:"sentry-crash-test"`
+	Config      string   `mapstructure:"config"`
+	Port        int      `mapstructure:"port"`
+	Version     bool     `mapstructure:"version"`
+	OpenUi      bool     `mapstructure:"open-ui"`
+	Verbose     bool     `mapstructure:"verbose"`
+	VeryVerbose bool     `mapstructure:"very-verbose"`
+	Host        string   `mapstructure:"host"`
+	Offline     bool     `mapstructure:"offline"`
+	SentryCrash bool     `mapstructure:"sentry-crash-test"`
+	Devices     []Device `mapstructure:"devices"`
 }
 
 var configPath string

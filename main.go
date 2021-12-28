@@ -2,51 +2,95 @@ package main
 
 import (
 	"fmt"
+	"ledfx/api"
+	"ledfx/color"
 	"ledfx/config"
 	"ledfx/constants"
-	"ledfx/devices"
-	"log"
+	"ledfx/device"
+	"ledfx/logger"
 )
 
-func init() {
-	err := config.InitFlags()
+var Config config.Config
 
+func init() {
+
+	err := config.InitFlags()
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.Fatal(err)
 	}
+
+	conf, err := config.LoadConfig()
+	if err != nil {
+		logger.Logger.Fatal(err)
+	}
+
+	Config = conf
+
+	logger.Init(Config)
+
 }
 
 func main() {
-	conf, err := config.LoadConfig()
-	if err != nil {
-		return
-	}
-
-	if conf.Version {
+	if Config.Version {
 		fmt.Println("LedFx " + constants.VERSION)
 		return
 	}
 
+	err := constants.PrintLogo()
+	if err != nil {
+		logger.Logger.Fatal(err)
+	}
+	fmt.Println("Welcome to LedFx " + constants.VERSION)
+	fmt.Println()
+
+	logger.Logger.Info("Verbose logging enabled")
+	logger.Logger.Debug("Very verbose logging enabled")
+
 	// TODO: handle other flags
 	/**
 	  OpenUi
-	  Verbose
-	  VeryVerbose
 	  Host
 	  Offline
 	  SentryCrash
 	*/
 
-	err = constants.PrintLogo()
-	if err != nil {
-		log.Fatal(err)
-	}
-	// err = api.InitApi(conf.Port)
-	if err != nil {
-		log.Fatal(err)
+	// REMOVEME: testing only
+	// Initialize config
+	var deviceConfig config.DeviceConfig
+	for _, d := range Config.Devices {
+		if d.Id == "wled" {
+			deviceConfig = d.Config
+		}
 	}
 
-	// REMOVEME: testing only
-	devices.SendUdpPacket()
+	// NOTE: This type of code should be run in a goroutine
+	var device device.Device = &device.UdpDevice{
+		Name:     "UDP",
+		Port:     deviceConfig.Port,
+		Protocol: device.UdpProtocols[deviceConfig.UdpPacketType],
+	}
+
+	data := [50]color.Color{}
+	for i := range data {
+		data[i], err = color.NewColor(color.LedFxColors["pink"])
+		if err != nil {
+			logger.Logger.Fatal(err)
+		}
+	}
+	err = device.Init()
+	if err != nil {
+		logger.Logger.Fatal(err)
+	}
+	err = device.SendData(data[:])
+	if err != nil {
+		logger.Logger.Fatal(err)
+	}
+
+	defer device.Close()
+
+	err = api.InitApi(Config.Port)
+	if err != nil {
+		logger.Logger.Fatal(err)
+	}
 
 }

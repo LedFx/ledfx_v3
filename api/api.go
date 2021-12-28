@@ -3,8 +3,7 @@ package api
 import (
 	"fmt"
 	"io"
-	"ledfx/color"
-	"log"
+	"ledfx/logger"
 	"net/http"
 )
 
@@ -14,18 +13,16 @@ func InitApi(port int) error {
 	helloHandler := func(w http.ResponseWriter, req *http.Request) {
 		_, err := io.WriteString(w, "Hello, LedFx Go!!\n")
 		if err != nil {
-			log.Println(err)
+			logger.Logger.Panic(err)
 		}
 		_, err = io.WriteString(w, "Have a good life!\n")
 		if err != nil {
-			log.Println(err)
+			logger.Logger.Panic(err)
 		}
 	}
 
-	c := "#FF55FF"
-	log.Println(color.NewColor(c))
-
 	http.HandleFunc("/hello", helloHandler)
-	log.Println("Listing for requests at http://localhost:8000/hello")
+	// TODO: change to config.Host
+	logger.Logger.Debug("Listing for requests at http://localhost:8000/hello")
 	return http.ListenAndServe(fmt.Sprint(":", port), nil)
 }

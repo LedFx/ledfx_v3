@@ -100,9 +100,16 @@ func (d *UdpDevice) BuildPacket(colors []color.Color) []byte {
 	}
 	protocol = byte(d.Protocol)
 	// TODO: read from config
-	var timeout byte = 0xff // No timeout
-	ledOffset := []byte{0x00, 0x00}
+	var timeout byte = 0x01
+	// TODO: get from params
+	ledOffset := []byte{}
+	if d.Protocol == WARLS {
+		ledOffset = []byte{0x00}
+	} else if d.Protocol == DNRGB {
+		ledOffset = []byte{0x00, 0x00}
+	}
 	packet := []byte{protocol, timeout}
+
 	packet = append(packet, ledOffset...)
 
 	data := ColorsToBytes(colors)

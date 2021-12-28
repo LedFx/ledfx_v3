@@ -10,8 +10,6 @@ import (
 	"ledfx/logger"
 )
 
-var Config config.Config
-
 func init() {
 
 	err := config.InitFlags()
@@ -19,14 +17,12 @@ func init() {
 		logger.Logger.Fatal(err)
 	}
 
-	conf, err := config.LoadConfig()
+	err = config.LoadConfig()
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}
 
-	Config = conf
-
-	_, err = logger.Init(Config)
+	_, err = logger.Init(config.GlobalConfig)
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}
@@ -34,7 +30,7 @@ func init() {
 }
 
 func main() {
-	if Config.Version {
+	if config.GlobalConfig.Version {
 		fmt.Println("LedFx " + constants.VERSION)
 		return
 	}
@@ -60,22 +56,32 @@ func main() {
 	// REMOVEME: testing only
 	// Initialize config
 	var deviceConfig config.DeviceConfig
-	for _, d := range Config.Devices {
-		if d.Id == "wled" {
+	var foundDevice bool = false
+	for _, d := range config.GlobalConfig.Devices {
+		if d.Type == "udp" {
 			deviceConfig = d.Config
+			foundDevice = true
+			break
 		}
 	}
 
-	// NOTE: This type of code should be run in a goroutine
-	var device device.Device = &device.UdpDevice{
-		Name:     "UDP",
-		Port:     deviceConfig.Port,
-		Protocol: device.UdpProtocols[deviceConfig.UdpPacketType],
+	if !foundDevice {
+		logger.Logger.Warn("No UDP device found in config")
+		return
 	}
 
-	data := [50]color.Color{}
-	for i := range data {
-		data[i], err = color.NewColor(color.LedFxColors["pink"])
+	// NOTE: This type of code should be run in a goroutine
+	var device = &device.UdpDevice{
+		Name:     deviceConfig.Name,
+		Port:     deviceConfig.Port,
+		Protocol: device.UdpProtocols[deviceConfig.UdpPacketType],
+		Config:   deviceConfig,
+	}
+
+	data := []color.Color{}
+	for i := 0; i < device.Config.PixelCount; i++ {
+		newColor, err := color.NewColor(color.LedFxColors["orange"])
+		data = append(data, newColor)
 		if err != nil {
 			logger.Logger.Fatal(err)
 		}
@@ -84,14 +90,14 @@ func main() {
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}
-	err = device.SendData(data[:])
+	err = device.SendData(data)
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}
 
 	defer device.Close()
 
-	err = api.InitApi(Config.Port)
+	err = api.InitApi(config.GlobalConfig.Port)
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}

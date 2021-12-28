@@ -1,4 +1,4 @@
-//go:generate goversioninfo -icon=assets/logo.ico
+//go:generate goversioninfo -icon=assets/logo.icns
 package frontendServer
 
 import (
@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	// "io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -19,6 +20,7 @@ import (
 	"time"
 
 	"github.com/getlantern/systray"
+	// "github.com/getlantern/systray/example/icon"
 	"github.com/gorilla/websocket"
 )
 
@@ -236,9 +238,8 @@ func openbrowser(url string) {
 //go:embed assets/logo.ico
 var logo []byte
 
-func onReady() {
+func OnReady() {
 	systray.SetIcon(logo)
-	systray.SetTitle("LedFx-Go")
 	systray.SetTooltip("LedFx-Go")
 	mOpen := systray.AddMenuItem("Open", "Open LedFx in Browser")
 	mGithub := systray.AddMenuItem("Github", "Open LedFx in Browser")
@@ -265,5 +266,4 @@ func InitFrontend() {
 	go func() {
 		http.ListenAndServe(":8080", nil)
 	}()
-	systray.Run(onReady, nil)
 }

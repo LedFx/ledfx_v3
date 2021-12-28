@@ -10,6 +10,7 @@ import (
 	"ledfx/frontendServer"
 	"ledfx/logger"
 	"ledfx/zeroconf"
+	"github.com/getlantern/systray"
 )
 
 func init() {
@@ -68,46 +69,49 @@ func main() {
 	}
 
 	if !foundDevice {
-		logger.Logger.Warn("No UDP device found in config")
-		return
-	}
+		logger.Logger.Warn("No UDP device found in config")		
+	} else {
 
-	// NOTE: This type of code should be run in a goroutine
-	var device = &device.UdpDevice{
-		Name:     deviceConfig.Name,
-		Port:     deviceConfig.Port,
-		Protocol: device.UdpProtocols[deviceConfig.UdpPacketType],
-		Config:   deviceConfig,
-	}
+		// NOTE: This type of code should be run in a goroutine
+		var device = &device.UdpDevice{
+			Name:     deviceConfig.Name,
+			Port:     deviceConfig.Port,
+			Protocol: device.UdpProtocols[deviceConfig.UdpPacketType],
+			Config:   deviceConfig,
+		}
 
-	data := []color.Color{}
-	for i := 0; i < device.Config.PixelCount; i++ {
-		newColor, err := color.NewColor(color.LedFxColors["orange"])
-		data = append(data, newColor)
+		data := []color.Color{}
+		for i := 0; i < device.Config.PixelCount; i++ {
+			newColor, err := color.NewColor(color.LedFxColors["orange"])
+			data = append(data, newColor)
+			if err != nil {
+				logger.Logger.Fatal(err)
+			}
+		}
+		err = device.Init()
 		if err != nil {
 			logger.Logger.Fatal(err)
 		}
-	}
-	err = device.Init()
-	if err != nil {
-		logger.Logger.Fatal(err)
-	}
-	err = device.SendData(data)
-	if err != nil {
-		logger.Logger.Fatal(err)
-	}
+		err = device.SendData(data)
+		if err != nil {
+			logger.Logger.Fatal(err)
+		}
 
-	defer device.Close()
-
+		defer device.Close()
+	}
 	go func() {
 		frontendServer.InitFrontend()
 	}()
 
-	err = zeroconf.ScanZeroconf()
-	if err != nil {
-		logger.Logger.Fatal(err)
-	}
-
+	go func() {
+		err = zeroconf.ScanZeroconf()
+		if err != nil {
+			logger.Logger.Fatal(err)
+		}	
+	}()
+		
+	systray.Run(frontendServer.OnReady, nil)
+	
 	err = api.InitApi(config.GlobalConfig.Port)
 	if err != nil {
 		logger.Logger.Fatal(err)

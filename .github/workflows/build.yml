@@ -65,6 +65,9 @@ jobs:
           GOOS=${GOOSARCH%/*}
           GOARCH=${GOOSARCH#*/}
           BINARY_NAME=ledfx-go-$GOOS-$GOARCH
+          if [ $GOOS = "windows" ]; then
+            BINARY_NAME+='.exe'
+          fi
           echo "BINARY_NAME=$BINARY_NAME" >> $GITHUB_ENV
           echo "GOOS=$GOOS" >> $GITHUB_ENV
           echo "GOARCH=$GOARCH" >> $GITHUB_ENV

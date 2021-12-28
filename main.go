@@ -26,7 +26,10 @@ func init() {
 
 	Config = conf
 
-	logger.Init(Config)
+	_, err = logger.Init(Config)
+	if err != nil {
+		logger.Logger.Fatal(err)
+	}
 
 }
 

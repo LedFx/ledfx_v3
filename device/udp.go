@@ -101,10 +101,10 @@ func (d *UdpDevice) BuildPacket(colors []color.Color) []byte {
 	// TODO: read from config
 	var timeout byte = 0xff // No timeout
 	ledOffset := []byte{0x00, 0x00}
-	prefix := []byte{protocol, timeout}
-	prefix = append(prefix, ledOffset...)
+	packet := []byte{protocol, timeout}
+	packet = append(packet, ledOffset...)
 
 	data := ColorsToBytes(colors)
-	packet := append(prefix, data...)
+	packet = append(packet, data...)
 	return packet
 }

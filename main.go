@@ -7,7 +7,9 @@ import (
 	"ledfx/config"
 	"ledfx/constants"
 	"ledfx/device"
+	"ledfx/frontendServer"
 	"ledfx/logger"
+	"ledfx/zeroconf"
 )
 
 func init() {
@@ -97,9 +99,22 @@ func main() {
 
 	defer device.Close()
 
+	go func() {
+		frontendServer.InitFrontend()
+	}()
+
+	err = zeroconf.ScanZeroconf()
+	if err != nil {
+		logger.Logger.Fatal(err)
+	}
+
 	err = api.InitApi(config.GlobalConfig.Port)
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}
 
+}
+
+func ScanZeroconf() {
+	panic("unimplemented")
 }

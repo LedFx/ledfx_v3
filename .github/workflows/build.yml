@@ -79,3 +79,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: $BINARY_NAME
+          path: $BINARY_NAME

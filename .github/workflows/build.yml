@@ -78,5 +78,4 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: $BINARY_NAME
-          path: $BINARY_NAME
+          name: ${{ env.BINARY_NAME }}

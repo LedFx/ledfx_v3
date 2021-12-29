@@ -146,14 +146,14 @@ func LoadConfig(configName string) (err error) {
 }
 
 func AddDevice(device Device, configName string) (err error) {
-	var c Config
+	var c *Config
 	var v *viper.Viper
 	if configName == "goconfig" {
 		v = GlobalViper
-		c = GlobalConfig
+		c = &GlobalConfig
 	} else if configName == "config" {
 		v = OldViper
-		c = OldConfig
+		c = &OldConfig
 	}
 
 	if c.Devices == nil {

@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"ledfx/config"
-	"log"
+	"ledfx/device"
+	"ledfx/logger"
 	"time"
 
 	"github.com/grandcat/zeroconf"
@@ -13,7 +14,7 @@ import (
 func ScanZeroconf() error {
 	resolver, err := zeroconf.NewResolver(nil)
 	if err != nil {
-		log.Println("Failed to initialize resolver:", err.Error())
+		logger.Logger.Warn("Failed to initialize resolver:", err.Error())
 		return err
 	}
 
@@ -21,9 +22,8 @@ func ScanZeroconf() error {
 
 	go func(results <-chan *zeroconf.ServiceEntry) {
 		for entry := range results {
-			fmt.Print("New WLED found: ")
-			// TODO: check if exists in config already
-			config.AddDevice(config.Device{
+			logger.Logger.Debug("New WLED found: ")
+			err = device.AddDeviceToConfig(config.Device{
 				// TODO: fill in details
 				Config: config.DeviceConfig{
 					Name:      entry.ServiceRecord.Instance,
@@ -31,12 +31,15 @@ func ScanZeroconf() error {
 				},
 				Type: "wled",
 			}, "goconfig")
+			if err != nil {
+				logger.Logger.Warn(err)
+			}
 			if Ws != nil {
 				SendWs(Ws, "info", "New WLED found: "+entry.ServiceRecord.Instance)
 			}
-			fmt.Print(entry.ServiceRecord.Instance)
-			fmt.Print(" on ")
-			fmt.Println(entry.AddrIPv4)
+			logger.Logger.Debug(entry.ServiceRecord.Instance)
+			logger.Logger.Debug(" on ")
+			logger.Logger.Debug(entry.AddrIPv4)
 		}
 		// fmt.Println("No more entries.")
 	}(entries)
@@ -47,7 +50,7 @@ func ScanZeroconf() error {
 
 	err = resolver.Browse(ctx, "_wled._tcp", "local", entries)
 	if err != nil {
-		log.Println("Failed to browse:", err.Error())
+		logger.Logger.Warn("Failed to browse:", err.Error())
 		return err
 	}
 

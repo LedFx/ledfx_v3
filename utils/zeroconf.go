@@ -2,7 +2,6 @@ package utils
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"log"
 	"time"
@@ -10,15 +9,8 @@ import (
 	"github.com/grandcat/zeroconf"
 )
 
-var (
-	service  = flag.String("service", "_wled._tcp", "Set the service category to look for devices.")
-	domain   = flag.String("domain", "local", "Set the search domain. For local networks, default is fine.")
-	waitTime = flag.Int("wait", 120, "Duration in [s] to run discovery.")
-)
-
 func ScanZeroconf() error {
 	// fmt.Println("Scanning... ")
-	flag.Parse()
 
 	resolver, err := zeroconf.NewResolver(nil)
 	if err != nil {
@@ -42,10 +34,10 @@ func ScanZeroconf() error {
 	}(entries)
 
 	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(*waitTime))
-	ctx, _ := context.WithTimeout(context.Background(), time.Second*time.Duration(*waitTime))
+	ctx := context.Background()
 	// defer cancel()
 
-	err = resolver.Browse(ctx, *service, *domain, entries)
+	err = resolver.Browse(ctx, "_wled._tcp", "local", entries)
 	if err != nil {
 		log.Println("Failed to browse:", err.Error())
 		return err

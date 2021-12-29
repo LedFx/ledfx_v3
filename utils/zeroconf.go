@@ -22,7 +22,7 @@ func ScanZeroconf() error {
 
 	resolver, err := zeroconf.NewResolver(nil)
 	if err != nil {
-		log.Fatalln("Failed to initialize resolver:", err.Error())
+		log.Println("Failed to initialize resolver:", err.Error())
 		return err
 	}
 
@@ -43,7 +43,7 @@ func ScanZeroconf() error {
 	defer cancel()
 	err = resolver.Browse(ctx, *service, *domain, entries)
 	if err != nil {
-		log.Fatalln("Failed to browse:", err.Error())
+		log.Println("Failed to browse:", err.Error())
 		return err
 	}
 

@@ -68,7 +68,7 @@ func unzip() {
 
 }
 
-func GetFrontend() {
+func DownloadFrontend() {
 	log.Println("Getting latest Frontend")
 	resp, err := http.Get("https://github.com/YeonV/LedFx-Frontend-v2/releases/latest/download/ledfx_frontend_v2.zip")
 	if err != nil {

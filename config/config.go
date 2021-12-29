@@ -92,3 +92,14 @@ func LoadConfig() (err error) {
 	err = viper.Unmarshal(&GlobalConfig)
 	return
 }
+
+func AddDevice(device Device) (err error) {
+	if GlobalConfig.Devices == nil {
+		GlobalConfig.Devices = make([]Device, 0)
+	}
+	GlobalConfig.Devices = append(GlobalConfig.Devices, device)
+	viper.Set("devices", GlobalConfig.Devices)
+	log.Println(GlobalConfig.Devices)
+	err = viper.WriteConfig()
+	return
+}

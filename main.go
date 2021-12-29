@@ -8,6 +8,7 @@ import (
 	"ledfx/constants"
 	"ledfx/device"
 	"ledfx/logger"
+	"ledfx/utils"
 )
 
 func init() {
@@ -35,7 +36,7 @@ func main() {
 		return
 	}
 
-	err := constants.PrintLogo()
+	err := utils.PrintLogo()
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}

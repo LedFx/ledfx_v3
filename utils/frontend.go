@@ -108,7 +108,7 @@ func DownloadFrontend() {
 	// Extract frontend
 	unzip()
 	logger.Logger.Info("Got latest Frontend")
-	fmt.Println("===========================================")
+	logger.Logger.Info("========================================================")
 }
 
 func ServeFrontend() {
@@ -144,10 +144,10 @@ func Openbrowser(url string) {
 }
 
 func InitFrontend() {
-	fmt.Println("===========================================")
-	fmt.Println("          LedFx-Frontend by Blade")
+	fmt.Println("========================================================")
+	fmt.Println("                LedFx-Frontend by Blade")
 	fmt.Println("    [CTRL]+Click: http://localhost:8080/#/?newCore=1")
-	fmt.Println("===========================================")
+	fmt.Println("========================================================")
 	SetupRoutes()
 	go func() {
 		err := http.ListenAndServe(":8080", nil)

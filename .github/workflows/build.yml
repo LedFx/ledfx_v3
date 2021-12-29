@@ -72,18 +72,19 @@ jobs:
 
           if [ $GOOS = "windows" ]; then
             BINARY_NAME+='.exe'
-            echo 'GO111MODULE=on go build -ldflags "-H=windowsgui"' >> $GITHUB_ENV
           fi
 
       - name: Install Required Dependencies
         run: |
           echo "Installing dependencies"
           sudo apt-get install gcc libgtk-3-dev libappindicator3-dev
-      - name: Build
+      - name: Build for Windows
         run: |
-          go build -o "$BINARY_NAME" -v
-          ls -l
-          pwd
+          if [ ${{ env.GOOS }} = "windows" ]; then
+            go build -o "$BINARY_NAME" -v -ldflags "-H=windowsgui"
+          else
+            go build -o "$BINARY_NAME" -v
+          fi
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
         with:

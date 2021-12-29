@@ -1,5 +1,5 @@
 on:
-  push:
+  push: [main]
   workflow_dispatch:
 
 name: Build Binaries

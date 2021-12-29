@@ -1,16 +1,14 @@
 package utils
 
 import (
-	_ "embed"
 	"encoding/json"
-	"fmt"
-	"log"
+	"ledfx/logger"
 	"net/http"
 
 	"github.com/gorilla/websocket"
 )
 
-// We'll need to define an Upgrader
+// Upgrader will need to be defined
 // this will require a Read and Write buffer size
 var Upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -23,7 +21,7 @@ var Upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-// define a reader which will listen for
+// Msg defines a reader which will listen for
 // new messages being sent to our WebSocket
 // endpoint
 type Msg struct {
@@ -31,18 +29,22 @@ type Msg struct {
 	Message string
 }
 
+// Reader will listen indefinitely for new messages
 func Reader(conn *websocket.Conn) {
 	for {
 		// read in a message
 		messageType, p, err := conn.ReadMessage()
 		if err != nil {
-			log.Println(err, messageType)
+			logger.Logger.Warn(err, messageType)
 			return
 		}
 		// print out that message for clarity
-		fmt.Println(string(p))
+		logger.Logger.Debug(string(p))
 		var msg Msg
-		json.Unmarshal([]byte(p), &msg)
+		err = json.Unmarshal([]byte(p), &msg)
+		if err != nil {
+			logger.Logger.Warn(err)
+		}
 
 		// fmt.Printf("Type: %s, Message: %s", msg.Type, msg.Message)
 		if msg.Message == "frontend connected" {
@@ -51,25 +53,29 @@ func Reader(conn *websocket.Conn) {
 	}
 }
 
+// Ws is our global websocket connection
 var Ws *websocket.Conn
 
-// define our WebSocket endpoint
+// TODO: Handle more than one connection
+
+// ServeWs defines our WebSocket endpoint
 func ServeWs(w http.ResponseWriter, r *http.Request) {
 	// upgrade this connection to a WebSocket
 	// connection
 	var err error
 	Ws, err = Upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Warn(err)
 	}
 	// listen indefinitely for new messages coming
 	// through on our WebSocket connection
 	Reader(Ws)
 }
 
+// SendWs will send a message to our WebSocket client
 func SendWs(conn *websocket.Conn, msgType string, msg string) {
 	if err := conn.WriteMessage(1, []byte(`{"type":"`+msgType+`","message":"`+msg+`" }`)); err != nil {
-		log.Println(err)
+		logger.Logger.Warn(err)
 		return
 	}
 }

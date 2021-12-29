@@ -7,9 +7,10 @@ import (
 	"ledfx/config"
 	"ledfx/constants"
 	"ledfx/device"
-	"ledfx/frontendServer"
 	"ledfx/logger"
+	"ledfx/utils"
 	"ledfx/zeroconf"
+
 	"github.com/getlantern/systray"
 )
 
@@ -69,7 +70,7 @@ func main() {
 	}
 
 	if !foundDevice {
-		logger.Logger.Warn("No UDP device found in config")		
+		logger.Logger.Warn("No UDP device found in config")
 	} else {
 
 		// NOTE: This type of code should be run in a goroutine
@@ -100,18 +101,18 @@ func main() {
 		defer device.Close()
 	}
 	go func() {
-		frontendServer.InitFrontend()
+		utils.InitFrontend()
 	}()
 
 	go func() {
 		err = zeroconf.ScanZeroconf()
 		if err != nil {
 			logger.Logger.Fatal(err)
-		}	
+		}
 	}()
-		
-	systray.Run(frontendServer.OnReady, nil)
-	
+
+	systray.Run(utils.OnReady, nil)
+
 	err = api.InitApi(config.GlobalConfig.Port)
 	if err != nil {
 		logger.Logger.Fatal(err)

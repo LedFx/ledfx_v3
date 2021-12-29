@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"ledfx/api"
-	"log"
+	"ledfx/logger"
 	"net/http"
 	"os"
 	"os/exec"
@@ -33,7 +33,10 @@ func unzip() {
 		}
 		if f.FileInfo().IsDir() {
 			// fmt.Println("creating directory...")
-			os.MkdirAll(filePath, os.ModePerm)
+			err = os.MkdirAll(filePath, os.ModePerm)
+			if err != nil {
+				panic(err)
+			}
 			continue
 		}
 
@@ -58,7 +61,10 @@ func unzip() {
 		dstFile.Close()
 		fileInArchive.Close()
 	}
-	os.Rename("./dest/ledfx_frontend_v2", "./frontend")
+	err = os.Rename("./dest/ledfx_frontend_v2", "./frontend")
+	if err != nil {
+		panic(err)
+	}
 
 	// cleanup
 	if _, err := os.Stat("dest"); err == nil {
@@ -70,10 +76,10 @@ func unzip() {
 }
 
 func DownloadFrontend() {
-	log.Println("Getting latest Frontend")
+	logger.Logger.Debug("Getting latest Frontend")
 	resp, err := http.Get("https://github.com/YeonV/LedFx-Frontend-v2/releases/latest/download/ledfx_frontend_v2.zip")
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Warn(err)
 		return
 	}
 	defer resp.Body.Close()
@@ -101,7 +107,7 @@ func DownloadFrontend() {
 	}
 	// Extract frontend
 	unzip()
-	log.Println("Got latest Frontend")
+	logger.Logger.Info("Got latest Frontend")
 	fmt.Println("===========================================")
 }
 
@@ -132,7 +138,7 @@ func Openbrowser(url string) {
 		err = fmt.Errorf("unsupported platform")
 	}
 	if err != nil {
-		log.Println(err)
+		logger.Logger.Warn(err)
 	}
 
 }
@@ -144,6 +150,9 @@ func InitFrontend() {
 	fmt.Println("===========================================")
 	SetupRoutes()
 	go func() {
-		http.ListenAndServe(":8080", nil)
+		err := http.ListenAndServe(":8080", nil)
+		if err != nil {
+			logger.Logger.Fatal(err)
+		}
 	}()
 }

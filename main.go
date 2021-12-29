@@ -15,36 +15,28 @@ import (
 
 func init() {
 
-	_, err := logger.Init(config.GlobalConfig)
+	// Initialize Config
+	err := config.InitConfig()
+	if err != nil {
+		logger.Logger.Fatal(err)
+	}
+
+	// Initialize Logger
+	_, err = logger.Init(config.GlobalConfig)
 	if err != nil {
 		log.Println(err)
-	}
-
-	err = config.InitConfig()
-	if err != nil {
-		logger.Logger.Fatal(err)
-	}
-
-	// Load old config
-	err = config.LoadConfig("config")
-	if err != nil {
-		logger.Logger.Fatal(err)
-	}
-	// TODO: once we are fully backwards compatible, we can just use config
-	// Load new config
-	err = config.LoadConfig("goconfig")
-	if err != nil {
-		logger.Logger.Fatal(err)
 	}
 
 }
 
 func main() {
+	// Just print version and return if flag is set
 	if config.GlobalConfig.Version {
 		fmt.Println("LedFx " + constants.VERSION)
 		return
 	}
 
+	// Print the cli logo
 	err := utils.PrintLogo()
 	if err != nil {
 		logger.Logger.Fatal(err)
@@ -106,6 +98,8 @@ func main() {
 
 		defer device.Close()
 	}
+	// REMOVEME: END
+
 	go func() {
 		utils.InitFrontend()
 	}()
@@ -121,6 +115,6 @@ func main() {
 
 }
 
-func ScanZeroconf() {
-	panic("unimplemented")
-}
+// func ScanZeroconf() {
+// 	panic("unimplemented")
+// }

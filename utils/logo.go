@@ -3,14 +3,26 @@ package utils
 import (
 	_ "embed"
 	"fmt"
+
+	"github.com/nathan-fiscaletti/consolesize-go"
 )
 
 //go:embed assets/logo.txt
 var logoTxt []byte
 
-// TODO: make this responsive to terminal size `$ stty size`
+//go:embed assets/logo-sm.txt
+var smLogoTxt []byte
+
 func PrintLogo() error {
-	s := string(logoTxt)
+	cols, _ := consolesize.GetConsoleSize()
+	var s string
+	if cols >= 125 {
+		s = string(logoTxt)
+	} else if cols >= 52 {
+		s = string(smLogoTxt)
+	} else {
+		return nil
+	}
 	fmt.Print(s)
 	fmt.Println()
 	return nil

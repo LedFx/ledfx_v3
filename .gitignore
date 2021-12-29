@@ -22,4 +22,5 @@ config.json
 # bin
 ledfx
 
+# frontend
 frontend/

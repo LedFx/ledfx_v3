@@ -41,7 +41,7 @@ func ScanZeroconf() error {
 	}(entries)
 
 	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(*waitTime))
-	ctx, _ := context.WithTimeout(context.Background(), time.Second*time.Duration(120))
+	ctx := context.Background()
 	// defer cancel()
 
 	err = resolver.Browse(ctx, "_wled._tcp", "local", entries)

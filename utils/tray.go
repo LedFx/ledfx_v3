@@ -20,7 +20,7 @@ func OnReady() {
 	for {
 		select {
 		case <-mOpen.ClickedCh:
-			Openbrowser("http://localhost:8080")
+			Openbrowser("http://localhost:8080/#/?newCore=1")
 		case <-mGithub.ClickedCh:
 			Openbrowser("https://github.com/YeonV/ledfx-go")
 		case <-mQuit.ClickedCh:

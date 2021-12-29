@@ -138,7 +138,7 @@ func Openbrowser(url string) {
 func InitFrontend() {
 	fmt.Println("===========================================")
 	fmt.Println("          LedFx-Frontend by Blade")
-	fmt.Println("    [CTRL]+Click: http://localhost:8080")
+	fmt.Println("    [CTRL]+Click: http://localhost:8080/#/?newCore=1")
 	fmt.Println("===========================================")
 	SetupRoutes()
 	go func() {

@@ -61,7 +61,7 @@ type wledInfo struct {
 }
 
 func resolveWledInfo(ip net.IP) {
-	url := "http://192.168.1.170/json/info"
+	url := "http://" + ip.String() + "/json/info"
 
 	spaceClient := http.Client{
 		Timeout: time.Second * 2, // Timeout after 2 seconds
@@ -101,7 +101,8 @@ func resolveWledInfo(ip net.IP) {
 		Config: config.DeviceConfig{
 			Name:       wledInfo1.Name,
 			PixelCount: wledInfo1.Leds.Count,
-			IpAddress:  wledInfo1.IP, // fmt.Sprintf("%s", entry.AddrIPv4[0]), // convert to string
+			// Id: entry.ServiceRecord.Instance,
+			IpAddress: wledInfo1.IP, // fmt.Sprintf("%s", entry.AddrIPv4[0]), // convert to string
 		},
 		Type: "wled",
 	}, "goconfig")
@@ -120,7 +121,7 @@ func ScanZeroconf() error {
 		for entry := range results {
 			fmt.Print("New WLED found: ")
 			// TODO: check if exists in config already
-			GetWledInfo(entry.AddrIPv4[0])
+			resolveWledInfo(entry.AddrIPv4[0])
 
 			if Ws != nil {
 				SendWs(Ws, "info", "New WLED found: "+entry.ServiceRecord.Instance)

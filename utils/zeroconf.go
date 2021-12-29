@@ -31,6 +31,7 @@ func ScanZeroconf() error {
 	go func(results <-chan *zeroconf.ServiceEntry) {
 		for entry := range results {
 			fmt.Print("New WLED found: ")
+			SendWs(Ws, "info", "New WLED found: "+entry.ServiceRecord.Instance)
 			fmt.Print(entry.ServiceRecord.Instance)
 			fmt.Print(" on ")
 			fmt.Println(entry.AddrIPv4)

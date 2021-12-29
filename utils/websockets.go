@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -38,59 +36,40 @@ func Reader(conn *websocket.Conn) {
 		// read in a message
 		messageType, p, err := conn.ReadMessage()
 		if err != nil {
-			log.Println(err)
+			log.Println(err, messageType)
 			return
 		}
 		// print out that message for clarity
 		fmt.Println(string(p))
 		var msg Msg
 		json.Unmarshal([]byte(p), &msg)
+
 		// fmt.Printf("Type: %s, Message: %s", msg.Type, msg.Message)
-
 		if msg.Message == "frontend connected" {
-			// EXAMPLE DUMMY
-			uptimeTicker := time.NewTicker(5 * time.Second)
-			uptimeTickerb := time.NewTicker(5 * time.Second)
-			dummyTypes := make([]string, 0)
-			dummyTypes = append(dummyTypes,
-				"success",
-				"info",
-				"warning",
-				"error")
-			dummyMsgs := make([]string, 0)
-			dummyMsgs = append(dummyMsgs,
-				"Sent from new LedFx-Go",
-				"New core detected!",
-				"BOOM",
-				"Just like that")
-
-			rand.Seed(time.Now().Unix()) // initialize global pseudo random generator
-			for {
-				select {
-				case <-uptimeTicker.C:
-					if err := conn.WriteMessage(messageType, []byte(`{"type":"`+dummyTypes[rand.Intn(len(dummyTypes))]+`","message":"`+dummyMsgs[rand.Intn(len(dummyMsgs))]+`" }`)); err != nil {
-						log.Println(err)
-						return
-					}
-				case <-uptimeTickerb.C:
-
-				}
-			}
+			SendWs(Ws, "info", "New Core detected!")
 		}
 	}
 }
 
+var Ws *websocket.Conn
+
 // define our WebSocket endpoint
 func ServeWs(w http.ResponseWriter, r *http.Request) {
-	// fmt.Println(r.Host)
-
 	// upgrade this connection to a WebSocket
 	// connection
-	ws, err := Upgrader.Upgrade(w, r, nil)
+	var err error
+	Ws, err = Upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 	}
 	// listen indefinitely for new messages coming
 	// through on our WebSocket connection
-	Reader(ws)
+	Reader(Ws)
+}
+
+func SendWs(conn *websocket.Conn, msgType string, msg string) {
+	if err := conn.WriteMessage(1, []byte(`{"type":"`+msgType+`","message":"`+msg+`" }`)); err != nil {
+		log.Println(err)
+		return
+	}
 }

@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"fmt"
+	"ledfx/config"
 	"log"
 	"time"
 
@@ -10,8 +11,6 @@ import (
 )
 
 func ScanZeroconf() error {
-	// fmt.Println("Scanning... ")
-
 	resolver, err := zeroconf.NewResolver(nil)
 	if err != nil {
 		log.Println("Failed to initialize resolver:", err.Error())
@@ -23,6 +22,15 @@ func ScanZeroconf() error {
 	go func(results <-chan *zeroconf.ServiceEntry) {
 		for entry := range results {
 			fmt.Print("New WLED found: ")
+			// TODO: check if exists in config already
+			config.AddDevice(config.Device{
+				// TODO: fill in details
+				Config: config.DeviceConfig{
+					Name:      entry.ServiceRecord.Instance,
+					IpAddress: fmt.Sprintf("%q", entry.AddrIPv4[0]), // convert to string
+				},
+				Type: "wled",
+			}, "goconfig")
 			if Ws != nil {
 				SendWs(Ws, "info", "New WLED found: "+entry.ServiceRecord.Instance)
 			}

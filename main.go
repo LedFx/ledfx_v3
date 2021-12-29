@@ -8,23 +8,31 @@ import (
 	"ledfx/device"
 	"ledfx/logger"
 	"ledfx/utils"
+	"log"
 
 	"github.com/getlantern/systray"
 )
 
 func init() {
 
-	err := config.InitFlags()
+	_, err := logger.Init(config.GlobalConfig)
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = config.InitConfig()
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}
 
-	err = config.LoadConfig()
+	// Load old config
+	err = config.LoadConfig("config")
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}
-
-	_, err = logger.Init(config.GlobalConfig)
+	// TODO: once we are fully backwards compatible, we can just use config
+	// Load new config
+	err = config.LoadConfig("goconfig")
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}

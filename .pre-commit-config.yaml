@@ -9,7 +9,6 @@ repos:
     -   id: check-yaml
     -   id: check-added-large-files
     -   id: check-toml
-    -   id: pretty-format-json
 # In order for these to work, you need to install these packages:
 # go get -u github.com/lietu/go-pre-commit
 # go install golang.org/x/tools/cmd/goimports@latest

@@ -38,7 +38,7 @@ func main() {
 		return
 	}
 
-	err := constants.PrintLogo()
+	err := utils.PrintLogo()
 	if err != nil {
 		logger.Logger.Fatal(err)
 	}

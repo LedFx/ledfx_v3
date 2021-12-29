@@ -26,7 +26,8 @@ func ScanZeroconf() error {
 			config.AddDevice(config.Device{
 				// TODO: fill in details
 				Config: config.DeviceConfig{
-					// IpAddress: entry.AddrIPv4, // convert to string
+					Name:      entry.ServiceRecord.Instance,
+					IpAddress: fmt.Sprintf("%q", entry.AddrIPv4[0]), // convert to string
 				},
 				Type: "wled",
 			}, "goconfig")

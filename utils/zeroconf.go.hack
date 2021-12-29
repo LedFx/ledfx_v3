@@ -1,4 +1,4 @@
-package zeroconf
+package utils
 
 import (
 	"bufio"

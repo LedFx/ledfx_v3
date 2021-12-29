@@ -39,8 +39,10 @@ func ScanZeroconf() error {
 		// fmt.Println("No more entries.")
 	}(entries)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(*waitTime))
-	defer cancel()
+	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(*waitTime))
+	ctx, _ := context.WithTimeout(context.Background(), time.Second*time.Duration(*waitTime))
+	// defer cancel()
+
 	err = resolver.Browse(ctx, *service, *domain, entries)
 	if err != nil {
 		log.Println("Failed to browse:", err.Error())

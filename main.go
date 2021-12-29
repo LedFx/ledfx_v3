@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"ledfx/api"
 	"ledfx/color"
 	"ledfx/config"
 	"ledfx/constants"
@@ -111,11 +110,6 @@ func main() {
 	}()
 
 	systray.Run(utils.OnReady, nil)
-
-	err = api.InitApi(config.GlobalConfig.Port)
-	if err != nil {
-		logger.Logger.Fatal(err)
-	}
 
 }
 

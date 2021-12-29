@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
+	"ledfx/api"
 	"log"
 	"net/http"
 	"os"
@@ -107,6 +108,7 @@ func DownloadFrontend() {
 func ServeFrontend() {
 	serveFrontend := http.FileServer(http.Dir("frontend"))
 	fileMatcher := regexp.MustCompile(`\.[a-zA-Z]*$`)
+	api.HandleApi()
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if !fileMatcher.MatchString(r.URL.Path) {
 			http.ServeFile(w, r, "frontend/index.html")

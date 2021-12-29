@@ -1,4 +1,4 @@
-name: golangci-lint
+name: Code Linter
 on:
   push:
   pull_request:

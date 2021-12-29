@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"ledfx/config"
+	"ledfx/device"
+	"ledfx/logger"
 	"log"
 	"net"
 	"net/http"
@@ -60,7 +62,7 @@ type wledInfo struct {
 	IP       string `json:"ip"`
 }
 
-func resolveWledInfo(ip net.IP) {
+func resolveWledInfo(ip net.IP, id string) {
 	url := "http://" + ip.String() + "/json/info"
 
 	spaceClient := http.Client{
@@ -96,22 +98,26 @@ func resolveWledInfo(ip net.IP) {
 
 	fmt.Println(wledInfo1.Name)
 
-	config.AddDevice(config.Device{
+	logger.Logger.Debug("New WLED found: ")
+	err = device.AddDeviceToConfig(config.Device{
 		// TODO: fill in details
 		Config: config.DeviceConfig{
 			Name:       wledInfo1.Name,
 			PixelCount: wledInfo1.Leds.Count,
-			// Id: entry.ServiceRecord.Instance,
-			IpAddress: wledInfo1.IP, // fmt.Sprintf("%s", entry.AddrIPv4[0]), // convert to string
+			IpAddress:  wledInfo1.IP,
 		},
 		Type: "wled",
+		Id:   id,
 	}, "goconfig")
+	if err != nil {
+		logger.Logger.Warn(err)
+	}
 }
 
 func ScanZeroconf() error {
 	resolver, err := zeroconf.NewResolver(nil)
 	if err != nil {
-		log.Println("Failed to initialize resolver:", err.Error())
+		logger.Logger.Warn("Failed to initialize resolver:", err.Error())
 		return err
 	}
 
@@ -121,25 +127,22 @@ func ScanZeroconf() error {
 		for entry := range results {
 			fmt.Print("New WLED found: ")
 			// TODO: check if exists in config already
-			resolveWledInfo(entry.AddrIPv4[0])
+			resolveWledInfo(entry.AddrIPv4[0], entry.ServiceRecord.Instance)
 
 			if Ws != nil {
 				SendWs(Ws, "info", "New WLED found: "+entry.ServiceRecord.Instance)
 			}
-			fmt.Print(entry.ServiceRecord.Instance)
-			fmt.Print(" on ")
-			fmt.Println(entry.AddrIPv4)
+			logger.Logger.Debug(entry.ServiceRecord.Instance)
+			logger.Logger.Debug(" on ")
+			logger.Logger.Debug(entry.AddrIPv4)
 		}
-		// fmt.Println("No more entries.")
 	}(entries)
 
-	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(*waitTime))
 	ctx := context.Background()
-	// defer cancel()
 
 	err = resolver.Browse(ctx, "_wled._tcp", "local", entries)
 	if err != nil {
-		log.Println("Failed to browse:", err.Error())
+		logger.Logger.Warn("Failed to browse:", err.Error())
 		return err
 	}
 

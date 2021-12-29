@@ -144,23 +144,3 @@ func LoadConfig(configName string) (err error) {
 	}
 	return
 }
-
-func AddDevice(device Device, configName string) (err error) {
-	var c *Config
-	var v *viper.Viper
-	if configName == "goconfig" {
-		v = GlobalViper
-		c = &GlobalConfig
-	} else if configName == "config" {
-		v = OldViper
-		c = &OldConfig
-	}
-
-	if c.Devices == nil {
-		c.Devices = make([]Device, 0)
-	}
-	c.Devices = append(c.Devices, device)
-	v.Set("devices", c.Devices)
-	err = v.WriteConfig()
-	return
-}

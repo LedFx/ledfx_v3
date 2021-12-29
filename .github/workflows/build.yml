@@ -72,7 +72,7 @@ jobs:
 
           if [ $GOOS = "windows" ]; then
             BINARY_NAME+='.exe'
-            echo "GO111MODULE=on go build -ldflags '-H=windowsgui'" >> $GITHUB_ENV
+            echo 'GO111MODULE=on go build -ldflags "-H=windowsgui"' >> $GITHUB_ENV
           fi
 
       - name: Install Required Dependencies

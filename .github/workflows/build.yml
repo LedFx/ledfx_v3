@@ -1,5 +1,6 @@
 on:
-  push: [main]
+  push:
+    branches: [main]
   workflow_dispatch:
 
 name: Build Binaries

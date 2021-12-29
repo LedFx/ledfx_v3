@@ -9,7 +9,6 @@ import (
 	"ledfx/device"
 	"ledfx/logger"
 	"ledfx/utils"
-	"ledfx/zeroconf"
 
 	"github.com/getlantern/systray"
 )
@@ -105,7 +104,7 @@ func main() {
 	}()
 
 	go func() {
-		err = zeroconf.ScanZeroconf()
+		err = utils.ScanZeroconf()
 		if err != nil {
 			logger.Logger.Fatal(err)
 		}

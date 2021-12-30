@@ -1,3 +1,9 @@
+// slow zeroconf on windows
+// all XXX seconds, announcements are done automatically
+// to forceTrigger the announcement, restart WLED
+// as a timing reference for fast zeroconf on windows run:
+// dns-sd -B _wled
+
 package utils
 
 import (

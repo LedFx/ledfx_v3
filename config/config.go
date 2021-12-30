@@ -92,7 +92,7 @@ type Config struct {
 	Offline     bool      `mapstructure:"offline" json:"offline"`
 	SentryCrash bool      `mapstructure:"sentry-crash-test" json:"sentry-crash-test"`
 	Devices     []Device  `mapstructure:"devices" json:"devices"`
-	Virtuals    []Virtual `mapstructure:"devices" json:"virtuals"`
+	Virtuals    []Virtual `mapstructure:"virtuals" json:"virtuals"`
 }
 
 var configPath string

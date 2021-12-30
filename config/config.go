@@ -114,42 +114,55 @@ func InitConfig() error {
 	pflag.BoolP("sentry-crash-test", "s", false, "This crashes LedFx to test the sentry crash logger")
 
 	pflag.Parse()
-	return GlobalViper.BindPFlags(pflag.CommandLine)
+	err := GlobalViper.BindPFlags(pflag.CommandLine)
+	if err != nil {
+		return err
+	}
+
+	// Load new config
+	err = loadConfig("goconfig")
+	if err != nil {
+		return err
+	}
+
+	// Load old config
+	err = loadConfig("config")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createConfigIfNotExists(configName string) error {
+	// Create config dir and files if it does not exist
+	_, err := os.Open(filepath.Join(configPath, configName+".json"))
+	var f *os.File
+	if _, ok := err.(*os.PathError); ok {
+		f, err = os.Create(filepath.Join(configPath, configName+".json"))
+		if err != nil {
+			return err
+		}
+		_, err = f.WriteString("{}\n")
+		if err != nil {
+			return err
+		}
+		err = nil
+	}
+	return err
 }
 
 // LoadConfig reads in config file and ENV variables if set.
 // TODO: once we are fully backwards compatible, we can just use config.json for GlobalConfig
-func LoadConfig(configName string) (err error) {
+func loadConfig(configName string) (err error) {
 
 	if configPath == "" {
 		configPath = constants.GetOsConfigDir()
 	}
 
-	// Create config dir and files if it does not exist
-	_, err = os.Open(filepath.Join(configPath, "config.json"))
-	var f *os.File
-	if _, ok := err.(*os.PathError); ok {
-		f, err = os.Create(filepath.Join(configPath, "config.json"))
-		if err != nil {
-			return err
-		}
-		_, err = f.WriteString("{}\n")
-		if err != nil {
-			return err
-		}
-		err = nil
-	}
-	_, err = os.Open(filepath.Join(configPath, "goconfig.json"))
-	if _, ok := err.(*os.PathError); ok {
-		f, err = os.Create(filepath.Join(configPath, "goconfig.json"))
-		if err != nil {
-			return err
-		}
-		_, err = f.WriteString("{}\n")
-		if err != nil {
-			return err
-		}
-		err = nil
+	err = createConfigIfNotExists(configName)
+	if err != nil {
+		return err
 	}
 
 	var v *viper.Viper

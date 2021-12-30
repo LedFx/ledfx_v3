@@ -11,20 +11,47 @@ import (
 )
 
 type DeviceConfig struct {
-	CenterOffset   int    `mapstructure:"center_offset" json:"center_offset"`
-	ForceRefresh   bool   `mapstructure:"force_refresh" json:"force_refresh"`
-	IconName       string `mapstructure:"icon_name" json:"icon_name"`
-	IncludeIndexes bool   `mapstructure:"include_indexes" json:"include_indexes"`
-	IpAddress      string `mapstructure:"ip_address" json:"ip_address"`
-	MaxBrightness  int    `mapstructure:"max_brightness" json:"max_brightness"`
-	Name           string `mapstructure:"name" json:"name"`
-	PixelCount     int    `mapstructure:"pixel_count" json:"pixel_count"`
-	Port           int    `mapstructure:"port" json:"port"`
-	PreviewOnly    bool   `mapstructure:"preview_only" json:"preview_only"`
-	RefreshRate    int    `mapstructure:"refresh_rate" json:"refresh_rate"`
-	Type           string `mapstructure:"type" json:"type"`
-	UdpPacketType  string `mapstructure:"udp_packet_type" json:"udp_packet_type"`
+	CenterOffset int `mapstructure:"center_offset" json:"center_offset"`
+	// ForceRefresh    bool   `mapstructure:"force_refresh" json:"force_refresh"`     // not in old api when devicetype UDP
+	// IconName        string `mapstructure:"icon_name" json:"icon_name"`             // not needed since its on virtual
+	// IncludeIndexes  bool   `mapstructure:"include_indexes" json:"include_indexes"` // not in old api when devicetype UDP
+	IpAddress string `mapstructure:"ip_address" json:"ip_address"`
+	// MinimiseTraffic bool   `mapstructure:"minimise_traffic" json:"minimise_traffic"` // not in old api when devicetype UDP
+	// MaxBrightness   int    `mapstructure:"max_brightness" json:"max_brightness"`     // not in old api when devicetype UDP
+	Name       string `mapstructure:"name" json:"name"`
+	PixelCount int    `mapstructure:"pixel_count" json:"pixel_count"`
+	Port       int    `mapstructure:"port" json:"port"`
+	// PreviewOnly     bool   `mapstructure:"preview_only" json:"preview_only"` // not needed since its on virtual
+	RefreshRate int `mapstructure:"refresh_rate" json:"refresh_rate"`
+	Timeout     int `mapstructure:"timeout" json:"timeout"`
+	// Type            string `mapstructure:"type" json:"type"` // not in old api when devicetype UDP
+	UdpPacketType string `mapstructure:"udp_packet_type" json:"udp_packet_type"`
 }
+
+type VirtualConfig struct {
+	CenterOffset   int     `mapstructure:"center_offset" json:"center_offset"`
+	FrequencyMax   int     `mapstructure:"frequency_max" json:"frequency_max"`
+	FrequencyMin   int     `mapstructure:"frequency_min" json:"frequency_min"`
+	IconName       string  `mapstructure:"icon_name" json:"icon_name"`
+	Mapping        string  `mapstructure:"mapping" json:"mapping"`
+	MaxBrightness  int     `mapstructure:"max_brightness" json:"max_brightness"`
+	Name           string  `mapstructure:"name" json:"name"`
+	PreviewOnly    bool    `mapstructure:"preview_only" json:"preview_only"`
+	TransitionMode string  `mapstructure:"transition_mode" json:"transition_mode"`
+	TransitionTime float32 `mapstructure:"transition_time" json:"transition_time"`
+}
+
+// type Segment struct {
+// 	Id     string
+// 	Start  int
+// 	Stop   int
+// 	Active bool
+// }
+
+// func (r *Segment) MarshalJSON() ([]byte, error) {
+// 	arr := []interface{}{r.Id, r.Start, r.Stop, r.Active}
+// 	return json.Marshal(arr)
+// }
 
 type EffectConfig struct {
 	BackgroundColor string `mapstructure:"background_color" json:"background_color"`
@@ -38,22 +65,32 @@ type Effect struct {
 
 type Device struct {
 	Config DeviceConfig `mapstructure:"config" json:"config"`
-	Effect Effect       `mapstructure:"effect" json:"effect"`
-	Id     string       `mapstructure:"id" json:"id"`
-	Type   string       `mapstructure:"type" json:"type"`
+	// Effect Effect       `mapstructure:"effect" json:"effect"` // not in old api when devicetype UDP
+	Id   string `mapstructure:"id" json:"id"`
+	Type string `mapstructure:"type" json:"type"`
+}
+type Virtual struct {
+	Active   bool            `mapstructure:"active" json:"active"`
+	Config   VirtualConfig   `mapstructure:"config" json:"config"`
+	Effect   Effect          `mapstructure:"effect" json:"effect"`
+	Id       string          `mapstructure:"id" json:"id"`
+	IsDevice string          `mapstructure:"is_device" json:"is_device"`
+	Segments [][]interface{} `mapstructure:"segments" json:"segments"`
+	// Segments []Segment     `mapstructure:"segments" json:"segments"`
 }
 
 type Config struct {
-	Config      string   `mapstructure:"config" json:"config"`
-	Port        int      `mapstructure:"port" json:"port"`
-	Version     bool     `mapstructure:"version" json:"version"`
-	OpenUi      bool     `mapstructure:"open-ui" json:"open-ui"`
-	Verbose     bool     `mapstructure:"verbose" json:"verbose"`
-	VeryVerbose bool     `mapstructure:"very-verbose" json:"very-verbose"`
-	Host        string   `mapstructure:"host" json:"host"`
-	Offline     bool     `mapstructure:"offline" json:"offline"`
-	SentryCrash bool     `mapstructure:"sentry-crash-test" json:"sentry-crash-test"`
-	Devices     []Device `mapstructure:"devices" json:"devices"`
+	Config      string    `mapstructure:"config" json:"config"`
+	Port        int       `mapstructure:"port" json:"port"`
+	Version     bool      `mapstructure:"version" json:"version"`
+	OpenUi      bool      `mapstructure:"open-ui" json:"open-ui"`
+	Verbose     bool      `mapstructure:"verbose" json:"verbose"`
+	VeryVerbose bool      `mapstructure:"very-verbose" json:"very-verbose"`
+	Host        string    `mapstructure:"host" json:"host"`
+	Offline     bool      `mapstructure:"offline" json:"offline"`
+	SentryCrash bool      `mapstructure:"sentry-crash-test" json:"sentry-crash-test"`
+	Devices     []Device  `mapstructure:"devices" json:"devices"`
+	Virtuals    []Virtual `mapstructure:"devices" json:"virtuals"`
 }
 
 var configPath string

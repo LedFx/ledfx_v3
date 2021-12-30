@@ -8,6 +8,7 @@ import (
 	"ledfx/config"
 	"ledfx/device"
 	"ledfx/logger"
+	"ledfx/virtual"
 	"log"
 	"net"
 	"net/http"
@@ -108,6 +109,26 @@ func resolveWledInfo(ip net.IP, id string) {
 		},
 		Type: "wled",
 		Id:   id,
+	}, "goconfig")
+	if err != nil {
+		logger.Logger.Warn(err)
+	}
+	err = virtual.AddDeviceAsVirtualToConfig(config.Virtual{
+		Config: config.VirtualConfig{
+			CenterOffset:   0,
+			FrequencyMax:   15000,
+			FrequencyMin:   20,
+			IconName:       "wled",
+			Mapping:        "span",
+			MaxBrightness:  1,
+			Name:           wledInfo1.Name,
+			PreviewOnly:    false,
+			TransitionMode: "Add",
+			TransitionTime: 0.4,
+		},
+		Segments: [][]interface{}{{id, 0, wledInfo1.Leds.Count - 1, false}},
+		IsDevice: id,
+		Id:       id,
 	}, "goconfig")
 	if err != nil {
 		logger.Logger.Warn(err)

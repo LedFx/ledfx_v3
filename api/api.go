@@ -49,22 +49,24 @@ func HandleApi() {
 	})
 	http.HandleFunc("/api/virtuals/", func(w http.ResponseWriter, r *http.Request) {
 		SetHeader(w)
-		logger.Logger.Warn(r.Method)
+		logger.Logger.Debug(r.Method)
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
 			return
 		} else {
 			var p Resp
-			json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
+
 			path := strings.TrimPrefix(r.URL.Path, "/virtuals/")
 			virtualid := strings.Split(path, "/api/virtuals/")[1]
 
 			err := json.NewDecoder(r.Body).Decode(&p)
 			if err != nil {
+				logger.Logger.Warn(err)
 				// http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 			virtual.PlayVirtual(virtualid, p.Active)
+			json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
 
 		}
 	})

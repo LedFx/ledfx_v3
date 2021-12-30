@@ -2,8 +2,8 @@ package virtual
 
 import (
 	"errors"
+	"fmt"
 	"ledfx/config"
-	"ledfx/logger"
 
 	"github.com/spf13/viper"
 )
@@ -20,7 +20,7 @@ func Remove(s []int, i int) []int {
 }
 
 func PlayVirtual(virtualid string, playState bool) (err error) {
-	logger.Logger.Warn("Set PlayState of ", virtualid, " to ", playState)
+	fmt.Println("Set PlayState of ", virtualid, " to ", playState)
 
 	// TODO: set Active of virtualid to playState
 	// search for a Virtual with id == virtualid inside Virtuals[]
@@ -50,7 +50,7 @@ func PlayVirtual(virtualid string, playState bool) (err error) {
 	return
 }
 
-func AddDeviceAsVirtualToConfig(virtual config.Virtual, configName string) (err error) {
+func AddDeviceAsVirtualToConfig(virtual config.Virtual, configName string) (exists bool, err error) {
 	if virtual.Id == "" {
 		err = errors.New("Virtual id is empty. Please provide Id to add virtual to config")
 		return
@@ -80,5 +80,5 @@ func AddDeviceAsVirtualToConfig(virtual config.Virtual, configName string) (err 
 		v.Set("virtuals", c.Virtuals)
 		err = v.WriteConfig()
 	}
-	return
+	return virtualExists, nil
 }

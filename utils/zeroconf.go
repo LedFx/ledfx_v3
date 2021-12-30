@@ -63,7 +63,7 @@ type wledInfo struct {
 	IP       string `json:"ip"`
 }
 
-func resolveWledInfo(ip net.IP, id string) {
+func resolveWledInfo(ip net.IP, id string) bool {
 	url := "http://" + ip.String() + "/json/info"
 
 	spaceClient := http.Client{
@@ -97,7 +97,7 @@ func resolveWledInfo(ip net.IP, id string) {
 		log.Fatal(jsonErr)
 	}
 
-	fmt.Println(wledInfo1.Name)
+	fmt.Print(wledInfo1.Name)
 
 	logger.Logger.Debug("New WLED found: ")
 	err = device.AddDeviceToConfig(config.Device{
@@ -113,7 +113,8 @@ func resolveWledInfo(ip net.IP, id string) {
 	if err != nil {
 		logger.Logger.Warn(err)
 	}
-	err = virtual.AddDeviceAsVirtualToConfig(config.Virtual{
+	var exists bool
+	exists, err = virtual.AddDeviceAsVirtualToConfig(config.Virtual{
 		Config: config.VirtualConfig{
 			CenterOffset:   0,
 			FrequencyMax:   15000,
@@ -141,6 +142,7 @@ func resolveWledInfo(ip net.IP, id string) {
 	if err != nil {
 		logger.Logger.Warn(err)
 	}
+	return exists
 }
 
 func ScanZeroconf() error {
@@ -154,12 +156,13 @@ func ScanZeroconf() error {
 
 	go func(results <-chan *zeroconf.ServiceEntry) {
 		for entry := range results {
-			fmt.Print("New WLED found: ")
-			// TODO: check if exists in config already
-			resolveWledInfo(entry.AddrIPv4[0], entry.ServiceRecord.Instance)
-
-			if Ws != nil {
+			fmt.Print("WLED found: ")
+			exists := resolveWledInfo(entry.AddrIPv4[0], entry.ServiceRecord.Instance)
+			if Ws != nil && !exists {
 				SendWs(Ws, "info", "New WLED found: "+entry.ServiceRecord.Instance)
+				fmt.Print("\n")
+			} else {
+				fmt.Println(", but already exsisting in config...")
 			}
 			logger.Logger.Debug(entry.ServiceRecord.Instance)
 			logger.Logger.Debug(" on ")

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"ledfx/config"
+	"ledfx/logger"
 
 	"github.com/spf13/viper"
 )
@@ -79,6 +80,10 @@ func AddDeviceAsVirtualToConfig(virtual config.Virtual, configName string) (exis
 		c.Virtuals = append(c.Virtuals, virtual)
 		v.Set("virtuals", c.Virtuals)
 		err = v.WriteConfig()
+		if err != nil {
+			logger.Logger.Warn("Failed to initialize resolver:", err.Error())
+			return virtualExists, err
+		}
 	}
 	return virtualExists, nil
 }

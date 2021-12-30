@@ -126,6 +126,14 @@ func resolveWledInfo(ip net.IP, id string) {
 			TransitionMode: "Add",
 			TransitionTime: 0.4,
 		},
+		Effect: config.Effect{
+			Config: config.EffectConfig{
+				BackgroundColor: "#000000",
+				Color:           "#eee000",
+			},
+			Name: "Single Color",
+			Type: "singleColor",
+		},
 		Segments: [][]interface{}{{id, 0, wledInfo1.Leds.Count - 1, false}},
 		IsDevice: id,
 		Id:       id,

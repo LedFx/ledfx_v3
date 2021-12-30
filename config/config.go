@@ -56,10 +56,12 @@ type VirtualConfig struct {
 type EffectConfig struct {
 	BackgroundColor string `mapstructure:"background_color" json:"background_color"`
 	GradientName    string `mapstructure:"gradient_name" json:"gradient_name"`
+	Color           string `mapstructure:"color" json:"color"`
 }
 
 type Effect struct {
 	Config EffectConfig `mapstructure:"config" json:"config"`
+	Name   string       `mapstructure:"name" json:"name"`
 	Type   string       `mapstructure:"type" json:"type"`
 }
 

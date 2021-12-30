@@ -10,21 +10,12 @@ import (
 )
 
 type Virtual interface {
-	// device.Init() error
-	// device.SendData(colors []color.Color) error
-	// device.Close() error
-}
-
-func Remove(s []int, i int) []int {
-	s[i] = s[len(s)-1]
-	return s[:len(s)-1]
+	// PlayVirtual() error // is this correct? does it make sence?
 }
 
 func PlayVirtual(virtualid string, playState bool) (err error) {
 	fmt.Println("Set PlayState of ", virtualid, " to ", playState)
 
-	// TODO: set Active of virtualid to playState
-	// search for a Virtual with id == virtualid inside Virtuals[]
 	if virtualid == "" {
 		err = errors.New("Virtual id is empty. Please provide Id to add virtual to config")
 		return

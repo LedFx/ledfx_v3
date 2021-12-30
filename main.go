@@ -101,6 +101,10 @@ func main() {
 	// REMOVEME: END
 
 	go func() {
+		utils.SetupRoutes()
+	}()
+
+	go func() {
 		utils.InitFrontend()
 	}()
 
@@ -114,7 +118,3 @@ func main() {
 	systray.Run(utils.OnReady, nil)
 
 }
-
-// func ScanZeroconf() {
-// 	panic("unimplemented")
-// }

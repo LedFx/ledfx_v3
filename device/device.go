@@ -8,12 +8,14 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Device is the base interface for all devices
 type Device interface {
 	Init() error
-	SendData(colors []color.Color) error
+	SendData(colors []color.Color, ledOffset int) error
 	Close() error
 }
 
+// AddDeviceToConfig adds a device to the config file, saves, and updates the config in memory
 func AddDeviceToConfig(device config.Device, configName string) (err error) {
 	if device.Id == "" {
 		err = errors.New("Device id is empty. Please provide Id to add device to config")

@@ -72,11 +72,8 @@ func main() {
 	} else {
 
 		// NOTE: This type of code should be run in a goroutine
-		var device = &device.UdpDevice{
-			Name:     deviceConfig.Name,
-			Port:     deviceConfig.Port,
-			Protocol: device.UdpProtocols[deviceConfig.UdpPacketType],
-			Config:   deviceConfig,
+		var device = &device.UDPDevice{
+			Config: deviceConfig,
 		}
 
 		data := []color.Color{}
@@ -91,7 +88,7 @@ func main() {
 		if err != nil {
 			logger.Logger.Fatal(err)
 		}
-		err = device.SendData(data)
+		err = device.SendData(data, 0)
 		if err != nil {
 			logger.Logger.Fatal(err)
 		}

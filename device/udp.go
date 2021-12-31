@@ -10,44 +10,57 @@ import (
 )
 
 const (
-	WARLS = 0x01
-	DRGB  = 0x02
-	DRGBW = 0x03
-	DNRGB = 0x04
-	// TODO: Add more here
+	warls = 0x01
+	drgb  = 0x02
+	drgbw = 0x03
+	dnrgb = 0x04
+	// TODO: adalight
+	// TODO: openrgb
 )
 
-var UdpProtocols = map[string]byte{
-	"WARLS": WARLS,
-	"DRGB":  DRGB,
-	"DRGBW": DRGBW,
-	"DNRGB": DNRGB,
+// UDPProtocols maps the string representation of the UDP packet type to the byte representation
+var UDPProtocols = map[string]byte{
+	"WARLS": warls,
+	"DRGB":  drgb,
+	"DRGBW": drgbw,
+	"DNRGB": dnrgb,
 }
 
-type UdpDevice struct {
-	Name       string
-	Port       int
+// UDPDevice is a device that uses UDP to send data to a WLED device
+type UDPDevice struct {
 	Connection net.Conn
-	Protocol   byte
 	Config     config.DeviceConfig
 }
 
-// Flatten array and convert to bytes
-func ColorsToBytes(colors []color.Color) []byte {
-	bytes := make([]byte, len(colors)*3)
+// enforce the Device interface
+var _ Device = (*UDPDevice)(nil)
+
+// ColorsToBytes flattens the array of colors and converts them to bytes
+func ColorsToBytes(colors []color.Color, includeWhite bool) []byte {
+	var multiplier int
+	if includeWhite {
+		multiplier = 4
+	} else {
+		multiplier = 3
+	}
+	bytes := make([]byte, len(colors)*multiplier)
 	for i, c := range colors {
-		bytes[i*3] = byte(c[0] * 255)
-		bytes[i*3+1] = byte(c[1] * 255)
-		bytes[i*3+2] = byte(c[2] * 255)
+		bytes[i*multiplier] = byte(c[0] * 255)
+		bytes[i*multiplier+1] = byte(c[1] * 255)
+		bytes[i*multiplier+2] = byte(c[2] * 255)
+		if includeWhite {
+			// currently unused white channel
+			bytes[i*multiplier+3] = byte(0x00)
+		}
 	}
 	return bytes
 }
 
-// Need to store the connection on the device struct
-func (d *UdpDevice) Init() error {
+// Init initializes the UDP device
+func (d *UDPDevice) Init() error {
 	hostName := d.Config.IpAddress
 
-	service := hostName + ":" + strconv.Itoa(d.Port)
+	service := hostName + ":" + strconv.Itoa(d.Config.Port)
 
 	RemoteAddr, err := net.ResolveUDPAddr("udp", service)
 	if err != nil {
@@ -68,7 +81,8 @@ func (d *UdpDevice) Init() error {
 	return nil
 }
 
-func (d *UdpDevice) Close() error {
+// Close closes the UDP connection on the device
+func (d *UDPDevice) Close() error {
 	err := d.Connection.Close()
 	if err != nil {
 		return err
@@ -76,43 +90,74 @@ func (d *UdpDevice) Close() error {
 	return nil
 }
 
-func (d *UdpDevice) SendData(colors []color.Color) error {
+// SendData sends the data to the UDP device over UDP
+func (d *UDPDevice) SendData(colors []color.Color, ledOffset int) error {
 	if d.Connection == nil {
 		return errors.New("Device must first be initialized")
 	}
 
-	packet := d.BuildPacket(colors)
+	packet, err := d.BuildPacket(colors, ledOffset)
+	if err != nil {
+		return err
+	}
 
 	logger.Logger.Debug("Sending Data: ", packet)
-	_, err := d.Connection.Write(packet)
+	_, err = d.Connection.Write(packet)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d *UdpDevice) BuildPacket(colors []color.Color) []byte {
-	// TODO: read from config
-	var protocol byte
-	if d.Protocol == 0x00 {
-		// use default protocol
-		d.Protocol = 0x04 // DNRGB https://github.com/Aircoookie/WLED/wiki/UDP-Realtime-Control
+// BuildPacket builds the UDP packet to send to the device
+func (d *UDPDevice) BuildPacket(colors []color.Color, ledOffset int) ([]byte, error) {
+	if d.Config.UdpPacketType == "WARLS" {
+		if len(colors) > 255 {
+			return nil, &InvalidLedCountError{Count: len(colors), Min: 0, Max: 255}
+		}
+		if ledOffset < 0 || ledOffset > 255 {
+			return nil, &InvalidLedOffsetError{Offset: ledOffset, Min: 0, Max: 255}
+		}
+	} else if d.Config.UdpPacketType == "DRGB" {
+		if len(colors) > 490 {
+			return nil, &InvalidLedCountError{Count: len(colors), Min: 0, Max: 490}
+		}
+		if ledOffset != 0 {
+			return nil, &InvalidLedOffsetError{Offset: ledOffset, Min: 0, Max: 0}
+		}
+	} else if d.Config.UdpPacketType == "DRGBW" {
+		if len(colors) > 367 {
+			return nil, &InvalidLedCountError{Count: len(colors), Min: 0, Max: 367}
+		}
+		if ledOffset != 0 {
+			return nil, &InvalidLedOffsetError{Offset: ledOffset, Min: 0, Max: 0}
+		}
+	} else if d.Config.UdpPacketType == "DNRGB" {
+		if len(colors) > 489 {
+			return nil, &InvalidLedCountError{Count: len(colors), Min: 0, Max: 489}
+		}
+		if ledOffset < 0 || ledOffset > 65535 {
+			return nil, &InvalidLedOffsetError{Offset: ledOffset, Min: 0, Max: 65535}
+		}
 	}
-	protocol = byte(d.Protocol)
-	// TODO: read from config
+
+	protocol := UDPProtocols[d.Config.UdpPacketType]
+	if protocol == 0x00 {
+		protocol = dnrgb // default to DNRGB https://github.com/Aircoookie/WLED/wiki/UDP-Realtime-Control
+	}
+	protocol = byte(protocol)
 	var timeout byte = 0x01
-	// TODO: get from params
-	ledOffset := []byte{}
-	if d.Protocol == WARLS {
-		ledOffset = []byte{0x00}
-	} else if d.Protocol == DNRGB {
-		ledOffset = []byte{0x00, 0x00}
+	var offset []byte
+	if protocol == warls {
+		offset = []byte{byte(ledOffset)}
+	} else if protocol == dnrgb {
+		offset = []byte{byte(ledOffset), byte(ledOffset >> 8)}
 	}
 	packet := []byte{protocol, timeout}
 
-	packet = append(packet, ledOffset...)
+	packet = append(packet, offset...)
 
-	data := ColorsToBytes(colors)
+	data := ColorsToBytes(colors, protocol == drgbw)
 	packet = append(packet, data...)
-	return packet
+	return packet, nil
 }

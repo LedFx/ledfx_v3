@@ -35,23 +35,26 @@ type UDPDevice struct {
 // enforce the Device interface
 var _ Device = (*UDPDevice)(nil)
 
-// ColorsToBytes flattens the array of colors and converts them to bytes
-func ColorsToBytes(colors []color.Color, includeWhite bool) []byte {
-	var multiplier int
-	if includeWhite {
-		multiplier = 4
-	} else {
-		multiplier = 3
-	}
-	bytes := make([]byte, len(colors)*multiplier)
+// ColorsToRGBBytes flattens the array of colors and converts them to rgb byte values
+func ColorsToRGBBytes(colors []color.Color) []byte {
+	bytes := make([]byte, len(colors)*3)
 	for i, c := range colors {
-		bytes[i*multiplier] = byte(c[0] * 255)
-		bytes[i*multiplier+1] = byte(c[1] * 255)
-		bytes[i*multiplier+2] = byte(c[2] * 255)
-		if includeWhite {
-			// currently unused white channel
-			bytes[i*multiplier+3] = byte(0x00)
-		}
+		bytes[i*3] = byte(c[0] * 255)
+		bytes[i*3+1] = byte(c[1] * 255)
+		bytes[i*3+2] = byte(c[2] * 255)
+	}
+	return bytes
+}
+
+// ColorsToRGBWBytes flattens the array of colors and converts them to rgbw byte values
+func ColorsToRGBWBytes(colors []color.Color) []byte {
+	bytes := make([]byte, len(colors)*4)
+	for i, c := range colors {
+		bytes[i*4] = byte(c[0] * 255)
+		bytes[i*4+1] = byte(c[1] * 255)
+		bytes[i*4+2] = byte(c[2] * 255)
+		// currently unused white channel
+		bytes[i*4+3] = byte(0x00)
 	}
 	return bytes
 }
@@ -157,7 +160,12 @@ func (d *UDPDevice) BuildPacket(colors []color.Color, ledOffset int) ([]byte, er
 
 	packet = append(packet, offset...)
 
-	data := ColorsToBytes(colors, protocol == drgbw)
+	var data []byte
+	if protocol == drgbw {
+		data = ColorsToRGBWBytes(colors)
+	} else {
+		data = ColorsToRGBBytes(colors)
+	}
 	packet = append(packet, data...)
 	return packet, nil
 }

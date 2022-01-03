@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"ledfx/config"
 	"ledfx/logger"
-	"ledfx/virtual"
 	"log"
 	"net"
 	"net/http"
@@ -108,7 +107,7 @@ func DetectWled(ip net.IP, id string) bool {
 
 	// Adding Virtual
 	var exists bool
-	exists, err = virtual.AddDeviceAsVirtualToConfig(config.Virtual{
+	exists, err = AddDeviceAsVirtualToConfig(config.Virtual{
 		Config: config.VirtualConfig{
 			CenterOffset:   0,
 			FrequencyMax:   15000,

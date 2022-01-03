@@ -4,13 +4,14 @@ import (
 	"errors"
 	"ledfx/color"
 	"ledfx/config"
+	"ledfx/logger"
 
 	"github.com/spf13/viper"
 )
 
 type Device interface {
 	Init() error
-	SendData(colors []color.Color) error
+	SendData(colors []color.Color, timeout byte) error
 	Close() error
 }
 
@@ -45,4 +46,41 @@ func AddDeviceToConfig(device config.Device, configName string) (err error) {
 		err = v.WriteConfig()
 	}
 	return
+}
+
+func AddDeviceAsVirtualToConfig(virtual config.Virtual, configName string) (exists bool, err error) {
+	if virtual.Id == "" {
+		err = errors.New("Virtual id is empty. Please provide Id to add virtual to config")
+		return
+	}
+	var c *config.Config
+	var v *viper.Viper
+	if configName == "goconfig" {
+		v = config.GlobalViper
+		c = &config.GlobalConfig
+	} else if configName == "config" {
+		v = config.OldViper
+		c = &config.OldConfig
+	}
+
+	var virtualExists bool
+	for _, d := range c.Virtuals {
+		if d.Id == virtual.Id {
+			virtualExists = true
+		}
+	}
+
+	if !virtualExists {
+		if c.Virtuals == nil {
+			c.Virtuals = make([]config.Virtual, 0)
+		}
+		c.Virtuals = append(c.Virtuals, virtual)
+		v.Set("virtuals", c.Virtuals)
+		err = v.WriteConfig()
+		if err != nil {
+			logger.Logger.Warn("Failed to initialize resolver:", err.Error())
+			return virtualExists, err
+		}
+	}
+	return virtualExists, nil
 }

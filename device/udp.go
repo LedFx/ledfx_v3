@@ -6,7 +6,6 @@ import (
 	"ledfx/config"
 	"ledfx/logger"
 	"net"
-	"strconv"
 )
 
 const (
@@ -45,9 +44,10 @@ func ColorsToBytes(colors []color.Color) []byte {
 
 // Need to store the connection on the device struct
 func (d *UdpDevice) Init() error {
-	hostName := d.Config.IpAddress
+	// hostName := d.Config.IpAddress
 
-	service := hostName + ":" + strconv.Itoa(d.Port)
+	// service := hostName + ":" + strconv.Itoa(d.Port)
+	service := d.Config.IpAddress + ":21324"
 
 	RemoteAddr, err := net.ResolveUDPAddr("udp", service)
 	if err != nil {
@@ -76,14 +76,14 @@ func (d *UdpDevice) Close() error {
 	return nil
 }
 
-func (d *UdpDevice) SendData(colors []color.Color) error {
+func (d *UdpDevice) SendData(colors []color.Color, timeout byte) error {
 	if d.Connection == nil {
 		return errors.New("Device must first be initialized")
 	}
 
-	packet := d.BuildPacket(colors)
+	packet := d.BuildPacket(colors, timeout)
 
-	logger.Logger.Debug("Sending Data: ", packet)
+	// logger.Logger.Debug("Sending Data: ", packet)
 	_, err := d.Connection.Write(packet)
 	if err != nil {
 		return err
@@ -91,7 +91,7 @@ func (d *UdpDevice) SendData(colors []color.Color) error {
 	return nil
 }
 
-func (d *UdpDevice) BuildPacket(colors []color.Color) []byte {
+func (d *UdpDevice) BuildPacket(colors []color.Color, timeout byte) []byte {
 	// TODO: read from config
 	var protocol byte
 	if d.Protocol == 0x00 {
@@ -100,7 +100,6 @@ func (d *UdpDevice) BuildPacket(colors []color.Color) []byte {
 	}
 	protocol = byte(d.Protocol)
 	// TODO: read from config
-	var timeout byte = 0x01
 	// TODO: get from params
 	ledOffset := []byte{}
 	if d.Protocol == WARLS {

@@ -1,6 +1,7 @@
 package api
 
 import (
+	_ "embed"
 	"encoding/json"
 	"ledfx/config"
 	"ledfx/logger"
@@ -19,9 +20,16 @@ func SetHeader(w http.ResponseWriter) {
 	headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
 }
 
-type Resp struct {
-	Active bool
+type RespConfig struct {
+	Color string `json:"color"`
 }
+type Resp struct {
+	Active bool       `json:"active"`
+	Config RespConfig `json:"config"`
+	Type   string     `json:"type"`
+}
+
+var LastColor string
 
 func HandleApi() {
 	http.HandleFunc("/api/oldconfig", func(w http.ResponseWriter, r *http.Request) {
@@ -57,9 +65,15 @@ func HandleApi() {
 			return
 		} else {
 			var p Resp
-
+			var category string
+			var virtualid string
 			path := strings.TrimPrefix(r.URL.Path, "/virtuals/")
-			virtualid := strings.Split(path, "/api/virtuals/")[1]
+			virtualid = strings.Split(path, "/api/virtuals/")[1]
+			pathNodes := strings.Split(virtualid, "/")
+			if len(pathNodes) > 1 {
+				category = string(pathNodes[1])
+				virtualid = string(pathNodes[0])
+			}
 
 			err := json.NewDecoder(r.Body).Decode(&p)
 			if err != nil {
@@ -67,16 +81,33 @@ func HandleApi() {
 				// http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			virtual.PlayVirtual(virtualid, p.Active)
+			// logger.Logger.Debug(p)
+			if category == "effects" {
+				// logger.Logger.Debug(p.Config.Color)
+				LastColor = p.Config.Color
+				virtual.PlayVirtual(virtualid, true, LastColor)
+			} else if category == "presets" {
+				logger.Logger.Debug("No Presets yet ;)")
+				// virtual.PlayVirtual(virtualid, p.Active, "#fff000")
+				// utils.SendWs(utils.Ws, "warning", "No Presets yet ;)")
+			} else {
+				if LastColor == "" {
+					LastColor = "#000fff"
+				}
+				virtual.PlayVirtual(virtualid, p.Active, LastColor)
+			}
+
 			json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
 
 		}
 	})
+	HandleSchema()
+	HandleColors()
 
-	http.HandleFunc("/api/schema", func(w http.ResponseWriter, r *http.Request) {
-		SetHeader(w)
-		json.NewEncoder(w).Encode(config.GlobalConfig)
-		// json.NewEncoder(w).Encode(config.Schema)
-	})
+	// http.HandleFunc("/api/schema", func(w http.ResponseWriter, r *http.Request) {
+	// 	SetHeader(w)
+	// 	json.NewEncoder(w).Encode(config.GlobalConfig)
+	// 	// json.NewEncoder(w).Encode(config.Schema)
+	// })
 
 }

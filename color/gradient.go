@@ -10,11 +10,19 @@ import (
 var errInvalidGradient = errors.New("invalid gradient")
 
 type Gradient struct {
-	mode  string
-	angle int64
-	// TODO: Do we want this exported or do we want a getter?
-	Colors    []Color
+	mode      string
+	angle     int64
+	colors    []Color
 	positions []float64
+}
+
+func NewGradient(gs string) (g Gradient, err error) {
+	predef, isPredef := LedFxGradients[gs]
+	if isPredef {
+		return parseGradient(predef)
+	} else {
+		return parseGradient(gs)
+	}
 }
 
 /*
@@ -23,7 +31,7 @@ Parses gradient from string of format eg.
 where each color is associated with a % value for its position in the gradient
 each color can be hex or rgb format
 */
-func NewGradient(gs string) (g Gradient, err error) {
+func parseGradient(gs string) (g Gradient, err error) {
 	var splits []string
 	gs = strings.ToLower(gs)
 	gs = strings.ReplaceAll(gs, " ", "")
@@ -81,7 +89,7 @@ func NewGradient(gs string) (g Gradient, err error) {
 	g = Gradient{
 		mode:      mode,
 		angle:     angle,
-		Colors:    colors,
+		colors:    colors,
 		positions: positions,
 	}
 	return g, err

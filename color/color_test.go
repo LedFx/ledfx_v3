@@ -43,7 +43,20 @@ func TestNewGradient(t *testing.T) {
 		{"linear-gradient(180deg, useless color 10%)", Gradient{}, true},
 		{
 			"linear-gradient(90deg, #ffFf00 10%, rgb(255, 0, 255) 30%)",
-			Gradient{mode: "linear", angle: 90},
+			Gradient{
+				mode:  "linear",
+				angle: 90,
+			},
+			false,
+		},
+		{
+			"Dancefloor",
+			Gradient{
+				mode:      "linear",
+				angle:     90,
+				colors:    []Color{{1, 0, 0}, {1, 0, 0.6980392156862745}, {0, 0, 1}},
+				positions: []float64{0, 0.5, 1},
+			},
 			false,
 		},
 	}

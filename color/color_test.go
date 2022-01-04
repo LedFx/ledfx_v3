@@ -21,6 +21,7 @@ func TestNewColor(t *testing.T) {
 		{"rgb(-1,0,256)", Color{}, true},
 		{"#efghij", Color{}, true},
 		{"nonsense color", Color{}, true},
+		{"red", Color{1, 0, 0}, false},
 	}
 	for _, c := range cases {
 		guess, err := NewColor(c.q)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"ledfx/audio"
 	"ledfx/color"
 	"ledfx/config"
 	"ledfx/constants"
@@ -97,6 +98,8 @@ func main() {
 		defer device.Close()
 	}
 	// REMOVEME: END
+
+	audio.Enumerate()
 
 	go func() {
 		utils.SetupRoutes()

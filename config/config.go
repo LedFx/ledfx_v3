@@ -162,7 +162,10 @@ func loadConfig(configName string) (err error) {
 		configPath = constants.GetOsConfigDir()
 	}
 
-	os.MkdirAll(configPath, 0744) // ensure given config directory exists
+	err = os.MkdirAll(configPath, 0744) // ensure given config directory exists
+	if err != nil {
+		return err
+	}
 
 	err = createConfigIfNotExists(configName)
 	if err != nil {

@@ -14,11 +14,10 @@ import (
 )
 
 func init() {
-
 	// Initialize Config
 	err := config.InitConfig()
 	if err != nil {
-		logger.Logger.Fatal(err)
+		log.Println(err)
 	}
 
 	// Initialize Logger
@@ -26,7 +25,6 @@ func init() {
 	if err != nil {
 		log.Println(err)
 	}
-
 }
 
 func main() {

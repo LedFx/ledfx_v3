@@ -36,6 +36,10 @@ func HandleApi() {
 		SetHeader(w)
 		json.NewEncoder(w).Encode(config.OldConfig)
 	})
+	http.HandleFunc("/api/audio", func(w http.ResponseWriter, r *http.Request) {
+		SetHeader(w)
+		json.NewEncoder(w).Encode(config.GlobalConfig.Audio)
+	})
 	http.HandleFunc("/api/config", func(w http.ResponseWriter, r *http.Request) {
 		SetHeader(w)
 		json.NewEncoder(w).Encode(config.GlobalConfig)

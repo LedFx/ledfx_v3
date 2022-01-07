@@ -67,7 +67,7 @@ func main() {
 	}
 
 	if !foundDevice {
-		logger.Logger.Warn("No UDP device found in config")
+		logger.Logger.Info("No UDP device found in config")
 	} else {
 
 		// NOTE: This type of code should be run in a goroutine

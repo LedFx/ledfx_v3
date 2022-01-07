@@ -106,7 +106,7 @@ func DownloadFrontend() {
 	// Extract frontend
 	unzip()
 	logger.Logger.Info("Got latest Frontend")
-	fmt.Println("========================================================")
+	logger.Logger.Info("========================================================")
 }
 
 func Openbrowser(url string) {

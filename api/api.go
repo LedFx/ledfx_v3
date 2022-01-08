@@ -3,6 +3,7 @@ package api
 import (
 	_ "embed"
 	"encoding/json"
+	"ledfx/audio"
 	"ledfx/config"
 	"ledfx/logger"
 	"ledfx/virtual"
@@ -38,7 +39,11 @@ func HandleApi() {
 	})
 	http.HandleFunc("/api/audio", func(w http.ResponseWriter, r *http.Request) {
 		SetHeader(w)
-		json.NewEncoder(w).Encode(config.GlobalConfig.Audio)
+		audioDevices, err := audio.GetAudioDevices()
+		if err != nil {
+			return
+		}
+		json.NewEncoder(w).Encode(audioDevices)
 	})
 	http.HandleFunc("/api/config", func(w http.ResponseWriter, r *http.Request) {
 		SetHeader(w)

@@ -2,84 +2,87 @@ package audio
 
 import (
 	"fmt"
-	"ledfx/config"
 	"ledfx/logger"
 	"os"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/gen2brain/malgo"
-	"github.com/spf13/viper"
 )
 
-func Enumerate() {
-	context, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+func GetAudioDevices() (infos []AudioDevice, err error) {
+	// Capture devices.
+	backends := []malgo.Backend{
+		malgo.BackendDsound,
 	}
+
+	context, err := malgo.InitContext(backends, malgo.ContextConfig{}, func(message string) {
+		logger.Logger.Info(message)
+	})
+	if err != nil {
+		logger.Logger.Error(err)
+		return
+	}
+
 	defer func() {
 		_ = context.Uninit()
 		context.Free()
 	}()
 
-	var c *config.Config
-	var v *viper.Viper
-	c = &config.GlobalConfig
-	v = config.GlobalViper
-	c.Audio.Outputs = nil
-	c.Audio.Inputs = nil
-
-	// Playback devices.
-	infos, err := context.Devices(malgo.Playback)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	audioDeviceTypes := []malgo.DeviceType{
+		malgo.Capture,
+		malgo.Loopback,
 	}
-	fmt.Println("========================================================")
-	fmt.Println(" Audio Playback Devices:")
-	fmt.Println("========================================================")
-	for i, info := range infos {
-		e := "ok"
-		full, err := context.DeviceInfo(malgo.Playback, info.ID, malgo.Shared)
+
+	var s string
+	for _, dt := range audioDeviceTypes {
+		dtinfos, err := context.Devices(dt)
 		if err != nil {
-			e = err.Error()
+			logger.Logger.Errorf("Failed to get capture audio devices: %v", err)
 		}
-		var device config.Audio
-		s := strings.Split(info.Name(), "\u0000")
-		device.Name = s[0]
-		device.Id = i
-		fmt.Println(" - ", device.Name)
-		c.Audio.Outputs = append(c.Audio.Outputs, device)
-		v.Set("audio.outputs", c.Audio.Outputs)
+		if dt == 2 {
+			s = "capture"
+		} else {
+			s = "loopback"
+		}
+		for _, info := range dtinfos {
+			full, err := context.DeviceInfo(dt, info.ID, malgo.Shared)
+			if err != nil {
+				continue
+			}
 
-		logger.Logger.Debug("    %d: %v, %s, [%s], channels: %d-%d, samplerate: %d-%d\n",
-			i, info.ID, info.Name(), e, full.MinChannels, full.MaxChannels, full.MinSampleRate, full.MaxSampleRate)
+			ad := AudioDevice{
+				Id:         full.ID.String(),
+				SampleRate: int(full.MaxSampleRate),
+				Name:       strings.ReplaceAll(full.Name(), "\u0000", ""),
+				Channels:   int(full.MaxChannels),
+				IsDefault:  full.IsDefault == 1,
+				Source:     s,
+			}
+			infos = append(infos, ad)
+		}
 	}
-	// Capture devices.
-	infos, err = context.Devices(malgo.Capture)
+
+	return infos, err
+}
+
+func LogAudioDevices() {
+	infos, err := GetAudioDevices()
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return
 	}
-	fmt.Println("========================================================")
-	fmt.Println(" Audio Capture Devices:")
-	fmt.Println("========================================================")
-	for i, info := range infos {
-		e := "ok"
-		full, err := context.DeviceInfo(malgo.Capture, info.ID, malgo.Shared)
-		if err != nil {
-			e = err.Error()
-		}
-		var device config.Audio
-		s := strings.Split(info.Name(), "\u0000")
-		device.Name = s[0]
-		device.Id = i
-		fmt.Println(" - ", device.Name)
-		c.Audio.Inputs = append(c.Audio.Inputs, device)
-		v.Set("audio.inputs", c.Audio.Inputs)
+	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 
-		logger.Logger.Debug("    %d: %v, %s, [%s], channels: %d-%d, samplerate: %d-%d\n",
-			i, info.ID, info.Name(), e, full.MinChannels, full.MaxChannels, full.MinSampleRate, full.MaxSampleRate)
+	var icon rune
+
+	for i, info := range infos {
+		if info.IsDefault {
+			icon = '✅'
+		} else {
+			icon = '❌'
+		}
+		fmt.Fprintf(w, "%v\t%d:\t%s,\t%s\tchannels: %d,\tsamplerate: %d,\tdefault: %q\n",
+			info.Source, i, info.Name, info.Id, info.Channels, info.SampleRate, icon)
 	}
-	v.WriteConfig()
+	w.Flush()
 }

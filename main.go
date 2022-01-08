@@ -10,11 +10,23 @@ import (
 	"ledfx/logger"
 	"ledfx/utils"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/getlantern/systray"
 )
 
 func init() {
+	// Capture ctrl-c or sigterm to gracefully shutdown
+	c := make(chan os.Signal, 2)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		shutdown()
+		os.Exit(1)
+	}()
+
 	// Initialize Config
 	err := config.InitConfig()
 	if err != nil {
@@ -99,7 +111,8 @@ func main() {
 	}
 	// REMOVEME: END
 
-	audio.Enumerate()
+	audio.LogAudioDevices()
+	go audio.TestCapture()
 
 	go func() {
 		utils.SetupRoutes()
@@ -116,6 +129,12 @@ func main() {
 		}
 	}()
 
-	systray.Run(utils.OnReady, nil)
+	systray.Run(utils.OnReady, utils.OnExit)
 
+}
+
+func shutdown() {
+	logger.Logger.Info("Shutting down LedFx")
+	// kill systray
+	utils.OnExit()
 }

@@ -82,27 +82,18 @@ type Virtual struct {
 	// Segments []Segment     `mapstructure:"segments" json:"segments"`
 }
 
-type Audio struct {
-	Id   int    `mapstructure:"id" json:"id"`
-	Name string `mapstructure:"name" json:"name"`
-}
-type AudioDevies struct {
-	Inputs  []Audio `mapstructure:"inputs" json:"inputs"`
-	Outputs []Audio `mapstructure:"outputs" json:"outputs"`
-}
 type Config struct {
-	Config      string      `mapstructure:"config" json:"config"`
-	Port        int         `mapstructure:"port" json:"port"`
-	Version     bool        `mapstructure:"version" json:"version"`
-	OpenUi      bool        `mapstructure:"open-ui" json:"open-ui"`
-	Verbose     bool        `mapstructure:"verbose" json:"verbose"`
-	VeryVerbose bool        `mapstructure:"very-verbose" json:"very-verbose"`
-	Host        string      `mapstructure:"host" json:"host"`
-	Offline     bool        `mapstructure:"offline" json:"offline"`
-	SentryCrash bool        `mapstructure:"sentry-crash-test" json:"sentry-crash-test"`
-	Devices     []Device    `mapstructure:"devices" json:"devices"`
-	Virtuals    []Virtual   `mapstructure:"virtuals" json:"virtuals"`
-	Audio       AudioDevies `mapstructure:"audio" json:"audio"`
+	Config      string    `mapstructure:"config" json:"config"`
+	Port        int       `mapstructure:"port" json:"port"`
+	Version     bool      `mapstructure:"version" json:"version"`
+	OpenUi      bool      `mapstructure:"open-ui" json:"open-ui"`
+	Verbose     bool      `mapstructure:"verbose" json:"verbose"`
+	VeryVerbose bool      `mapstructure:"very-verbose" json:"very-verbose"`
+	Host        string    `mapstructure:"host" json:"host"`
+	Offline     bool      `mapstructure:"offline" json:"offline"`
+	SentryCrash bool      `mapstructure:"sentry-crash-test" json:"sentry-crash-test"`
+	Devices     []Device  `mapstructure:"devices" json:"devices"`
+	Virtuals    []Virtual `mapstructure:"virtuals" json:"virtuals"`
 }
 
 var configPath string

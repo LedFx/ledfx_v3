@@ -3,19 +3,21 @@ package virtual
 import (
 	"errors"
 	"fmt"
-	"ledfx/color"
 	"ledfx/config"
-	"ledfx/device"
+	"ledfx/effect"
 	"ledfx/logger"
-
-	"github.com/spf13/viper"
 )
 
+// Virtual represents a virtual device which can be mapped to one or more devices or segments
 type Virtual interface {
 	// PlayVirtual() error // is this correct? does it make sence?
 }
 
-func PlayVirtual(virtualid string, playState bool, clr string) (err error) {
+// TODO: this should belong to the virtual instance
+var done chan bool
+
+// FindAndPlayVirtual finds the virtual with the given name and sets any effects that are on it to active
+func FindAndPlayVirtual(virtualid string, playState bool, clr string) (err error) {
 	fmt.Println("Set PlayState of ", virtualid, " to ", playState)
 	if clr != "" {
 		fmt.Println("Set color of ", virtualid, " to ", clr)
@@ -25,15 +27,11 @@ func PlayVirtual(virtualid string, playState bool, clr string) (err error) {
 		err = errors.New("Virtual id is empty. Please provide Id to add virtual to config")
 		return
 	}
-	var c *config.Config
-	var v *viper.Viper
 
-	c = &config.GlobalConfig
-	v = config.GlobalViper
+	c := &config.GlobalConfig
+	v := config.GlobalViper
 
 	var virtualExists bool
-
-	newColor, err := color.NewColor(clr)
 
 	for i, d := range c.Virtuals {
 		if d.Id == virtualid {
@@ -42,35 +40,54 @@ func PlayVirtual(virtualid string, playState bool, clr string) (err error) {
 			if c.Virtuals[i].IsDevice != "" {
 				for in, de := range c.Devices {
 					if de.Id == c.Virtuals[i].IsDevice {
-						var device = &device.UdpDevice{
-							Name:     c.Devices[in].Config.Name,
-							Port:     c.Devices[in].Config.Port,
-							Protocol: device.UdpProtocols[c.Devices[in].Config.UdpPacketType],
-							Config:   c.Devices[in].Config,
-						}
-						data := []color.Color{}
-						for i := 0; i < device.Config.PixelCount; i++ {
-							// newColor, err := color.NewColor(clr)
-							data = append(data, newColor)
-							if err != nil {
-								logger.Logger.Fatal(err)
+						// FOR TESTING: solid color
+						// var device = &device.UdpDevice{
+						// 	Name:     c.Devices[in].Config.Name,
+						// 	Port:     c.Devices[in].Config.Port,
+						// 	Protocol: device.UdpProtocols[c.Devices[in].Config.UdpPacketType],
+						// 	Config:   c.Devices[in].Config,
+						// }
+						// data := []color.Color{}
+						// for i := 0; i < device.Config.PixelCount; i++ {
+						// 	newColor, err := color.NewColor(clr)
+						// 	data = append(data, newColor)
+						// 	if err != nil {
+						// 		logger.Logger.Fatal(err)
+						// 	}
+						// }
+						// err = device.Init()
+						// if err != nil {
+						// 	logger.Logger.Fatal(err)
+						// }
+						// var timeo byte
+						// if playState {
+						// 	timeo = 0xff
+						// } else {
+						// 	timeo = 0x00
+						// }
+						// err = device.SendData(data, timeo)
+						// if err != nil {
+						// 	logger.Logger.Fatal(err)
+						// }
+
+						// FOR TESTING: pulse effect
+						var currentEffect effect.Effect = &effect.PulsingEffect{}
+
+						if playState {
+							if done == nil {
+								done = make(chan bool)
+							}
+							go func() {
+								err := effect.StartEffect(c.Devices[in].Config, currentEffect, 60, done)
+								if err != nil {
+									logger.Logger.Warn(err)
+								}
+							}()
+						} else if !playState {
+							if done != nil {
+								done <- true
 							}
 						}
-						err = device.Init()
-						if err != nil {
-							logger.Logger.Fatal(err)
-						}
-						var timeo byte
-						if playState {
-							timeo = 0xff
-						} else {
-							timeo = 0x00
-						}
-						err = device.SendData(data, timeo)
-						if err != nil {
-							logger.Logger.Fatal(err)
-						}
-
 					}
 
 				}
@@ -83,4 +100,29 @@ func PlayVirtual(virtualid string, playState bool, clr string) (err error) {
 		err = v.WriteConfig()
 	}
 	return
+}
+
+// LoadVirtuals loads the virtuals from the config file and plays any effects that are active on them
+func LoadVirtuals() (err error) {
+	// TODO: load all virtuals from config
+
+	// c := &config.GlobalConfig
+	// v := config.GlobalViper
+
+	// for i, virtualConfig := range c.Virtuals {
+	// 	if c.Virtuals[i].Active == true {
+	// 		if c.Virtuals[i].IsDevice != "" {
+	//       // TODO: instantiate a virtual
+	// 			// PlayVirtual(virtual)
+	// 		}
+	// 	}
+	// }
+
+	return nil
+}
+
+// PlayVirtual sets any effects that are on the given virtual to active
+func PlayVirtual(virtual *Virtual) (err error) {
+	// TODO: start the effect on an active virtual
+	return nil
 }

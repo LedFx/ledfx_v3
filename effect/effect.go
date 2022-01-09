@@ -10,11 +10,13 @@ import (
 	"time"
 )
 
+// Effect is the interface for an effect
 type Effect interface {
 	AssembleFrame(phase float64, ledCount int, effectColor color.Color) (colors []color.Color)
 }
 
-type EffectConfig struct {
+// Config is the configuration for an effect
+type Config struct {
 	Blur       float64
 	Flip       bool
 	Mirror     bool
@@ -22,6 +24,7 @@ type EffectConfig struct {
 	Background color.Color
 }
 
+// StartEffect starts a specific effect on a device at a given FPS
 func StartEffect(deviceConfig config.DeviceConfig, effect Effect, fps int, done <-chan bool) error {
 	logger.Logger.Debug(fmt.Sprintf("fps: %v", fps))
 	usPerFrame := (float64(1.0) / float64(fps))
@@ -61,7 +64,6 @@ func StartEffect(deviceConfig config.DeviceConfig, effect Effect, fps int, done 
 			if err != nil {
 				return err
 			}
-			logger.Logger.Debug(fmt.Sprintf("phase: %v", phase))
 			err = device.SendData(effect.AssembleFrame(phase, device.Config.PixelCount, newColor), 0xff)
 			if err != nil {
 				return err

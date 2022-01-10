@@ -1,0 +1,3773 @@
+{
+    "schemas": {
+        "effects": {
+            "gradient": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "modulate": {
+                            "type": "boolean",
+                            "title": "Modulate",
+                            "description": "Brightness modulation",
+                            "default": false
+                        },
+                        "modulation_effect": {
+                            "type": "string",
+                            "enum": [
+                                "sine",
+                                "breath"
+                            ],
+                            "title": "Modulation Effect",
+                            "description": "Choose an animation",
+                            "default": "sine"
+                        },
+                        "modulation_speed": {
+                            "type": "number",
+                            "minimum": 0.01,
+                            "maximum": 1,
+                            "title": "Modulation Speed",
+                            "description": "Animation speed",
+                            "default": 0.5
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "speed": {
+                            "type": "number",
+                            "minimum": 0.1,
+                            "maximum": 10,
+                            "title": "Speed",
+                            "description": "Speed of the effect",
+                            "default": 1
+                        }
+                    }
+                },
+                "id": "gradient",
+                "name": "Gradient",
+                "category": "Non-Reactive"
+            },
+            "bands": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "band_count": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 16,
+                            "title": "Band Count",
+                            "description": "Number of bands",
+                            "default": 6
+                        },
+                        "align": {
+                            "type": "string",
+                            "enum": [
+                                "left",
+                                "right",
+                                "invert",
+                                "center"
+                            ],
+                            "title": "Align",
+                            "description": "Alignment of bands",
+                            "default": "left"
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        }
+                    }
+                },
+                "id": "bands",
+                "name": "Bands",
+                "category": "2D"
+            },
+            "bands_matrix": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "band_count": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 16,
+                            "title": "Band Count",
+                            "description": "Number of bands",
+                            "default": 6
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "flip_gradient": {
+                            "type": "boolean",
+                            "title": "Flip Gradient",
+                            "description": "Flip Gradient",
+                            "default": false
+                        }
+                    }
+                },
+                "id": "bands_matrix",
+                "name": "Bands Matrix",
+                "category": "2D"
+            },
+            "bar": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "mode": {
+                            "type": "string",
+                            "enum": [
+                                "bounce",
+                                "wipe",
+                                "in-out"
+                            ],
+                            "title": "Mode",
+                            "description": "Choose from different animations",
+                            "default": "wipe"
+                        },
+                        "ease_method": {
+                            "type": "string",
+                            "enum": [
+                                "ease_in_out",
+                                "ease_in",
+                                "ease_out",
+                                "linear"
+                            ],
+                            "title": "Ease Method",
+                            "description": "Acceleration profile of bar",
+                            "default": "ease_out"
+                        },
+                        "color_step": {
+                            "type": "number",
+                            "minimum": 0.0625,
+                            "maximum": 0.5,
+                            "title": "Color Step",
+                            "description": "Amount of color change per beat",
+                            "default": 0.125
+                        },
+                        "beat_skip": {
+                            "type": "string",
+                            "enum": [
+                                "none",
+                                "odds",
+                                "even"
+                            ],
+                            "title": "Beat Skip",
+                            "description": "Skips odd or even beats",
+                            "default": "none"
+                        },
+                        "skip_every": {
+                            "type": "string",
+                            "enum": [
+                                1,
+                                2
+                            ],
+                            "title": "Skip Every",
+                            "description": "If skipping beats, skip every",
+                            "default": 1
+                        }
+                    }
+                },
+                "id": "bar",
+                "name": "Bar",
+                "category": "BPM"
+            },
+            "blade_power_plus": {
+                "schema": {
+                    "properties": {
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 2
+                        },
+                        "decay": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Decay",
+                            "description": "Rate of color decay",
+                            "default": 0.7
+                        },
+                        "multiplier": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Multiplier",
+                            "description": "Make the reactive bar bigger/smaller",
+                            "default": 0.5
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Color of Background",
+                            "default": "#000000"
+                        },
+                        "frequency_range": {
+                            "type": "string",
+                            "enum": [
+                                "Beat",
+                                "Bass",
+                                "Lows (beat+bass)",
+                                "Mids",
+                                "High"
+                            ],
+                            "title": "Frequency Range",
+                            "description": "Frequency range for the beat detection",
+                            "default": "Lows (beat+bass)"
+                        },
+                        "invert_roll": {
+                            "type": "boolean",
+                            "title": "Invert Roll",
+                            "description": "Invert the direction of the gradient roll",
+                            "default": false
+                        }
+                    }
+                },
+                "id": "blade_power_plus",
+                "name": "Blade Power+",
+                "category": "Classic"
+            },
+            "block_reflections": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "speed": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 1,
+                            "title": "Speed",
+                            "description": "Effect Speed modifier",
+                            "default": 0.5
+                        },
+                        "reactivity": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 1,
+                            "title": "Reactivity",
+                            "description": "Audio Reactive modifier",
+                            "default": 0.5
+                        }
+                    }
+                },
+                "id": "block_reflections",
+                "name": "Block Reflections",
+                "category": "Atmospheric"
+            },
+            "blocks": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "block_count": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 10,
+                            "title": "Block Count",
+                            "description": "Number of color blocks",
+                            "default": 4
+                        }
+                    }
+                },
+                "id": "blocks",
+                "name": "Blocks",
+                "category": "2D"
+            },
+            "crawler": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "speed": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 1,
+                            "title": "Speed",
+                            "description": "Effect Speed modifier",
+                            "default": 0.5
+                        },
+                        "reactivity": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 1,
+                            "title": "Reactivity",
+                            "description": "Audio Reactive modifier",
+                            "default": 0.25
+                        },
+                        "sway": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 50,
+                            "title": "Sway",
+                            "description": "Sway modifier",
+                            "default": 20
+                        },
+                        "chop": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 100,
+                            "title": "Chop",
+                            "description": "Chop modifier",
+                            "default": 30
+                        },
+                        "stretch": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 10,
+                            "title": "Stretch",
+                            "description": "Stretch modifier",
+                            "default": 2.5
+                        }
+                    }
+                },
+                "id": "crawler",
+                "name": "Crawler",
+                "category": "Atmospheric"
+            },
+            "energy": {
+                "schema": {
+                    "properties": {
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 4
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": true
+                        },
+                        "color_cycler": {
+                            "type": "boolean",
+                            "title": "Color Cycler",
+                            "description": "Change colors in time with the beat",
+                            "default": false
+                        },
+                        "color_lows": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Color Lows",
+                            "description": "Color of low, bassy sounds",
+                            "default": "#FF0000"
+                        },
+                        "color_mids": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Color Mids",
+                            "description": "Color of midrange sounds",
+                            "default": "#00FF00"
+                        },
+                        "color_high": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Color High",
+                            "description": "Color of high sounds",
+                            "default": "#0000FF"
+                        },
+                        "sensitivity": {
+                            "type": "number",
+                            "minimum": 0.3,
+                            "maximum": 0.99,
+                            "title": "Sensitivity",
+                            "description": "Responsiveness to changes in sound",
+                            "default": 0.6
+                        },
+                        "mixing_mode": {
+                            "type": "string",
+                            "enum": [
+                                "additive",
+                                "overlap"
+                            ],
+                            "title": "Mixing Mode",
+                            "description": "Mode of combining each frequencies' colors",
+                            "default": "additive"
+                        }
+                    }
+                },
+                "id": "energy",
+                "name": "Energy",
+                "category": "Classic"
+            },
+            "energy2": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "speed": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 1,
+                            "title": "Speed",
+                            "description": "Effect Speed modifier",
+                            "default": 0.1
+                        },
+                        "reactivity": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 1,
+                            "title": "Reactivity",
+                            "description": "Audio Reactive modifier",
+                            "default": 0.2
+                        }
+                    }
+                },
+                "id": "energy2",
+                "name": "Energy 2",
+                "category": "Atmospheric"
+            },
+            "equalizer": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "align": {
+                            "type": "string",
+                            "enum": [
+                                "left",
+                                "right",
+                                "invert",
+                                "center"
+                            ],
+                            "title": "Align",
+                            "description": "Alignment of bands",
+                            "default": "left"
+                        },
+                        "gradient_repeat": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 16,
+                            "title": "Gradient Repeat",
+                            "description": "Repeat the gradient into segments",
+                            "default": 6
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        }
+                    }
+                },
+                "id": "equalizer",
+                "name": "Equalizer",
+                "category": "2D"
+            },
+            "fade": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "speed": {
+                            "type": "number",
+                            "minimum": 0.1,
+                            "maximum": 10,
+                            "title": "Speed",
+                            "description": "Rate of change of color",
+                            "default": 0.5
+                        }
+                    }
+                },
+                "id": "fade",
+                "name": "Fade",
+                "category": "Non-Reactive"
+            },
+            "fire": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "speed": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 0.5,
+                            "title": "Speed",
+                            "description": "Effect Speed modifier",
+                            "default": 0.04
+                        },
+                        "color_shift": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Color Shift",
+                            "description": "Fire color",
+                            "default": 0.15
+                        },
+                        "intensity": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 30,
+                            "title": "Intensity",
+                            "description": "Fire intensity",
+                            "default": 8
+                        }
+                    }
+                },
+                "id": "fire",
+                "name": "Fire",
+                "category": "Atmospheric"
+            },
+            "glitch": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "speed": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 10,
+                            "title": "Speed",
+                            "description": "Effect Speed modifier",
+                            "default": 0.5
+                        },
+                        "reactivity": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 1,
+                            "title": "Reactivity",
+                            "description": "Audio Reactive modifier",
+                            "default": 0.2
+                        }
+                    }
+                },
+                "id": "glitch",
+                "name": "Glitch",
+                "category": "Atmospheric"
+            },
+            "lava_lamp": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "speed": {
+                            "type": "number",
+                            "minimum": 0.1,
+                            "maximum": 15,
+                            "title": "Speed",
+                            "description": "Effect Speed modifier",
+                            "default": 7
+                        },
+                        "contrast": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Contrast",
+                            "description": "Difference between lighter and darker spots",
+                            "default": 0.6
+                        },
+                        "reactivity": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 0.9,
+                            "title": "Reactivity",
+                            "description": "Audio Reactive modifier",
+                            "default": 0.3
+                        }
+                    }
+                },
+                "id": "lava_lamp",
+                "name": "Lava lamp",
+                "category": "Atmospheric"
+            },
+            "magnitude": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "frequency_range": {
+                            "type": "string",
+                            "enum": [
+                                "Beat",
+                                "Bass",
+                                "Lows (beat+bass)",
+                                "Mids",
+                                "High"
+                            ],
+                            "title": "Frequency Range",
+                            "description": "Frequency range for the beat detection",
+                            "default": "Lows (beat+bass)"
+                        }
+                    }
+                },
+                "id": "magnitude",
+                "name": "Magnitude",
+                "category": "Classic"
+            },
+            "marching": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "speed": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 1,
+                            "title": "Speed",
+                            "description": "Effect Speed modifier",
+                            "default": 0.1
+                        },
+                        "reactivity": {
+                            "type": "number",
+                            "minimum": 0.00001,
+                            "maximum": 1,
+                            "title": "Reactivity",
+                            "description": "Audio Reactive modifier",
+                            "default": 0.2
+                        }
+                    }
+                },
+                "id": "marching",
+                "name": "Marching",
+                "category": "Atmospheric"
+            },
+            "melt": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "speed": {
+                            "type": "number",
+                            "minimum": 0.001,
+                            "maximum": 1,
+                            "title": "Speed",
+                            "description": "Effect Speed modifier",
+                            "default": 0.5
+                        },
+                        "reactivity": {
+                            "type": "number",
+                            "minimum": 0.0001,
+                            "maximum": 1,
+                            "title": "Reactivity",
+                            "description": "Audio Reactive modifier",
+                            "default": 0.5
+                        }
+                    }
+                },
+                "id": "melt",
+                "name": "Melt",
+                "category": "Atmospheric"
+            },
+            "multiBar": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "mode": {
+                            "type": "string",
+                            "enum": [
+                                "cascade",
+                                "wipe"
+                            ],
+                            "title": "Mode",
+                            "description": "Choose from different animations",
+                            "default": "wipe"
+                        },
+                        "ease_method": {
+                            "type": "string",
+                            "enum": [
+                                "ease_in_out",
+                                "ease_in",
+                                "ease_out",
+                                "linear"
+                            ],
+                            "title": "Ease Method",
+                            "description": "Acceleration profile of bar",
+                            "default": "linear"
+                        },
+                        "color_step": {
+                            "type": "number",
+                            "minimum": 0.0625,
+                            "maximum": 0.5,
+                            "title": "Color Step",
+                            "description": "Amount of color change per beat",
+                            "default": 0.125
+                        }
+                    }
+                },
+                "id": "multiBar",
+                "name": "Multicolor Bar",
+                "category": "BPM"
+            },
+            "pitchSpectrum": {
+                "schema": {
+                    "properties": {
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 1
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": true
+                        },
+                        "fade_rate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Fade Rate",
+                            "description": "Rate at which notes fade",
+                            "default": 0.15
+                        },
+                        "responsiveness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Responsiveness",
+                            "description": "Responsiveness to note changes",
+                            "default": 0.15
+                        }
+                    }
+                },
+                "id": "pitchSpectrum",
+                "name": "Pitch Spectrum",
+                "category": "Classic"
+            },
+            "power": {
+                "schema": {
+                    "properties": {
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": true
+                        },
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "sparks_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Sparks Color",
+                            "description": "Flash on percussive hits",
+                            "default": "#ffffff"
+                        }
+                    }
+                },
+                "id": "power",
+                "name": "Power",
+                "category": "Classic"
+            },
+            "rain": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": true
+                        },
+                        "lows_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Lows Color",
+                            "description": "color for low sounds, ie beats",
+                            "default": "white"
+                        },
+                        "mids_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Mids Color",
+                            "description": "color for mid sounds, ie vocals",
+                            "default": "red"
+                        },
+                        "high_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "High Color",
+                            "description": "color for high sounds, ie hi hat",
+                            "default": "blue"
+                        },
+                        "lows_sensitivity": {
+                            "type": "number",
+                            "minimum": 0.03,
+                            "maximum": 0.3,
+                            "title": "Lows Sensitivity",
+                            "description": "Sensitivity to low sounds",
+                            "default": 0.1
+                        },
+                        "mids_sensitivity": {
+                            "type": "number",
+                            "minimum": 0.03,
+                            "maximum": 0.3,
+                            "title": "Mids Sensitivity",
+                            "description": "Sensitivity to mid sounds",
+                            "default": 0.05
+                        },
+                        "high_sensitivity": {
+                            "type": "number",
+                            "minimum": 0.03,
+                            "maximum": 0.3,
+                            "title": "High Sensitivity",
+                            "description": "Sensitivity to high sounds",
+                            "default": 0.1
+                        },
+                        "raindrop_animation": {
+                            "type": "string",
+                            "enum": [
+                                "Blob",
+                                "Laser",
+                                "Ripple"
+                            ],
+                            "title": "Raindrop Animation",
+                            "description": "Droplet animation style",
+                            "default": "Blob"
+                        }
+                    }
+                },
+                "id": "rain",
+                "name": "Rain",
+                "category": "Classic"
+            },
+            "rainbow": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "speed": {
+                            "type": "number",
+                            "minimum": 0.1,
+                            "maximum": 10,
+                            "title": "Speed",
+                            "description": "Speed of the effect",
+                            "default": 1
+                        },
+                        "frequency": {
+                            "type": "number",
+                            "minimum": 0.1,
+                            "maximum": 10,
+                            "title": "Frequency",
+                            "description": "Frequency of the effect curve",
+                            "default": 1
+                        }
+                    }
+                },
+                "id": "rainbow",
+                "name": "Rainbow",
+                "category": "Non-Reactive"
+            },
+            "real_strobe": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color scheme for bass strobe to cycle through",
+                            "default": "Dancefloor"
+                        },
+                        "color_step": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 0.25,
+                            "title": "Color Step",
+                            "description": "Amount of color change per bass strobe",
+                            "default": 0.0625
+                        },
+                        "bass_strobe_decay_rate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Bass Strobe Decay Rate",
+                            "description": "Bass strobe decay rate. Higher -> decays faster.",
+                            "default": 0.5
+                        },
+                        "strobe_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Strobe Color",
+                            "description": "color for percussive strobes",
+                            "default": "#FFFFFF"
+                        },
+                        "strobe_width": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000,
+                            "title": "Strobe Width",
+                            "description": "Percussive strobe width, in pixels",
+                            "default": 10
+                        },
+                        "strobe_decay_rate": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Strobe Decay Rate",
+                            "description": "Percussive strobe decay rate. Higher -> decays faster.",
+                            "default": 0.5
+                        }
+                    }
+                },
+                "id": "real_strobe",
+                "name": "Strobe",
+                "category": "Classic"
+            },
+            "scroll": {
+                "schema": {
+                    "properties": {
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 3
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": true
+                        },
+                        "speed": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 10,
+                            "title": "Speed",
+                            "description": "Speed of the effect",
+                            "default": 3
+                        },
+                        "decay": {
+                            "type": "number",
+                            "minimum": 0.8,
+                            "maximum": 1,
+                            "title": "Decay",
+                            "description": "Decay rate of the scroll",
+                            "default": 0.97
+                        },
+                        "threshold": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Threshold",
+                            "description": "Cutoff for quiet sounds. Higher -> only loud sounds are detected",
+                            "default": 0
+                        },
+                        "color_lows": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Color Lows",
+                            "description": "Color of low, bassy sounds",
+                            "default": "#FF0000"
+                        },
+                        "color_mids": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Color Mids",
+                            "description": "Color of midrange sounds",
+                            "default": "#00FF00"
+                        },
+                        "color_high": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Color High",
+                            "description": "Color of high sounds",
+                            "default": "#0000FF"
+                        }
+                    }
+                },
+                "id": "scroll",
+                "name": "Scroll",
+                "category": "Classic"
+            },
+            "singleColor": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "modulate": {
+                            "type": "boolean",
+                            "title": "Modulate",
+                            "description": "Brightness modulation",
+                            "default": false
+                        },
+                        "modulation_effect": {
+                            "type": "string",
+                            "enum": [
+                                "sine",
+                                "breath"
+                            ],
+                            "title": "Modulation Effect",
+                            "description": "Choose an animation",
+                            "default": "sine"
+                        },
+                        "modulation_speed": {
+                            "type": "number",
+                            "minimum": 0.01,
+                            "maximum": 1,
+                            "title": "Modulation Speed",
+                            "description": "Animation speed",
+                            "default": 0.5
+                        },
+                        "speed": {
+                            "type": "number",
+                            "minimum": 0.1,
+                            "maximum": 10,
+                            "title": "Speed",
+                            "description": "Speed of the effect",
+                            "default": 1
+                        },
+                        "color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Color",
+                            "description": "Color of strip",
+                            "default": "#FF0000"
+                        }
+                    }
+                },
+                "id": "singleColor",
+                "name": "Single Color",
+                "category": "Non-Reactive"
+            },
+            "spectrum": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        }
+                    }
+                },
+                "id": "spectrum",
+                "name": "Spectrum",
+                "category": "Classic"
+            },
+            "strobe": {
+                "schema": {
+                    "properties": {
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 0
+                        },
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "strobe_frequency": {
+                            "type": "string",
+                            "enum": [
+                                "1/1 (.,. )",
+                                "1/2 (.-. )",
+                                "1/4 (.o. )",
+                                "1/8 (◉◡◉ )",
+                                "1/16 (◉﹏◉ )",
+                                "1/32 (⊙▃⊙ )"
+                            ],
+                            "title": "Strobe Frequency",
+                            "description": "How many strobes per beat",
+                            "default": "1/2 (.-. )"
+                        },
+                        "strobe_decay": {
+                            "type": "number",
+                            "minimum": 1,
+                            "maximum": 10,
+                            "title": "Strobe Decay",
+                            "description": "How rapidly a single strobe hit fades. Higher -> faster fade",
+                            "default": 1.5
+                        },
+                        "beat_decay": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Beat Decay",
+                            "description": "How much the strobes fade across the beat. Higher -> less bright strobes towards end of beat",
+                            "default": 2
+                        }
+                    }
+                },
+                "id": "strobe",
+                "name": "BPM Strobe",
+                "category": "BPM"
+            },
+            "wavelength": {
+                "schema": {
+                    "properties": {
+                        "flip": {
+                            "type": "boolean",
+                            "title": "Flip",
+                            "description": "Flip the effect",
+                            "default": false
+                        },
+                        "mirror": {
+                            "type": "boolean",
+                            "title": "Mirror",
+                            "description": "Mirror the effect",
+                            "default": false
+                        },
+                        "brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Brightness",
+                            "description": "Brightness of strip",
+                            "default": 1
+                        },
+                        "background_color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Background Color",
+                            "description": "Apply a background color",
+                            "default": "#000000"
+                        },
+                        "background_brightness": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1,
+                            "title": "Background Brightness",
+                            "description": "Brightness of the background color",
+                            "default": 1
+                        },
+                        "gradient": {
+                            "type": "color",
+                            "gradient": true,
+                            "title": "Gradient",
+                            "description": "Color gradient to display",
+                            "default": "linear-gradient(90deg, rgb(255, 0, 0) 0%, rgb(255, 120, 0) 14%, rgb(255, 200, 0) 28%, rgb(0, 255, 0) 42%, rgb(0, 199, 140) 56%, rgb(0, 0, 255) 70%, rgb(128, 0, 128) 84%, rgb(255, 0, 178) 98%)"
+                        },
+                        "gradient_roll": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Gradient Roll",
+                            "description": "Amount to shift the gradient",
+                            "default": 0
+                        },
+                        "blur": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 10,
+                            "title": "Blur",
+                            "description": "Amount to blur the effect",
+                            "default": 3
+                        }
+                    }
+                },
+                "id": "wavelength",
+                "name": "Wavelength",
+                "category": "Classic"
+            }
+        },
+        "integrations": {
+            "midi": {
+                "schema": {
+                    "properties": {}
+                },
+                "id": "midi",
+                "name": "MIDI",
+                "description": "Control LedFx with a MIDI device"
+            },
+            "mqtt": {
+                "schema": {
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Name",
+                            "description": "Name of this integration instance and associated settings",
+                            "default": "MQTT"
+                        },
+                        "topic": {
+                            "type": "string",
+                            "title": "Topic",
+                            "description": "Description of this integration",
+                            "default": ""
+                        },
+                        "ip_address": {
+                            "type": "string",
+                            "title": "Ip Address",
+                            "description": "MQTT ip address",
+                            "default": "127.0.0.1"
+                        },
+                        "port": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 65535,
+                            "title": "Port",
+                            "description": "MQTT port",
+                            "default": 1883
+                        },
+                        "username": {
+                            "type": "string",
+                            "title": "Username",
+                            "description": "MQTT username",
+                            "default": ""
+                        },
+                        "password": {
+                            "type": "string",
+                            "title": "Password",
+                            "description": "MQTT password",
+                            "default": ""
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "topic",
+                        "ip_address",
+                        "port"
+                    ]
+                },
+                "id": "mqtt",
+                "name": "MQTT",
+                "description": "MQTT Integration"
+            },
+            "mqtt_hass": {
+                "schema": {
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Name",
+                            "description": "Name of this HomeAssistant instance",
+                            "default": "Home Assistant"
+                        },
+                        "topic": {
+                            "type": "string",
+                            "title": "Topic",
+                            "description": "HomeAssistant's discovery prefix",
+                            "default": "homeassistant"
+                        },
+                        "ip_address": {
+                            "type": "string",
+                            "title": "Ip Address",
+                            "description": "MQTT ip address",
+                            "default": "127.0.0.1"
+                        },
+                        "port": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 65535,
+                            "title": "Port",
+                            "description": "MQTT port",
+                            "default": 1883
+                        },
+                        "username": {
+                            "type": "string",
+                            "title": "Username",
+                            "description": "MQTT username",
+                            "default": ""
+                        },
+                        "password": {
+                            "type": "string",
+                            "title": "Password",
+                            "description": "MQTT password",
+                            "default": ""
+                        },
+                        "description": {
+                            "type": "string",
+                            "title": "Description",
+                            "description": "Internal Description",
+                            "default": "MQTT Integration with auto-discovery"
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "topic",
+                        "ip_address",
+                        "port"
+                    ]
+                },
+                "id": "mqtt_hass",
+                "name": "Home Assistant MQTT",
+                "description": "MQTT Integration for Home Assistant"
+            },
+            "qlc": {
+                "schema": {
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Name",
+                            "description": "Name of this integration instance and associated settings",
+                            "default": "QLC+"
+                        },
+                        "description": {
+                            "type": "string",
+                            "title": "Description",
+                            "description": "Description of this integration",
+                            "default": "Web Api Integration for Q Light Controller Plus"
+                        },
+                        "ip_address": {
+                            "type": "string",
+                            "title": "Ip Address",
+                            "description": "QLC+ ip address",
+                            "default": "127.0.0.1"
+                        },
+                        "port": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 65535,
+                            "title": "Port",
+                            "description": "QLC+ port",
+                            "default": 9999
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "description",
+                        "ip_address",
+                        "port"
+                    ]
+                },
+                "id": "qlc",
+                "name": "QLC+",
+                "description": "Web Api Integration for Q Light Controller Plus"
+            },
+            "spotify": {
+                "schema": {
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Name",
+                            "description": "Name of this integration instance and associated settings",
+                            "default": "Spotify"
+                        },
+                        "description": {
+                            "type": "string",
+                            "title": "Description",
+                            "description": "Description of this integration",
+                            "default": "Activate scenes with Spotify"
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "description"
+                    ]
+                },
+                "id": "spotify",
+                "name": "Spotify",
+                "description": "Activate scenes with Spotify Connect [BETA]. Requires Spotify Premium."
+            }
+        },
+        "wled_preferences": {
+            "schema": {
+                "properties": {
+                    "wled_preferred_mode": {
+                        "properties": {
+                            "setting": {
+                                "type": "string",
+                                "title": "Setting"
+                            },
+                            "user_enabled": {
+                                "type": "boolean",
+                                "title": "User Enabled"
+                            }
+                        },
+                        "title": "Wled Preferred Mode",
+                        "default": {
+                            "setting": "UDP",
+                            "user_enabled": false
+                        }
+                    },
+                    "realtime_gamma_enabled": {
+                        "properties": {
+                            "setting": {
+                                "type": "boolean",
+                                "title": "Setting"
+                            },
+                            "user_enabled": {
+                                "type": "boolean",
+                                "title": "User Enabled"
+                            }
+                        },
+                        "title": "Realtime Gamma Enabled",
+                        "default": {
+                            "setting": false,
+                            "user_enabled": false
+                        }
+                    },
+                    "force_max_brightness": {
+                        "properties": {
+                            "setting": {
+                                "type": "boolean",
+                                "title": "Setting"
+                            },
+                            "user_enabled": {
+                                "type": "boolean",
+                                "title": "User Enabled"
+                            }
+                        },
+                        "title": "Force Max Brightness",
+                        "default": {
+                            "setting": false,
+                            "user_enabled": false
+                        }
+                    },
+                    "realtime_dmx_mode": {
+                        "properties": {
+                            "setting": {
+                                "type": "string",
+                                "title": "Setting"
+                            },
+                            "user_enabled": {
+                                "type": "boolean",
+                                "title": "User Enabled"
+                            }
+                        },
+                        "title": "Realtime Dmx Mode",
+                        "default": {
+                            "setting": "MultiRGB",
+                            "user_enabled": false
+                        }
+                    },
+                    "start_universe_setting": {
+                        "properties": {
+                            "setting": {
+                                "type": "integer",
+                                "title": "Setting"
+                            },
+                            "user_enabled": {
+                                "type": "boolean",
+                                "title": "User Enabled"
+                            }
+                        },
+                        "title": "Start Universe Setting",
+                        "default": {
+                            "setting": 1,
+                            "user_enabled": false
+                        }
+                    },
+                    "dmx_address_start": {
+                        "properties": {
+                            "setting": {
+                                "type": "integer",
+                                "title": "Setting"
+                            },
+                            "user_enabled": {
+                                "type": "boolean",
+                                "title": "User Enabled"
+                            }
+                        },
+                        "title": "Dmx Address Start",
+                        "default": {
+                            "setting": 1,
+                            "user_enabled": false
+                        }
+                    },
+                    "inactivity_timeout": {
+                        "properties": {
+                            "setting": {
+                                "type": "integer",
+                                "title": "Setting"
+                            },
+                            "user_enabled": {
+                                "type": "boolean",
+                                "title": "User Enabled"
+                            }
+                        },
+                        "title": "Inactivity Timeout",
+                        "default": {
+                            "setting": 1,
+                            "user_enabled": false
+                        }
+                    }
+                },
+                "permitted_keys": [
+                    "wled_preferred_mode",
+                    "realtime_gamma_enabled",
+                    "force_max_brightness",
+                    "realtime_dmx_mode",
+                    "start_universe_setting",
+                    "dmx_address_start",
+                    "inactivity_timeout"
+                ]
+            }
+        },
+        "melbanks": {
+            "schema": {
+                "properties": {
+                    "max_frequencies": {
+                        "type": "list",
+                        "validators": [
+                            {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 15000
+                            }
+                        ],
+                        "title": "Max Frequencies",
+                        "default": [
+                            350,
+                            2000,
+                            15000
+                        ]
+                    },
+                    "min_frequency": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 15000,
+                        "title": "Min Frequency",
+                        "default": 20
+                    }
+                },
+                "permitted_keys": [
+                    "max_frequencies",
+                    "min_frequency"
+                ]
+            }
+        },
+        "audio": {
+            "schema": {
+                "properties": {
+                    "sample_rate": {
+                        "type": "integer",
+                        "title": "Sample Rate",
+                        "default": 60
+                    },
+                    "mic_rate": {
+                        "type": "integer",
+                        "title": "Mic Rate",
+                        "default": 30000
+                    },
+                    "fft_size": {
+                        "type": "integer",
+                        "title": "Fft Size",
+                        "default": 4096
+                    },
+                    "min_volume": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10,
+                        "title": "Min Volume",
+                        "default": 0.2
+                    },
+                    "audio_device": {
+                        "type": "string",
+                        "enum": {
+                            "0": "MME: Microsoft Soundmapper - Input",
+                            "1": "MME: Mikrofon (3- USB PnP Audio Devi",
+                            "2": "MME: VoiceMeeter Output (VB-Audio Vo",
+                            "3": "MME: Mikrofon (Virtual Desktop Audio",
+                            "10": "Windows DirectSound: Primärer Soundaufnahmetreiber",
+                            "11": "Windows DirectSound: Mikrofon (3- USB PnP Audio Device)",
+                            "12": "Windows DirectSound: VoiceMeeter Output (VB-Audio VoiceMeeter VAIO)",
+                            "13": "Windows DirectSound: Mikrofon (Virtual Desktop Audio)",
+                            "26": "Windows WASAPI: Mikrofon (3- USB PnP Audio Device)",
+                            "27": "Windows WASAPI: VoiceMeeter Output (VB-Audio VoiceMeeter VAIO)",
+                            "28": "Windows WASAPI: Mikrofon (Virtual Desktop Audio)",
+                            "30": "Windows WDM-KS: Mikrofon (VDVAD Wave)",
+                            "32": "Windows WDM-KS: Eingang (Realtek HD Audio Line input)",
+                            "33": "Windows WDM-KS: Mikrofon (Realtek HD Audio Mic input)",
+                            "35": "Windows WDM-KS: Stereomix (Realtek HD Audio Stereo input)",
+                            "38": "Windows WDM-KS: VoiceMeeter Output (VoiceMeeter vaio)",
+                            "41": "Windows WDM-KS: Kopfhörer (@System32\\drivers\\bthhfenum.sys,#2;%1 Hands-Free%0\r\n;(Jabra Elite 75t))",
+                            "43": "Windows WDM-KS: Mikrofon (USB PnP Audio Device)"
+                        },
+                        "title": "Audio Device",
+                        "default": 1
+                    }
+                },
+                "permitted_keys": [
+                    "min_volume",
+                    "audio_device"
+                ]
+            }
+        },
+        "core": {
+            "schema": {
+                "properties": {
+                    "host": {
+                        "type": "string",
+                        "title": "Host",
+                        "default": "0.0.0.0"
+                    },
+                    "port": {
+                        "type": "integer",
+                        "title": "Port",
+                        "default": 8888
+                    },
+                    "port_s": {
+                        "type": "integer",
+                        "title": "Port S",
+                        "default": 8443
+                    },
+                    "dev_mode": {
+                        "type": "boolean",
+                        "title": "Dev Mode",
+                        "default": false
+                    },
+                    "devices": {
+                        "type": "array",
+                        "title": "Devices",
+                        "default": []
+                    },
+                    "virtuals": {
+                        "type": "array",
+                        "title": "Virtuals",
+                        "default": []
+                    },
+                    "audio": {
+                        "type": "dict",
+                        "title": "Audio",
+                        "default": {}
+                    },
+                    "melbanks": {
+                        "type": "dict",
+                        "title": "Melbanks",
+                        "default": {}
+                    },
+                    "ledfx_presets": {
+                        "type": "dict",
+                        "title": "Ledfx Presets",
+                        "default": {}
+                    },
+                    "user_presets": {
+                        "type": "dict",
+                        "title": "User Presets",
+                        "default": {}
+                    },
+                    "scenes": {
+                        "type": "dict",
+                        "title": "Scenes",
+                        "default": {}
+                    },
+                    "integrations": {
+                        "type": "array",
+                        "title": "Integrations",
+                        "default": []
+                    },
+                    "visualisation_fps": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 60,
+                        "title": "Visualisation Fps",
+                        "default": 30
+                    },
+                    "visualisation_maxlen": {
+                        "type": "integer",
+                        "minimum": 5,
+                        "maximum": 300,
+                        "title": "Visualisation Maxlen",
+                        "default": 50
+                    },
+                    "global_transitions": {
+                        "type": "boolean",
+                        "title": "Global Transitions",
+                        "description": "Changes to any virtual's transitions apply to all other virtuals",
+                        "default": true
+                    },
+                    "user_colors": {
+                        "type": "dict",
+                        "title": "User Colors",
+                        "default": {}
+                    },
+                    "user_gradients": {
+                        "type": "dict",
+                        "title": "User Gradients",
+                        "default": {}
+                    },
+                    "scan_on_startup": {
+                        "type": "boolean",
+                        "title": "Scan On Startup",
+                        "default": false
+                    },
+                    "wled_preferences": {
+                        "type": "dict",
+                        "title": "Wled Preferences",
+                        "default": {}
+                    },
+                    "configuration_version": {
+                        "type": "string",
+                        "title": "Configuration Version",
+                        "default": "2.1.0"
+                    }
+                },
+                "permitted_keys": [
+                    "host",
+                    "port",
+                    "port_s",
+                    "dev_mode",
+                    "scan_on_startup",
+                    "visualisation_fps",
+                    "visualisation_maxlen",
+                    "global_transitions"
+                ]
+            }
+        },
+        "virtuals": {
+            "schema": {
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "title": "Name",
+                        "description": "Friendly name for the device"
+                    },
+                    "mapping": {
+                        "type": "string",
+                        "enum": [
+                            "span",
+                            "copy"
+                        ],
+                        "title": "Mapping",
+                        "description": "Span: Effect spans all segments. Copy: Effect copied on each segment",
+                        "default": "span"
+                    },
+                    "icon_name": {
+                        "type": "string",
+                        "title": "Icon Name",
+                        "description": "Icon for the device*",
+                        "default": "mdi:led-strip-variant"
+                    },
+                    "max_brightness": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "title": "Max Brightness",
+                        "description": "Max brightness for the device",
+                        "default": 1
+                    },
+                    "center_offset": {
+                        "type": "integer",
+                        "title": "Center Offset",
+                        "description": "Number of pixels from the perceived center of the device",
+                        "default": 0
+                    },
+                    "preview_only": {
+                        "type": "boolean",
+                        "title": "Preview Only",
+                        "description": "Preview the pixels without updating the devices",
+                        "default": false
+                    },
+                    "transition_time": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 5,
+                        "title": "Transition Time",
+                        "description": "Length of transition between effects",
+                        "default": 0.4
+                    },
+                    "transition_mode": {
+                        "type": "string",
+                        "enum": [
+                            "Add",
+                            "Dissolve",
+                            "Push",
+                            "Slide",
+                            "Iris",
+                            "Through White",
+                            "Through Black",
+                            "None"
+                        ],
+                        "title": "Transition Mode",
+                        "description": "Type of transition between effects",
+                        "default": "Add"
+                    },
+                    "frequency_min": {
+                        "type": "integer",
+                        "minimum": 20,
+                        "maximum": 15000,
+                        "title": "Frequency Min",
+                        "description": "Lowest frequency for this virtual's audio reactive effects",
+                        "default": 20
+                    },
+                    "frequency_max": {
+                        "type": "integer",
+                        "minimum": 20,
+                        "maximum": 15000,
+                        "title": "Frequency Max",
+                        "description": "Highest frequency for this virtual's audio reactive effects",
+                        "default": 15000
+                    }
+                },
+                "required": [
+                    "name",
+                    "mapping"
+                ]
+            }
+        },
+        "devices": {
+            "adalight": {
+                "schema": {
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Name",
+                            "description": "Friendly name for the device"
+                        },
+                        "icon_name": {
+                            "type": "string",
+                            "title": "Icon Name",
+                            "description": "https://material-ui.com/components/material-icons/",
+                            "default": "mdi:led-strip"
+                        },
+                        "center_offset": {
+                            "type": "integer",
+                            "title": "Center Offset",
+                            "description": "Number of pixels from the perceived center of the device",
+                            "default": 0
+                        },
+                        "refresh_rate": {
+                            "type": "int",
+                            "enum": [
+                                10,
+                                12,
+                                16,
+                                21,
+                                32,
+                                64
+                            ],
+                            "title": "Refresh Rate",
+                            "description": "Target rate that pixels are sent to the device",
+                            "default": 64
+                        },
+                        "com_port": {
+                            "type": "string",
+                            "enum": [
+                                "COM1"
+                            ],
+                            "title": "Com Port",
+                            "description": "COM port for Adalight compatible device"
+                        },
+                        "baudrate": {
+                            "type": "integer",
+                            "minimum": 115200,
+                            "title": "Baudrate",
+                            "description": "baudrate",
+                            "default": 500000
+                        },
+                        "pixel_count": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Pixel Count",
+                            "description": "Number of individual pixels",
+                            "default": 1
+                        },
+                        "color_order": {
+                            "type": "string",
+                            "enum": [
+                                "RGB",
+                                "RBG",
+                                "GRB",
+                                "BRG",
+                                "GBR",
+                                "BGR"
+                            ],
+                            "title": "Color Order",
+                            "description": "Color order",
+                            "default": "RGB"
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "com_port",
+                        "baudrate",
+                        "pixel_count",
+                        "color_order"
+                    ]
+                },
+                "id": "adalight"
+            },
+            "ddp": {
+                "schema": {
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Name",
+                            "description": "Friendly name for the device"
+                        },
+                        "icon_name": {
+                            "type": "string",
+                            "title": "Icon Name",
+                            "description": "https://material-ui.com/components/material-icons/",
+                            "default": "mdi:led-strip"
+                        },
+                        "center_offset": {
+                            "type": "integer",
+                            "title": "Center Offset",
+                            "description": "Number of pixels from the perceived center of the device",
+                            "default": 0
+                        },
+                        "refresh_rate": {
+                            "type": "int",
+                            "enum": [
+                                10,
+                                12,
+                                16,
+                                21,
+                                32,
+                                64
+                            ],
+                            "title": "Refresh Rate",
+                            "description": "Target rate that pixels are sent to the device",
+                            "default": 64
+                        },
+                        "ip_address": {
+                            "type": "string",
+                            "title": "Ip Address",
+                            "description": "Hostname or IP address of the device"
+                        },
+                        "pixel_count": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Pixel Count",
+                            "description": "Number of individual pixels",
+                            "default": 1
+                        },
+                        "port": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 65535,
+                            "title": "Port",
+                            "description": "Port for the UDP device",
+                            "default": 4048
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "ip_address",
+                        "pixel_count",
+                        "port"
+                    ]
+                },
+                "id": "ddp"
+            },
+            "e131": {
+                "schema": {
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Name",
+                            "description": "Friendly name for the device"
+                        },
+                        "icon_name": {
+                            "type": "string",
+                            "title": "Icon Name",
+                            "description": "https://material-ui.com/components/material-icons/",
+                            "default": "mdi:led-strip"
+                        },
+                        "center_offset": {
+                            "type": "integer",
+                            "title": "Center Offset",
+                            "description": "Number of pixels from the perceived center of the device",
+                            "default": 0
+                        },
+                        "refresh_rate": {
+                            "type": "int",
+                            "enum": [
+                                10,
+                                12,
+                                16,
+                                21,
+                                32,
+                                64
+                            ],
+                            "title": "Refresh Rate",
+                            "description": "Target rate that pixels are sent to the device",
+                            "default": 64
+                        },
+                        "ip_address": {
+                            "type": "string",
+                            "title": "Ip Address",
+                            "description": "Hostname or IP address of the device"
+                        },
+                        "pixel_count": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Pixel Count",
+                            "description": "Number of individual pixels",
+                            "default": 1
+                        },
+                        "universe": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Universe",
+                            "description": "DMX universe for the device",
+                            "default": 1
+                        },
+                        "universe_size": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Universe Size",
+                            "description": "Size of each DMX universe",
+                            "default": 510
+                        },
+                        "channel_offset": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "title": "Channel Offset",
+                            "description": "Channel offset within the DMX universe",
+                            "default": 0
+                        },
+                        "packet_priority": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 200,
+                            "title": "Packet Priority",
+                            "description": "Priority given to the sACN packets for this device",
+                            "default": 100
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "ip_address",
+                        "pixel_count"
+                    ]
+                },
+                "id": "e131"
+            },
+            "open_pixel_control": {
+                "schema": {
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Name",
+                            "description": "Friendly name for the device"
+                        },
+                        "icon_name": {
+                            "type": "string",
+                            "title": "Icon Name",
+                            "description": "https://material-ui.com/components/material-icons/",
+                            "default": "mdi:led-strip"
+                        },
+                        "center_offset": {
+                            "type": "integer",
+                            "title": "Center Offset",
+                            "description": "Number of pixels from the perceived center of the device",
+                            "default": 0
+                        },
+                        "refresh_rate": {
+                            "type": "int",
+                            "enum": [
+                                10,
+                                12,
+                                16,
+                                21,
+                                32,
+                                64
+                            ],
+                            "title": "Refresh Rate",
+                            "description": "Target rate that pixels are sent to the device",
+                            "default": 64
+                        },
+                        "ip_address": {
+                            "type": "string",
+                            "title": "Ip Address",
+                            "description": "Hostname or IP address of the device"
+                        },
+                        "pixel_count": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Pixel Count",
+                            "description": "Number of individual pixels",
+                            "default": 1
+                        },
+                        "channel": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "title": "Channel",
+                            "description": "Channel to send pixel data",
+                            "default": 0
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "ip_address",
+                        "pixel_count",
+                        "channel"
+                    ]
+                },
+                "id": "open_pixel_control"
+            },
+            "openrgb": {
+                "schema": {
+                    "properties": {
+                        "icon_name": {
+                            "type": "string",
+                            "title": "Icon Name",
+                            "description": "https://material-ui.com/components/material-icons/",
+                            "default": "mdi:led-strip"
+                        },
+                        "center_offset": {
+                            "type": "integer",
+                            "title": "Center Offset",
+                            "description": "Number of pixels from the perceived center of the device",
+                            "default": 0
+                        },
+                        "refresh_rate": {
+                            "type": "int",
+                            "enum": [
+                                10,
+                                12,
+                                16,
+                                21,
+                                32,
+                                64
+                            ],
+                            "title": "Refresh Rate",
+                            "description": "Target rate that pixels are sent to the device",
+                            "default": 64
+                        },
+                        "ip_address": {
+                            "type": "string",
+                            "title": "Ip Address",
+                            "description": "Hostname or IP address of the device"
+                        },
+                        "name": {
+                            "type": "string",
+                            "title": "Name",
+                            "description": "Friendly name for the device"
+                        },
+                        "openrgb_name": {
+                            "type": "string",
+                            "title": "Openrgb Name",
+                            "description": "Exact name of openRGB device (within openRGB)."
+                        },
+                        "pixel_count": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Pixel Count",
+                            "description": "Number of individual pixels",
+                            "default": 1
+                        },
+                        "port": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 65535,
+                            "title": "Port",
+                            "description": "Port for the UDP device",
+                            "default": 6742
+                        }
+                    },
+                    "required": [
+                        "ip_address",
+                        "name",
+                        "openrgb_name",
+                        "pixel_count",
+                        "port"
+                    ]
+                },
+                "id": "openrgb"
+            },
+            "rpi_ws281x": {
+                "schema": {
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Name",
+                            "description": "Friendly name for the device"
+                        },
+                        "icon_name": {
+                            "type": "string",
+                            "title": "Icon Name",
+                            "description": "https://material-ui.com/components/material-icons/",
+                            "default": "mdi:led-strip"
+                        },
+                        "center_offset": {
+                            "type": "integer",
+                            "title": "Center Offset",
+                            "description": "Number of pixels from the perceived center of the device",
+                            "default": 0
+                        },
+                        "refresh_rate": {
+                            "type": "int",
+                            "enum": [
+                                10,
+                                12,
+                                16,
+                                21,
+                                32,
+                                64
+                            ],
+                            "title": "Refresh Rate",
+                            "description": "Target rate that pixels are sent to the device",
+                            "default": 64
+                        },
+                        "pixel_count": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Pixel Count",
+                            "description": "Number of individual pixels",
+                            "default": 1
+                        },
+                        "gpio_pin": {
+                            "type": "string",
+                            "enum": [
+                                21,
+                                31
+                            ],
+                            "title": "Gpio Pin",
+                            "description": "Raspberry Pi GPIO pin your LEDs are connected to"
+                        },
+                        "color_order": {
+                            "type": "string",
+                            "enum": [
+                                "RGB",
+                                "RBG",
+                                "GRB",
+                                "BRG",
+                                "GBR",
+                                "BGR"
+                            ],
+                            "title": "Color Order",
+                            "description": "Color order",
+                            "default": "RGB"
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "pixel_count",
+                        "gpio_pin",
+                        "color_order"
+                    ]
+                },
+                "id": "rpi_ws281x"
+            },
+            "udp": {
+                "schema": {
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Name",
+                            "description": "Friendly name for the device"
+                        },
+                        "icon_name": {
+                            "type": "string",
+                            "title": "Icon Name",
+                            "description": "https://material-ui.com/components/material-icons/",
+                            "default": "mdi:led-strip"
+                        },
+                        "center_offset": {
+                            "type": "integer",
+                            "title": "Center Offset",
+                            "description": "Number of pixels from the perceived center of the device",
+                            "default": 0
+                        },
+                        "refresh_rate": {
+                            "type": "int",
+                            "enum": [
+                                10,
+                                12,
+                                16,
+                                21,
+                                32,
+                                64
+                            ],
+                            "title": "Refresh Rate",
+                            "description": "Target rate that pixels are sent to the device",
+                            "default": 64
+                        },
+                        "ip_address": {
+                            "type": "string",
+                            "title": "Ip Address",
+                            "description": "Hostname or IP address of the device"
+                        },
+                        "pixel_count": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "title": "Pixel Count",
+                            "description": "Number of individual pixels",
+                            "default": 1
+                        },
+                        "port": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 65535,
+                            "title": "Port",
+                            "description": "Port for the UDP device",
+                            "default": 21324
+                        },
+                        "udp_packet_type": {
+                            "type": "string",
+                            "enum": [
+                                "DRGB",
+                                "WARLS",
+                                "DRGBW",
+                                "DNRGB",
+                                "adaptive_smallest"
+                            ],
+                            "title": "Udp Packet Type",
+                            "description": "RGB packet encoding",
+                            "default": "DRGB"
+                        },
+                        "timeout": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "title": "Timeout",
+                            "description": "Seconds to wait after the last received packet to yield device control",
+                            "default": 1
+                        },
+                        "minimise_traffic": {
+                            "type": "boolean",
+                            "title": "Minimise Traffic",
+                            "description": "Won't send updates if nothing has changed on the LED device",
+                            "default": true
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "ip_address",
+                        "pixel_count",
+                        "port",
+                        "udp_packet_type"
+                    ]
+                },
+                "id": "udp"
+            },
+            "wled": {
+                "schema": {
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Name",
+                            "description": "Friendly name for the device"
+                        },
+                        "icon_name": {
+                            "type": "string",
+                            "title": "Icon Name",
+                            "description": "https://material-ui.com/components/material-icons/",
+                            "default": "mdi:led-strip"
+                        },
+                        "center_offset": {
+                            "type": "integer",
+                            "title": "Center Offset",
+                            "description": "Number of pixels from the perceived center of the device",
+                            "default": 0
+                        },
+                        "refresh_rate": {
+                            "type": "int",
+                            "enum": [
+                                10,
+                                12,
+                                16,
+                                21,
+                                32,
+                                64
+                            ],
+                            "title": "Refresh Rate",
+                            "description": "Target rate that pixels are sent to the device",
+                            "default": 64
+                        },
+                        "ip_address": {
+                            "type": "string",
+                            "title": "Ip Address",
+                            "description": "Hostname or IP address of the device"
+                        },
+                        "sync_mode": {
+                            "type": "string",
+                            "enum": [
+                                "UDP",
+                                "DDP",
+                                "E131"
+                            ],
+                            "title": "Sync Mode",
+                            "description": "Streaming protocol to WLED device. Recommended: UDP<480px, DDP>480px",
+                            "default": "UDP"
+                        },
+                        "timeout": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 255,
+                            "title": "Timeout",
+                            "description": "Time between LedFx effect off and WLED effect activate",
+                            "default": 1
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "ip_address"
+                    ]
+                },
+                "id": "wled"
+            }
+        }
+    }
+}

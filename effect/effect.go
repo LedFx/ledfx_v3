@@ -25,7 +25,7 @@ type Config struct {
 }
 
 // StartEffect starts a specific effect on a device at a given FPS
-func StartEffect(deviceConfig config.DeviceConfig, effect Effect, fps int, done <-chan bool) error {
+func StartEffect(deviceConfig config.DeviceConfig, effect Effect, clr string, fps int, done <-chan bool) error {
 	logger.Logger.Debug(fmt.Sprintf("fps: %v", fps))
 	usPerFrame := (float64(1.0) / float64(fps))
 	usPerFrameDuration := time.Duration(usPerFrame*1000000.0) * time.Microsecond
@@ -50,17 +50,29 @@ func StartEffect(deviceConfig config.DeviceConfig, effect Effect, fps int, done 
 
 	// TODO: this should be in effect config
 	speed := 1.0 // beats per minute
+	if clr == "" {
+		clr = "#000fff"
+	}
 
 	for {
 		select {
 		case <-done:
 			fmt.Println("Done!")
+
+			newColor, err := color.NewColor(clr)
+			if err != nil {
+				return err
+			}
+			err = device.SendData(effect.AssembleFrame(phase, device.Config.PixelCount, newColor), 0x00)
+			if err != nil {
+				return err
+			}
 			device.Close()
 			return nil
 		case <-ticker.C:
 			// TODO: get pixelCount and color from config
 			// TODO: this should be
-			newColor, err := color.NewColor(color.LedFxColors["red"])
+			newColor, err := color.NewColor(clr)
 			if err != nil {
 				return err
 			}
@@ -75,6 +87,34 @@ func StartEffect(deviceConfig config.DeviceConfig, effect Effect, fps int, done 
 			}
 		}
 	}
+}
+func StopEffect(deviceConfig config.DeviceConfig, effect Effect, clr string, fps int, done <-chan bool) error {
+
+	// TODO: choose type of device dynamically based on the deviceConfig
+	var device = &device.UdpDevice{
+		Name:     deviceConfig.Name,
+		Port:     deviceConfig.Port,
+		Protocol: device.UdpProtocols[deviceConfig.UdpPacketType],
+		Config:   deviceConfig,
+	}
+
+	err := device.Init()
+	if err != nil {
+		logger.Logger.Fatal(err)
+	}
+
+	fmt.Println("Done!")
+
+	newColor, err := color.NewColor("#000000")
+	if err != nil {
+		return err
+	}
+	err = device.SendData(effect.AssembleFrame(0.0, device.Config.PixelCount, newColor), 0x00)
+	if err != nil {
+		return err
+	}
+	device.Close()
+	return nil
 }
 
 // TODO: StopEffect

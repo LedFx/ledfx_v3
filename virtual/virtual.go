@@ -40,6 +40,7 @@ func FindAndPlayVirtual(virtualid string, playState bool, clr string) (err error
 			if c.Virtuals[i].IsDevice != "" {
 				for in, de := range c.Devices {
 					if de.Id == c.Virtuals[i].IsDevice {
+
 						// FOR TESTING: solid color
 						// var device = &device.UdpDevice{
 						// 	Name:     c.Devices[in].Config.Name,
@@ -78,7 +79,7 @@ func FindAndPlayVirtual(virtualid string, playState bool, clr string) (err error
 								done = make(chan bool)
 							}
 							go func() {
-								err := effect.StartEffect(c.Devices[in].Config, currentEffect, 60, done)
+								err := effect.StartEffect(c.Devices[in].Config, currentEffect, clr, 60, done)
 								if err != nil {
 									logger.Logger.Warn(err)
 								}
@@ -88,6 +89,56 @@ func FindAndPlayVirtual(virtualid string, playState bool, clr string) (err error
 								done <- true
 							}
 						}
+					}
+
+				}
+			}
+		}
+	}
+
+	if virtualExists {
+		v.Set("virtuals", c.Virtuals)
+		err = v.WriteConfig()
+	}
+	return
+}
+
+func FindAndStopVirtual(virtualid string) (err error) {
+	fmt.Println("Clear Effect of ", virtualid)
+
+	if virtualid == "" {
+		err = errors.New("Virtual id is empty. Please provide Id to add virtual to config")
+		return
+	}
+
+	c := &config.GlobalConfig
+	v := config.GlobalViper
+
+	var virtualExists bool
+
+	for i, d := range c.Virtuals {
+		if d.Id == virtualid {
+			virtualExists = true
+			if c.Virtuals[i].IsDevice != "" {
+				fmt.Println("WTF Clear Effect of ", c.Virtuals[i].Effect.Name)
+				for in, de := range c.Devices {
+					if de.Id == c.Virtuals[i].IsDevice {
+						var currentEffect effect.Effect = &effect.PulsingEffect{}
+						go func() {
+							// err := effect.StartEffect(c.Devices[in].Config, currentEffect, "#fff000", 60, done)
+							err := effect.StopEffect(c.Devices[in].Config, currentEffect, "#000000", 60, done)
+							if err != nil {
+								logger.Logger.Warn(err)
+							}
+						}()
+						// c.Virtuals[i].Effect = config.Effect{
+						// 	Config: config.EffectConfig{
+						// 		BackgroundColor: "#000000",
+						// 		Color:           "#eee000",
+						// 	},
+						// 	Name: "Single Color",
+						// 	Type: "singleColor",
+						// }
 					}
 
 				}

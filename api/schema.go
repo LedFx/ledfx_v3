@@ -29,6 +29,22 @@ func HandleSchema() {
 				"id": "singleColor",
 				"name": "Single Color",
 				"category": "Non-Reactive"
+			},
+			"pulsing": {
+				"schema": {
+					"properties": {
+						"color": {
+							"type": "color",
+							"gradient": false,
+							"title": "Color",
+							"description": "Color of strip",
+							"default": "#FF0000"
+						}
+					}
+				},
+				"id": "pulsing",
+				"name": "Pulsing",
+				"category": "Non-Reactive"
 			}
 		}
 	}`)

@@ -1,0 +1,22 @@
+{
+    "schemas": {
+        "effects": {
+            "singleColor": {
+                "schema": {
+                    "properties": {
+                        "color": {
+                            "type": "color",
+                            "gradient": false,
+                            "title": "Color",
+                            "description": "Color of strip",
+                            "default": "#FF0000"
+                        }
+                    }
+                },
+                "id": "singleColor",
+                "name": "Single Color",
+                "category": "Non-Reactive"
+            }
+        }
+    }
+}

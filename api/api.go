@@ -3,6 +3,7 @@ package api
 import (
 	_ "embed"
 	"encoding/json"
+	"fmt"
 	"ledfx/audio"
 	"ledfx/config"
 	"ledfx/logger"
@@ -82,12 +83,16 @@ func HandleApi() {
 		// json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
 	})
 	http.HandleFunc("/api/virtuals/", func(w http.ResponseWriter, r *http.Request) {
+		if LastColor == "" {
+			LastColor = "#ff0000"
+		}
 		SetHeader(w)
 		logger.Logger.Debug(r.Method)
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
 			return
 		} else {
+
 			var p Resp
 			var category string
 			var virtualid string
@@ -99,15 +104,25 @@ func HandleApi() {
 				virtualid = string(pathNodes[0])
 			}
 
-			err := json.NewDecoder(r.Body).Decode(&p)
-			if err != nil {
-				logger.Logger.Warn(err)
-				// http.Error(w, err.Error(), http.StatusBadRequest)
+			if r.Method == "DELETE" {
+				fmt.Println("DELETING", r.Method, category, virtualid)
+				err := virtual.FindAndStopVirtual(virtualid)
+				if err != nil {
+					logger.Logger.Warn(err)
+				}
 				return
 			}
+			if r.Method == "POST" || r.Method == "PUT" {
+				err := json.NewDecoder(r.Body).Decode(&p)
+				if err != nil {
+					logger.Logger.Warn(err)
+					// http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+			}
+
 			// logger.Logger.Debug(p)
 			if category == "effects" {
-				// logger.Logger.Debug(p.Config.Color)
 				LastColor = p.Config.Color
 				err := virtual.FindAndPlayVirtual(virtualid, true, LastColor)
 				if err != nil {
@@ -127,7 +142,7 @@ func HandleApi() {
 				}
 			}
 
-			err = json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
+			err := json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
 			if err != nil {
 				logger.Logger.Warn(err)
 			}

@@ -82,18 +82,35 @@ type Virtual struct {
 	// Segments []Segment     `mapstructure:"segments" json:"segments"`
 }
 
+type AudioDevice struct {
+	Id         string  `mapstructure:"id" json:"id"`
+	HostApi    string  `mapstructure:"hostapi" json:"hostapi"`
+	SampleRate float64 `mapstructure:"sample_rate" json:"sample_rate"`
+	Name       string  `mapstructure:"name" json:"name"`
+	Channels   int     `mapstructure:"channels" json:"channels"`
+	IsDefault  bool    `mapstructure:"is_default" json:"is_default"`
+	Source     string  `mapstructure:"source" json:"source"`
+}
+
+type AudioConfig struct {
+	Device    AudioDevice `mapstructure:"device" json:"device"`
+	FftSize   int         `mapstructure:"fft_size" json:"fft_size"`
+	FrameRate int         `mapstructure:"frame_rate" json:"frame_rate"`
+}
+
 type Config struct {
-	Config      string    `mapstructure:"config" json:"config"`
-	Port        int       `mapstructure:"port" json:"port"`
-	Version     bool      `mapstructure:"version" json:"version"`
-	OpenUi      bool      `mapstructure:"open-ui" json:"open-ui"`
-	Verbose     bool      `mapstructure:"verbose" json:"verbose"`
-	VeryVerbose bool      `mapstructure:"very-verbose" json:"very-verbose"`
-	Host        string    `mapstructure:"host" json:"host"`
-	Offline     bool      `mapstructure:"offline" json:"offline"`
-	SentryCrash bool      `mapstructure:"sentry-crash-test" json:"sentry-crash-test"`
-	Devices     []Device  `mapstructure:"devices" json:"devices"`
-	Virtuals    []Virtual `mapstructure:"virtuals" json:"virtuals"`
+	Config      string      `mapstructure:"config" json:"config"`
+	Port        int         `mapstructure:"port" json:"port"`
+	Version     bool        `mapstructure:"version" json:"version"`
+	OpenUi      bool        `mapstructure:"open-ui" json:"open-ui"`
+	Verbose     bool        `mapstructure:"verbose" json:"verbose"`
+	VeryVerbose bool        `mapstructure:"very-verbose" json:"very-verbose"`
+	Host        string      `mapstructure:"host" json:"host"`
+	Offline     bool        `mapstructure:"offline" json:"offline"`
+	SentryCrash bool        `mapstructure:"sentry-crash-test" json:"sentry-crash-test"`
+	Devices     []Device    `mapstructure:"devices" json:"devices"`
+	Virtuals    []Virtual   `mapstructure:"virtuals" json:"virtuals"`
+	Audio       AudioConfig `mapstructure:"audio" json:"audio"`
 }
 
 var configPath string

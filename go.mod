@@ -12,6 +12,11 @@ require (
 )
 
 require (
+	github.com/gordonklaus/portaudio v0.0.0-20200911161147-bb74aa485641 // indirect
+	github.com/simonassank/aubio-go v0.0.0-20210318191226-729d3d668592 // indirect
+)
+
+require (
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
 	github.com/gen2brain/malgo v0.10.35

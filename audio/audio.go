@@ -1,10 +1,11 @@
 package audio
 
-type AudioDevice struct {
-	Id         string `mapstructure:"id" json:"id"`
-	SampleRate int    `mapstructure:"sample_rate" json:"sample_rate"`
-	Name       string `mapstructure:"name" json:"name"`
-	Channels   int    `mapstructure:"channels" json:"channels"`
-	IsDefault  bool   `mapstructure:"is_default" json:"is_default"`
-	Source     string `mapstructure:"source" json:"source"`
+type Buffer []float32
+
+func bufferToF64(b *Buffer) (out []float64) {
+	out = make([]float64, len(*b))
+	for i, x := range *b {
+		out[i] = float64(x)
+	}
+	return out
 }

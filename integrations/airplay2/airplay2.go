@@ -21,7 +21,9 @@ type Server struct {
 	conf   *Config
 	svc    *raop.AirplayServer
 
-	runLock atomic.Value
+	done chan struct{}
+
+	runLock *atomic.Value
 }
 
 func NewServer(conf Config) (s *Server) {
@@ -29,8 +31,12 @@ func NewServer(conf Config) (s *Server) {
 		mu:      sync.Mutex{},
 		conf:    &conf,
 		player:  newPlayer(), // Port range: 1024 through 65530
-		runLock: atomic.Value{},
+		runLock: &atomic.Value{},
+		done:    make(chan struct{}),
 	}
+
+	s.runLock.Store(false)
+
 	return s
 }
 
@@ -47,10 +53,19 @@ func (s *Server) Start() error {
 	}
 
 	s.runLock.Store(true)
-	s.svc = raop.NewAirplayServer(rand.Intn(65530-1024+1)+1024, s.conf.AdvertisementName, s.player)
-	go s.svc.Start(s.conf.VerboseLogging, true)
+	s.svc = raop.NewAirplayServer(rand.Intn(65530-1024+1)+1024, s.conf.AdvertisementName, s.player) //nolint:gosec
+	go func() {
+		defer func() {
+			s.done <- struct{}{}
+		}()
+		s.svc.Start(s.conf.VerboseLogging, true)
+	}()
 
 	return nil
+}
+
+func (s *Server) Wait() {
+	<-s.done
 }
 
 func (s *Server) Stop() error {

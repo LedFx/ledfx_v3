@@ -28,15 +28,16 @@ type audioPlayer struct {
 }
 
 func newPlayer() *audioPlayer {
-	a := &audioPlayer{
+	p := &audioPlayer{
 		volLock:    sync.RWMutex{},
 		outputMu:   sync.Mutex{},
 		outputs:    make([]io.Writer, 0),
 		metaDataMu: sync.RWMutex{},
 		muted:      &atomic.Value{},
+		volume:     1,
 	}
-	a.muted.Store(false)
-	return a
+	p.muted.Store(false)
+	return p
 }
 
 func (p *audioPlayer) AddWriter(wr io.Writer) {
@@ -46,6 +47,10 @@ func (p *audioPlayer) AddWriter(wr io.Writer) {
 }
 
 func (p *audioPlayer) Play(session *rtsp.Session) {
+	go p.playStream(session)
+}
+
+func (p *audioPlayer) playStream(session *rtsp.Session) {
 	// We need a writer waitgroup so the recieving player doesn't get confused
 	// if one finishes before another
 	wg := sync.WaitGroup{}
@@ -61,15 +66,14 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 			continue
 		}
 		adjusted := codec.AdjustAudio(decoded, vol)
-		p.outputMu.Lock()
 		wg.Add(len(p.outputs))
 		for _, output := range p.outputs {
-			go func(out io.Writer) {
-				defer wg.Done()
-				_, _ = out.Write(adjusted)
-			}(output)
+			output := output
+			go func() {
+				_, _ = output.Write(adjusted)
+				wg.Done()
+			}()
 		}
-		p.outputMu.Unlock()
 		wg.Wait()
 	}
 }

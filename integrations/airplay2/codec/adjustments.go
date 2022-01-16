@@ -11,7 +11,7 @@ func AdjustAudio(raw []byte, vol float64) []byte {
 		return raw
 	}
 	adjusted := new(bytes.Buffer)
-	for i := 0; i < len(raw); i += 2 {
+	for i := 0; i < len(raw); i = i + 2 {
 		var val int16
 		b := raw[i : i+2]
 		buf := bytes.NewReader(b)

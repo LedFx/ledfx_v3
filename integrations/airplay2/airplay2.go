@@ -28,7 +28,7 @@ func NewServer(conf Config) (s *Server) {
 	s = &Server{
 		mu:      sync.Mutex{},
 		conf:    &conf,
-		player:  NewPlayer(), // Port range: 1024 through 65530
+		player:  newPlayer(), // Port range: 1024 through 65530
 		runLock: atomic.Value{},
 	}
 	return s

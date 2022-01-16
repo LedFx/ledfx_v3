@@ -27,7 +27,7 @@ type audioPlayer struct {
 	muted *atomic.Value
 }
 
-func NewPlayer() *audioPlayer {
+func newPlayer() *audioPlayer {
 	a := &audioPlayer{
 		volLock:    sync.RWMutex{},
 		outputMu:   sync.Mutex{},

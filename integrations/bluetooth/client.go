@@ -6,8 +6,8 @@ import (
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
-	log "github.com/sirupsen/logrus"
 	"ledfx/integrations/bluetooth/util"
+	log "ledfx/logger"
 	"regexp"
 	"sync"
 	"time"
@@ -26,22 +26,21 @@ type Client struct {
 }
 
 // NewClient initializes a new Bluetooth adapter client
-func NewClient(loglevel log.Level) (cl *Client, err error) {
+func NewClient() (cl *Client, err error) {
 	cl = &Client{
 		mu:   sync.Mutex{},
 		done: make(chan struct{}),
 	}
-	log.SetLevel(loglevel)
 	if cl.adapter, err = adapter.GetDefaultAdapter(); err != nil {
 		return nil, fmt.Errorf("error getting default Bluetooth adapter: %w", err)
 	}
-	log.Debugf("Default Bluetooth adapter: %s\n", cl.adapter.Properties.Name)
+	log.Logger.Debugf("Default Bluetooth adapter: %s\n", cl.adapter.Properties.Name)
 
 	if err := cl.adapter.SetPowered(true); err != nil {
 		return nil, fmt.Errorf("error powering on Bluetooth adapter: %w", err)
 	}
 
-	log.Debugln("Powered on Bluetooth adapter...")
+	log.Logger.Debugf("Powered on Bluetooth adapter...\n")
 
 	return cl, nil
 }
@@ -73,13 +72,13 @@ func (cl *Client) SearchAndConnect(config SearchTargetConfig) (err error) {
 		}
 	}
 
-	log.Infof("Starting tryCacheConnect...\n")
+	log.Logger.Infof("Starting tryCacheConnect...\n")
 	if err := cl.tryCacheConnect(matchFunc, config); err != nil {
 		if errors.Is(err, ErrBtDeviceNotFound) {
 			go func() {
-				log.Infof("Could not find device in cache, starting tryDiscoveryConnect...\n")
+				log.Logger.Infof("Could not find device in cache, starting tryDiscoveryConnect...\n")
 				if err := cl.tryDiscoveryConnect(matchFunc, config); err != nil {
-					log.Errorf("error attempting connection through discovery: %v\n", err)
+					log.Logger.Errorf("error attempting connection through discovery: %v\n", err)
 				}
 			}()
 			return nil
@@ -104,10 +103,10 @@ func (cl *Client) tryCacheConnect(matchFunc func(mac string, name string) (match
 
 	for _, cl.dev = range devices {
 		if matchFunc(cl.dev.Properties.Address, cl.dev.Properties.Name) {
-			log.Infof("Found requested device in cache: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
+			log.Logger.Infof("Found requested device in cache: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
 			break
 		}
-		log.Debugf("Found non-matching device: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
+		log.Logger.Debugf("Found non-matching device: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
 		cl.dev = nil
 	}
 
@@ -132,15 +131,15 @@ func (cl *Client) tryDiscoveryConnect(matchFunc func(mac string, name string) (m
 		}
 
 		if cl.dev, err = device.NewDevice1(found.Path); err != nil {
-			log.Warnf("Error generating new device from dbus object: %v\n", err)
+			log.Logger.Warnf("Error generating new device from dbus object: %v\n", err)
 			continue
 		}
 
 		if matchFunc(cl.dev.Properties.Address, cl.dev.Properties.Name) {
-			log.Infof("Found requested device: (addr=%s, name=%s)\n", cl.dev.Properties.Address, cl.dev.Properties.Name)
+			log.Logger.Infof("Found requested device: (addr=%s, name=%s)\n", cl.dev.Properties.Address, cl.dev.Properties.Name)
 			break
 		}
-		log.Debugf("Found non-matching device: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
+		log.Logger.Debugf("Found non-matching device: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
 		cl.dev = nil
 	}
 
@@ -153,11 +152,11 @@ func (cl *Client) tryDiscoveryConnect(matchFunc func(mac string, name string) (m
 
 // tryConnectForever is self-explanatory. It attempts to connect to dev until it succeeds.
 func (cl *Client) tryConnectForever(coolDown time.Duration) {
-	log.Infof("Attempting to connect to %q indefinitely...\n", cl.dev.Properties.Address)
+	log.Logger.Infof("Attempting to connect to %q indefinitely...\n", cl.dev.Properties.Address)
 	for err := cl.dev.Connect(); err != nil; {
-		log.Debugf("Error encountered during connection attempt to Bluetooth device: %v (retrying...)\n", err)
+		log.Logger.Debugf("Error encountered during connection attempt to Bluetooth device: %v (retrying...)\n", err)
 		time.Sleep(coolDown)
 	}
-	log.Infof("Connection to Bluetooth device with address %q succeeded\n", cl.dev.Properties.Name)
+	log.Logger.Infof("Connection to Bluetooth device with address %q succeeded\n", cl.dev.Properties.Name)
 	cl.done <- struct{}{}
 }

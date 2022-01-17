@@ -2,12 +2,20 @@ package airplay2
 
 import (
 	"github.com/hajimehoshi/oto"
+	"ledfx/config"
+	log "ledfx/logger"
 	"os"
 	"testing"
 	"time"
 )
 
 func TestAirPlayServer(t *testing.T) {
+	if _, err := log.Init(config.Config{
+		Verbose: true,
+	}); err != nil {
+		t.Fatalf("Error initializing logger: %v\n", err)
+	}
+
 	server := NewServer(Config{
 		AdvertisementName: "AirPlay2-TestServer",
 		VerboseLogging:    false,

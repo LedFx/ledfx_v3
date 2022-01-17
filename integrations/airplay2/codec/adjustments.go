@@ -3,7 +3,7 @@ package codec
 import (
 	"bytes"
 	"encoding/binary"
-	log "github.com/sirupsen/logrus"
+	log "ledfx/logger"
 )
 
 func AdjustAudio(raw []byte, vol float64) []byte {
@@ -16,7 +16,7 @@ func AdjustAudio(raw []byte, vol float64) []byte {
 		b := raw[i : i+2]
 		buf := bytes.NewReader(b)
 		if err := binary.Read(buf, binary.LittleEndian, &val); err != nil {
-			log.Warnf("Error reading binary data: %v\n", err)
+			log.Logger.Warnf("Error reading binary data: %v\n", err)
 			return raw
 		}
 		val = int16(vol * float64(val))

@@ -13,7 +13,10 @@ require (
 
 require (
 	github.com/gordonklaus/portaudio v0.0.0-20200911161147-bb74aa485641
+	github.com/hajimehoshi/oto v1.0.1
 	github.com/simonassank/aubio-go v0.0.0-20210318191226-729d3d668592
+	github.com/sirupsen/logrus v1.8.1
+	github.com/xlab/alac-go v0.0.0-20170905164718-4fb25f51d3a7
 )
 
 require (
@@ -26,7 +29,6 @@ require (
 	github.com/getlantern/hidden v0.0.0-20190325191715-f02dbb02be55 // indirect
 	github.com/getlantern/ops v0.0.0-20190325191751-d70cb0d6f85f // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
-	github.com/hajimehoshi/oto v1.0.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/maghul/alac v0.0.0-20161106215514-129591bceef4 // indirect
@@ -34,7 +36,6 @@ require (
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
-	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect

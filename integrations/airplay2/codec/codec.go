@@ -1,15 +1,16 @@
 package codec
 
 import (
+	"strings"
+
 	"github.com/carterpeel/bobcaygeon/rtsp"
 	"github.com/maghul/alac"
-	"strings"
 )
 
-// CodecHandler handler function for receiving raw bytes and decoding them using some codec
-type CodecHandler func(data []byte) ([]byte, error)
+// Handler is a function type for receiving raw bytes and decoding them using some codec
+type Handler func(data []byte) ([]byte, error)
 
-var codecMap = map[string]CodecHandler{
+var codecMap = map[string]Handler{
 	"AppleLossless": decodeAlac}
 
 func decodeAlac(data []byte) ([]byte, error) {
@@ -20,9 +21,9 @@ func decodeAlac(data []byte) ([]byte, error) {
 	return decoder.Decode(data), nil
 }
 
-// GetCodec determins the appropriate codec from the rtsp session
-func GetCodec(session *rtsp.Session) CodecHandler {
-	var decoder CodecHandler
+// GetCodec determines the appropriate codec from the rtsp session
+func GetCodec(session *rtsp.Session) Handler {
+	var decoder Handler
 	rtpmap := session.Description.Attributes["rtpmap"]
 	if strings.Contains(rtpmap, "AppleLossless") {
 		decoder = codecMap["AppleLossless"]

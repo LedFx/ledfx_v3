@@ -3,9 +3,9 @@ package airplay2
 import (
 	"github.com/carterpeel/bobcaygeon/player"
 	"github.com/carterpeel/bobcaygeon/rtsp"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"ledfx/integrations/airplay2/codec"
+	log "ledfx/logger"
 	"sync"
 	"sync/atomic"
 )
@@ -62,7 +62,7 @@ func (p *audioPlayer) playStream(session *rtsp.Session) {
 		p.volLock.RUnlock()
 		decoded, err := decoder(d)
 		if err != nil {
-			log.Warnf("Error decoding audio: %v\n", err)
+			log.Logger.Warnf("Error decoding audio: %v\n", err)
 			continue
 		}
 		adjusted := codec.AdjustAudio(decoded, vol)

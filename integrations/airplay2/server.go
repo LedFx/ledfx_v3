@@ -3,6 +3,7 @@ package airplay2
 import (
 	"fmt"
 	"github.com/carterpeel/bobcaygeon/raop"
+	"github.com/carterpeel/bobcaygeon/rtsp"
 	"io"
 	"math/rand"
 	"sync"
@@ -24,15 +25,23 @@ type Server struct {
 	done chan struct{}
 
 	runLock *atomic.Value
+	reqChan chan *rtsp.Request
 }
 
 func NewServer(conf Config) (s *Server) {
+	pl := newPlayer()
 	s = &Server{
 		mu:      sync.Mutex{},
 		conf:    &conf,
-		player:  newPlayer(), // Port range: 1024 through 65530
+		player:  pl, // Port range: 1024 through 65530
 		runLock: &atomic.Value{},
 		done:    make(chan struct{}),
+		reqChan: make(chan *rtsp.Request),
+		svc:     raop.NewAirplayServer(conf.Port, conf.AdvertisementName, pl),
+	}
+
+	if s.conf.Port == 0 {
+		s.conf.Port = 35293
 	}
 
 	s.runLock.Store(false)
@@ -44,6 +53,10 @@ func (s *Server) AddOutput(output io.Writer) {
 	s.player.AddWriter(output)
 }
 
+func (s *Server) SetClient(client *Client) {
+	s.player.SetClient(client)
+}
+
 func (s *Server) Start() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -53,7 +66,6 @@ func (s *Server) Start() error {
 	}
 
 	s.runLock.Store(true)
-	s.svc = raop.NewAirplayServer(rand.Intn(65530-1024+1)+1024, s.conf.AdvertisementName, s.player) //nolint:gosec
 	go func() {
 		defer func() {
 			s.done <- struct{}{}

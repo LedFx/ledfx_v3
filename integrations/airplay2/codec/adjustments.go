@@ -1,31 +1,16 @@
 package codec
 
 import (
-	"bytes"
 	"encoding/binary"
-	log "ledfx/logger"
 )
 
-func AdjustAudio(raw []byte, vol float64) []byte {
-	if vol == 1 {
-		return raw
+func NormalizeAudio(audioBytes []byte, volume float64) {
+	if volume == 1 {
+		return
 	}
-	adjusted := new(bytes.Buffer)
-	for i := 0; i < len(raw); i = i + 2 {
-		var val int16
-		b := raw[i : i+2]
-		buf := bytes.NewReader(b)
-		if err := binary.Read(buf, binary.LittleEndian, &val); err != nil {
-			log.Logger.Warnf("Error reading binary data: %v\n", err)
-			return raw
-		}
-		val = int16(vol * float64(val))
-		val = min(32767, val)
-		val = max(-32767, val)
-		_ = binary.Write(adjusted, binary.LittleEndian, val)
+	for i := 0; i < len(audioBytes); i += 2 {
+		binary.LittleEndian.PutUint16(audioBytes[i:i+2], uint16(max(-32767, min(32767, int16(volume*float64(int16(binary.LittleEndian.Uint16(audioBytes[i:i+2]))))))))
 	}
-
-	return adjusted.Bytes()
 }
 
 func min(a, b int16) int16 {

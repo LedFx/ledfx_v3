@@ -2,105 +2,88 @@ package airplay2
 
 import (
 	"github.com/carterpeel/bobcaygeon/player"
+	"github.com/carterpeel/bobcaygeon/raop"
 	"github.com/carterpeel/bobcaygeon/rtsp"
 	"io"
 	"ledfx/integrations/airplay2/codec"
 	log "ledfx/logger"
-	"sync"
 	"sync/atomic"
 )
 
 type audioPlayer struct {
-	volLock    sync.RWMutex
-	volume     float64
-	lastVolume float64
-
-	outputMu sync.Mutex
-	outputs  []io.Writer
-
-	metaDataMu sync.RWMutex
-	album      string
-	artist     string
-	title      string
-	artwork    []byte
-
 	muted *atomic.Value
+	//curSession *rtsp.Session
+
+	closeChan chan struct{}
+
+	output io.Writer
+
+	apClient      *Client
+	doEncodedSend bool
+
+	volume  float64
+	artwork []byte
+
+	album  string
+	artist string
+	title  string
 }
 
 func newPlayer() *audioPlayer {
 	p := &audioPlayer{
-		volLock:    sync.RWMutex{},
-		outputMu:   sync.Mutex{},
-		outputs:    make([]io.Writer, 0),
-		metaDataMu: sync.RWMutex{},
-		muted:      &atomic.Value{},
-		volume:     1,
+		output:    io.MultiWriter(),
+		muted:     &atomic.Value{},
+		volume:    1,
+		closeChan: make(chan struct{}),
 	}
 	p.muted.Store(false)
+
 	return p
 }
 
 func (p *audioPlayer) AddWriter(wr io.Writer) {
-	p.outputMu.Lock()
-	defer p.outputMu.Unlock()
-	p.outputs = append(p.outputs, wr)
+	p.output = io.MultiWriter(p.output, wr)
 }
 
 func (p *audioPlayer) Play(session *rtsp.Session) {
-	go p.playStream(session)
-}
-
-func (p *audioPlayer) playStream(session *rtsp.Session) {
-	// We need a writer waitgroup so the recieving player doesn't get confused
-	// if one finishes before another
-	wg := sync.WaitGroup{}
-
 	decoder := codec.GetCodec(session)
-	for d := range session.DataChan {
-		p.volLock.RLock()
-		vol := p.volume
-		p.volLock.RUnlock()
-		decoded, err := decoder(d)
-		if err != nil {
-			log.Logger.Warnf("Error decoding audio: %v\n", err)
-			continue
-		}
-		adjusted := codec.AdjustAudio(decoded, vol)
-		wg.Add(len(p.outputs))
-		for _, output := range p.outputs {
-			output := output
-			go func() {
-				_, _ = output.Write(adjusted)
-				wg.Done()
+	go func(dc *codec.Handler) {
+		for d := range session.DataChan {
+			func() {
+				defer func() {
+					if err := recover(); err != nil {
+						log.Logger.Errorf("Recovered from panic during playStream: %v\n", err)
+					}
+				}()
+				if p.doEncodedSend {
+					_, _ = p.apClient.Write(d)
+				}
+				buf := dc.Decode(d)
+				codec.NormalizeAudio(buf, p.volume)
+				_, _ = p.output.Write(buf)
 			}()
 		}
-		wg.Wait()
-	}
+		log.Logger.Warnf("Session '%s' closed", session.Description.SessionName)
+	}(decoder)
+}
+
+func (p *audioPlayer) SetClient(client *Client) {
+	p.apClient = client
+	p.doEncodedSend = true
 }
 
 func (p *audioPlayer) SetVolume(volume float64) {
-	p.volLock.Lock()
-	if volume <= 0 {
-		p.SetMute(true)
-	} else {
-		p.muted.Store(false)
-		p.volume = volume
+	if p.doEncodedSend {
+		p.apClient.SetParam(raop.ParamVolume(prepareVolume(volume)))
 	}
-	p.volLock.Unlock()
+	p.volume = volume
 }
 
 func (p *audioPlayer) SetMute(isMuted bool) {
-	p.volLock.Lock()
-	switch isMuted {
-	case true:
-		p.muted.Store(true)
-		p.lastVolume = p.volume
-		p.volume = -1
-	case false:
-		p.muted.Store(false)
-		p.volume = p.lastVolume
+	if p.doEncodedSend {
+		p.apClient.SetParam(raop.ParamMuted(isMuted))
 	}
-	p.volLock.Unlock()
+	p.muted.Store(isMuted)
 }
 
 func (p *audioPlayer) GetIsMuted() bool {
@@ -108,26 +91,44 @@ func (p *audioPlayer) GetIsMuted() bool {
 }
 
 func (p *audioPlayer) SetTrack(album string, artist string, title string) {
-	p.metaDataMu.Lock()
+	if p.doEncodedSend {
+		p.apClient.SetParam(raop.ParamTrackInfo{
+			Album:  album,
+			Artist: artist,
+			Title:  title,
+		})
+	}
 	p.album = album
 	p.artist = artist
 	p.title = title
-	p.metaDataMu.Unlock()
 }
 
 func (p *audioPlayer) SetAlbumArt(artwork []byte) {
-	p.metaDataMu.Lock()
+	if p.doEncodedSend {
+		p.apClient.SetParam(raop.ParamAlbumArt(artwork))
+	}
 	p.artwork = artwork
-	p.metaDataMu.Unlock()
 }
 
 func (p *audioPlayer) GetTrack() player.Track {
-	p.metaDataMu.RLock()
-	defer p.metaDataMu.RUnlock()
 	return player.Track{
 		Artist:  p.artist,
 		Album:   p.album,
 		Title:   p.title,
 		Artwork: p.artwork,
+	}
+}
+
+// airplay server will apply a normalization,
+// we have the raw volume on a scale of 0 to 1,
+// so we build the proper format. (-144 through 0)
+func prepareVolume(vol float64) float64 {
+	switch vol {
+	case 0:
+		return -144
+	case 1:
+		return 0
+	default:
+		return (vol * 30) - 30
 	}
 }

@@ -12,7 +12,7 @@ func TestAudioBridge(t *testing.T) {
 	}
 	dstConf := audiobridge.EndpointConfig{
 		Type: audiobridge.DeviceTypeAirPlay,
-		Name: "Basement",
+		Name: "LedFX-AirPlay-Output",
 	}
 	bridge, err := audiobridge.NewBridge(srcConf, dstConf)
 	if err != nil {

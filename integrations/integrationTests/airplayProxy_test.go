@@ -38,7 +38,7 @@ func TestAirPlayProxy_OutputServer(t *testing.T) {
 }
 
 // The client bridges the audio between the input server and the output server
-func TestAirPlayProxy_InputBridge(t *testing.T) {
+func TestAirPlayProxy_InputServer(t *testing.T) {
 	inputServer := airplay2.NewServer(airplay2.Config{
 		AdvertisementName: "AirPlay2-Test-InputServer",
 		VerboseLogging:    false,

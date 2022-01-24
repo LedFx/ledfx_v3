@@ -64,7 +64,7 @@ func (br *Bridge) initDevices() error {
 	case srcType == DeviceTypeBluetooth && dstType == DeviceTypeBluetooth:
 		// TODO io.Copy(bluetoothWriter, bluetoothReader)
 	case srcType == DeviceTypeBluetooth && dstType == DeviceTypeLocal:
-		// TODO io.Copy(br.localAudioDest)
+		// TODO io.Copy(br.localAudioDest, bluetoothReader)
 	default:
 		return fmt.Errorf("this error should never be returned, so if it was, we've got an issue")
 	}
@@ -85,7 +85,7 @@ func (br *Bridge) initAirPlayDest() (err error) {
 	if br.airplayClient, err = airplay2.NewClient(airplay2.ClientDiscoveryParameters{
 		DeviceName: br.DestEndpoint.Name,
 		DeviceIP:   br.DestEndpoint.IP,
-		Verbose:    false,
+		Verbose:    true,
 	}); err != nil {
 		return fmt.Errorf("error initializing AirPlay client: %w", err)
 	}

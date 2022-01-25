@@ -7,8 +7,6 @@ import (
 	"ledfx/config"
 	"ledfx/device"
 	"ledfx/logger"
-
-	"github.com/spf13/viper"
 )
 
 type Virtual interface {
@@ -25,28 +23,23 @@ func PlayVirtual(virtualid string, playState bool, clr string) (err error) {
 		err = errors.New("Virtual id is empty. Please provide Id to add virtual to config")
 		return
 	}
-	var c *config.Config
-	var v *viper.Viper
-
-	c = &config.GlobalConfig
-	v = config.GlobalViper
 
 	var virtualExists bool
 
 	newColor, err := color.NewColor(clr)
 
-	for i, d := range c.Virtuals {
+	for i, d := range config.GlobalConfig.Virtuals {
 		if d.Id == virtualid {
 			virtualExists = true
-			c.Virtuals[i].Active = playState
-			if c.Virtuals[i].IsDevice != "" {
-				for in, de := range c.Devices {
-					if de.Id == c.Virtuals[i].IsDevice {
+			config.GlobalConfig.Virtuals[i].Active = playState
+			if config.GlobalConfig.Virtuals[i].IsDevice != "" {
+				for in, de := range config.GlobalConfig.Devices {
+					if de.Id == config.GlobalConfig.Virtuals[i].IsDevice {
 						var device = &device.UdpDevice{
-							Name:     c.Devices[in].Config.Name,
-							Port:     c.Devices[in].Config.Port,
-							Protocol: device.UdpProtocols[c.Devices[in].Config.UdpPacketType],
-							Config:   c.Devices[in].Config,
+							Name:     config.GlobalConfig.Devices[in].Config.Name,
+							Port:     config.GlobalConfig.Devices[in].Config.Port,
+							Protocol: device.UdpProtocols[config.GlobalConfig.Devices[in].Config.UdpPacketType],
+							Config:   config.GlobalConfig.Devices[in].Config,
 						}
 						data := []color.Color{}
 						for i := 0; i < device.Config.PixelCount; i++ {
@@ -79,8 +72,8 @@ func PlayVirtual(virtualid string, playState bool, clr string) (err error) {
 	}
 
 	if virtualExists {
-		v.Set("virtuals", c.Virtuals)
-		err = v.WriteConfig()
+		config.GlobalViper.Set("virtuals", config.GlobalConfig.Virtuals)
+		err = config.GlobalViper.WriteConfig()
 	}
 	return
 }

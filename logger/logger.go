@@ -11,7 +11,7 @@ import (
 
 var Logger *zap.SugaredLogger
 
-func Init(config config.Config) (logger *zap.SugaredLogger, err error) {
+func Init(config *config.Config) (logger *zap.SugaredLogger, err error) {
 	// First, define our level-handling logic.
 	errorLvl := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= zapcore.ErrorLevel

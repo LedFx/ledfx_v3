@@ -9,15 +9,12 @@ import (
 	"ledfx/integrations/bluetooth/util"
 	log "ledfx/logger"
 	"regexp"
-	"sync"
 	"time"
 )
 
 type Client struct {
-	mu sync.Mutex
-
-	dev     *device.Device1
 	adapter *adapter.Adapter1
+	dev     *device.Device1
 
 	discoverChan     chan *adapter.DeviceDiscovered
 	cancelDiscoverFn func()
@@ -28,19 +25,18 @@ type Client struct {
 // NewClient initializes a new Bluetooth adapter client
 func NewClient() (cl *Client, err error) {
 	cl = &Client{
-		mu:   sync.Mutex{},
 		done: make(chan struct{}),
 	}
 	if cl.adapter, err = adapter.GetDefaultAdapter(); err != nil {
 		return nil, fmt.Errorf("error getting default Bluetooth adapter: %w", err)
 	}
-	log.Logger.Debugf("Default Bluetooth adapter: %s\n", cl.adapter.Properties.Name)
+	log.Logger.Debugf("Default Bluetooth adapter: %s", cl.adapter.Properties.Name)
 
 	if err := cl.adapter.SetPowered(true); err != nil {
 		return nil, fmt.Errorf("error powering on Bluetooth adapter: %w", err)
 	}
 
-	log.Logger.Debugf("Powered on Bluetooth adapter...\n")
+	log.Logger.Debugf("Powered on Bluetooth adapter...")
 
 	return cl, nil
 }
@@ -72,13 +68,13 @@ func (cl *Client) SearchAndConnect(config SearchTargetConfig) (err error) {
 		}
 	}
 
-	log.Logger.Infof("Starting tryCacheConnect...\n")
+	log.Logger.Infof("Starting tryCacheConnect...")
 	if err := cl.tryCacheConnect(matchFunc, config); err != nil {
 		if errors.Is(err, ErrBtDeviceNotFound) {
 			go func() {
-				log.Logger.Infof("Could not find device in cache, starting tryDiscoveryConnect...\n")
+				log.Logger.Infof("Could not find device in cache, starting tryDiscoveryConnect...")
 				if err := cl.tryDiscoveryConnect(matchFunc, config); err != nil {
-					log.Logger.Errorf("error attempting connection through discovery: %v\n", err)
+					log.Logger.Errorf("error attempting connection through discovery: %v", err)
 				}
 			}()
 			return nil
@@ -131,12 +127,12 @@ func (cl *Client) tryDiscoveryConnect(matchFunc func(mac string, name string) (m
 		}
 
 		if cl.dev, err = device.NewDevice1(found.Path); err != nil {
-			log.Logger.Warnf("Error generating new device from dbus object: %v\n", err)
+			log.Logger.Warnf("Error generating new device from dbus object: %v", err)
 			continue
 		}
 
 		if matchFunc(cl.dev.Properties.Address, cl.dev.Properties.Name) {
-			log.Logger.Infof("Found requested device: (addr=%s, name=%s)\n", cl.dev.Properties.Address, cl.dev.Properties.Name)
+			log.Logger.Infof("Found requested device: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
 			break
 		}
 		log.Logger.Debugf("Found non-matching device: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
@@ -152,11 +148,23 @@ func (cl *Client) tryDiscoveryConnect(matchFunc func(mac string, name string) (m
 
 // tryConnectForever is self-explanatory. It attempts to connect to dev until it succeeds.
 func (cl *Client) tryConnectForever(coolDown time.Duration) {
-	log.Logger.Infof("Attempting to connect to %q indefinitely...\n", cl.dev.Properties.Address)
+	log.Logger.Infof("Attempting to connect to %q indefinitely...", cl.dev.Properties.Address)
 	for err := cl.dev.Connect(); err != nil; {
-		log.Logger.Debugf("Error encountered during connection attempt to Bluetooth device: %v (retrying...)\n", err)
+		log.Logger.Debugf("Error encountered during connection attempt to Bluetooth device: %v (retrying...)", err)
 		time.Sleep(coolDown)
 	}
-	log.Logger.Infof("Connection to Bluetooth device with address %q succeeded\n", cl.dev.Properties.Name)
+	log.Logger.Infof("Connection to Bluetooth device with address %q succeeded", cl.dev.Properties.Name)
 	cl.done <- struct{}{}
+}
+
+func (cl *Client) Close() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Logger.Errorf("recovered from panic: %v", r)
+		}
+	}()
+	cl.cancelDiscoverFn()
+	cl.dev.Close()
+	cl.adapter.Close()
+	close(cl.discoverChan)
 }

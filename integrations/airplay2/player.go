@@ -11,12 +11,20 @@ import (
 )
 
 type audioPlayer struct {
+	recvBuf    []byte
+	encodedBuf []byte
+
 	muted *atomic.Value
 	//curSession *rtsp.Session
 
 	closeChan chan struct{}
 
-	output io.Writer
+	// outputs supports 8 writers maximum.
+	// We use a fixed-length array because
+	// indexing an array is slightly faster
+	// than indexing a slice.
+	numOutputs int
+	outputs    [8]io.Writer
 
 	apClient      *Client
 	doEncodedSend bool
@@ -31,24 +39,36 @@ type audioPlayer struct {
 
 func newPlayer() *audioPlayer {
 	p := &audioPlayer{
-		output:    io.MultiWriter(),
-		muted:     &atomic.Value{},
-		volume:    1,
-		closeChan: make(chan struct{}),
+		outputs:    [8]io.Writer{},
+		muted:      &atomic.Value{},
+		volume:     1,
+		closeChan:  make(chan struct{}),
+		recvBuf:    make([]byte, 0),
+		encodedBuf: make([]byte, 0),
 	}
 	p.muted.Store(false)
 
 	return p
 }
 
+// AddWriter adds a writer to p.output, which is wrapped with an io.MultiWriter().
+//
+//
+// DO NOT provide an io.Writer() wrapped with io.MultiWriter()!
+//
+//------------------------------------------------------------
+//
+// If an io.MultiWriter() is provided, the already mediocre time complexity
+// of this operation will go from O(n) to O(n^2). We don't want that.
 func (p *audioPlayer) AddWriter(wr io.Writer) {
-	p.output = io.MultiWriter(p.output, wr)
+	p.outputs[p.numOutputs] = wr
+	p.numOutputs++
 }
 
 func (p *audioPlayer) Play(session *rtsp.Session) {
 	decoder := codec.GetCodec(session)
 	go func(dc *codec.Handler) {
-		for d := range session.DataChan {
+		for p.recvBuf = range session.DataChan {
 			func() {
 				defer func() {
 					if err := recover(); err != nil {
@@ -56,11 +76,13 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 					}
 				}()
 				if p.doEncodedSend {
-					_, _ = p.apClient.Write(d)
+					_, _ = p.apClient.DataConn.Write(p.recvBuf)
 				}
-				buf := dc.Decode(d)
-				codec.NormalizeAudio(buf, p.volume)
-				_, _ = p.output.Write(buf)
+				p.recvBuf = dc.Decode(p.recvBuf)
+				codec.NormalizeAudio(p.recvBuf, p.volume)
+				for i := 0; i < p.numOutputs; i++ {
+					_, _ = p.outputs[i].Write(p.recvBuf)
+				}
 			}()
 		}
 		log.Logger.Warnf("Session '%s' closed", session.Description.SessionName)

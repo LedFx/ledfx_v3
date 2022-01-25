@@ -46,8 +46,8 @@ func TestAirPlayProxy_InputServer(t *testing.T) {
 	})
 
 	client, err := airplay2.NewClient(airplay2.ClientDiscoveryParameters{
-		DeviceName: "OutputServer",
-		Verbose:    true,
+		DeviceNameRegex: "OutputServer",
+		Verbose:         true,
 	})
 	if err != nil {
 		t.Fatalf("Error connecting to AirPlay server: %v\n", err)

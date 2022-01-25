@@ -3,7 +3,7 @@ module ledfx
 go 1.17
 
 require (
-	github.com/carterpeel/bobcaygeon v0.0.0-20220123175453-1d7db29da2af
+	github.com/carterpeel/bobcaygeon v0.0.0-20220125190821-ac7023fa57c2
 	github.com/carterpeel/go.alac v0.0.0-20220120210858-abcf099555b4
 	github.com/getlantern/systray v1.1.0
 	github.com/gordonklaus/portaudio v0.0.0-20200911161147-bb74aa485641
@@ -41,6 +41,7 @@ require (
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect

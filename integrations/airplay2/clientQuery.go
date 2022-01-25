@@ -5,7 +5,7 @@ import (
 	"github.com/grantmd/go-airplay"
 	"net"
 	"os"
-	"strings"
+	"regexp"
 )
 
 func queryDevice(params ClientDiscoveryParameters) (*airplay.AirplayDevice, error) {
@@ -15,11 +15,11 @@ func queryDevice(params ClientDiscoveryParameters) (*airplay.AirplayDevice, erro
 		if ip == nil {
 			return nil, fmt.Errorf("could not parse IP address '%s'", params.DeviceIP)
 		}
-		return queryDeviceByIP(ip, false)
-	case params.DeviceName != "":
-		return queryDeviceByName(params.DeviceName, false)
+		return queryDeviceByIP(ip, params.Verbose)
+	case params.DeviceNameRegex != "":
+		return queryDeviceByName(params.DeviceNameRegex, params.Verbose)
 	default:
-		return nil, fmt.Errorf("either DeviceName or DeviceIP must be populated in the client discovery parameters")
+		return nil, fmt.Errorf("either DeviceNameRegex or DeviceIP must be populated in the client discovery parameters")
 	}
 }
 
@@ -41,6 +41,11 @@ func queryDeviceByIP(ip net.IP, verbose bool) (device *airplay.AirplayDevice, er
 }
 
 func queryDeviceByName(name string, verbose bool) (device *airplay.AirplayDevice, err error) {
+	rxp, err := regexp.Compile(name)
+	if err != nil {
+		return nil, fmt.Errorf("error compiling regular expression: %w", err)
+	}
+
 	ch := make(chan []airplay.AirplayDevice)
 	go airplay.Discover(ch)
 
@@ -53,8 +58,9 @@ func queryDeviceByName(name string, verbose bool) (device *airplay.AirplayDevice
 			if dev.IP == nil || dev.Type != "airplay" {
 				continue
 			}
+
 			// Did we find it?
-			if strings.Contains(strings.ToLower(dev.Name), strings.ToLower(name)) {
+			if rxp.MatchString(dev.Name) {
 				// Yes, we did.
 				return &dev, nil
 			}

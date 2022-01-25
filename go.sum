@@ -153,8 +153,8 @@ github.com/bombsimon/wsl/v3 v3.3.0/go.mod h1:st10JtZYLE4D5sC7b8xV4zTKZwAQjCH/Hy2
 github.com/breml/bidichk v0.1.1/go.mod h1:zbfeitpevDUGI7V91Uzzuwrn4Vls8MoBMrwtt78jmso=
 github.com/breml/bidichk v0.2.1/go.mod h1:zbfeitpevDUGI7V91Uzzuwrn4Vls8MoBMrwtt78jmso=
 github.com/butuzov/ireturn v0.1.1/go.mod h1:Wh6Zl3IMtTpaIKbmwzqi6olnM9ptYQxxVacMsOEFPoc=
-github.com/carterpeel/bobcaygeon v0.0.0-20220123175453-1d7db29da2af h1:jgFpUvrtqzSbesBgp2A2rsa3wH+CkglMXikm8exhk4k=
-github.com/carterpeel/bobcaygeon v0.0.0-20220123175453-1d7db29da2af/go.mod h1:dTYUNRrv+TMPDP09kAeHucxnUMvw57cLO/cF0npgLdw=
+github.com/carterpeel/bobcaygeon v0.0.0-20220125190821-ac7023fa57c2 h1:H3c9r3q5lA9Fxjd03kJ/xo6imNfEbYKFl2UXrolx5ZE=
+github.com/carterpeel/bobcaygeon v0.0.0-20220125190821-ac7023fa57c2/go.mod h1:dTYUNRrv+TMPDP09kAeHucxnUMvw57cLO/cF0npgLdw=
 github.com/carterpeel/go.alac v0.0.0-20220120210858-abcf099555b4 h1:1TmVkmqllc3IVtr9BVzm9zoaew6pP/sJeJPT8ycFV7c=
 github.com/carterpeel/go.alac v0.0.0-20220120210858-abcf099555b4/go.mod h1:5q4STjBbb21l65y2ecaB+ZP3uFY95o+D1BScp50zyRA=
 github.com/cavaliercoder/go-cpio v0.0.0-20180626203310-925f9528c45e/go.mod h1:oDpT4efm8tSYHXV5tHSdRvBet/b/QzxZ+XyyPehvm3A=

@@ -6,6 +6,7 @@ import (
 	"github.com/carterpeel/bobcaygeon/rtsp"
 	"github.com/grantmd/go-airplay"
 	log "ledfx/logger"
+	"net"
 	"strconv"
 	"time"
 )
@@ -13,14 +14,15 @@ import (
 type Client struct {
 	dev       *airplay.AirplayDevice
 	session   *rtsp.Session
+	DataConn  net.Conn
 	paramConn *rtsp.Client
 }
 
 type ClientDiscoveryParameters struct {
-	// DeviceName ignores case and will connect to any device that contains this string.
-	DeviceName string
+	// DeviceNameRegex ignores case and will connect to any device that contains this string.
+	DeviceNameRegex string
 
-	// DeviceIP takes higher priority than DeviceName if it is populated.
+	// DeviceIP takes higher priority than DeviceNameRegex if it is populated.
 	DeviceIP string
 
 	// Verbose, when true, enables the printing of all discovered devices to stderr.
@@ -53,6 +55,7 @@ func NewClient(searchParameters ClientDiscoveryParameters) (cl *Client, err erro
 		dev:       device,
 		session:   session,
 		paramConn: paramConn,
+		DataConn:  session.DataConn(),
 	}
 
 	return cl, nil
@@ -100,6 +103,5 @@ func (cl *Client) SetParam(par interface{}) {
 }
 
 func (cl *Client) Write(p []byte) (n int, err error) {
-	cl.session.DataChan <- p
-	return len(p), nil
+	return cl.DataConn.Write(p)
 }

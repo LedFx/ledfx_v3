@@ -15,9 +15,9 @@ func TestServer(t *testing.T) {
 	}
 
 	server := NewServer(Config{
-		AdvertisementName: "AirPlay2-TestServer",
+		AdvertisementName: "LedFX-AirPlay-Output",
 		VerboseLogging:    false,
-		Port:              8093,
+		Port:              7000,
 	})
 
 	otoCtx, err := oto.NewContext(44100, 2, 2, 12000)

@@ -1,12 +1,17 @@
 package audiobridge
 
 import (
+	"github.com/gordonklaus/portaudio"
 	"github.com/hajimehoshi/oto"
+	"io"
 	"ledfx/integrations/airplay2"
+	"ledfx/integrations/bluetooth"
 )
 
 // Bridge is a type for configuring the bridging of two audio devices.
 type Bridge struct {
+	ledFxWriter io.Writer
+
 	SourceEndpoint *EndpointConfig `json:"source_endpoint"`
 	DestEndpoint   *EndpointConfig `json:"dest_endpoint"`
 
@@ -18,6 +23,11 @@ type Bridge struct {
 
 	localAudioCtx  *oto.Context
 	localAudioDest *oto.Player
+
+	localAudioSource *portaudio.Stream
+
+	bluetoothClient *bluetooth.Client
+	bluetoothServer *bluetooth.Server
 }
 
 // DeviceType constants
@@ -26,7 +36,6 @@ type DeviceType string
 const (
 	DeviceTypeAirPlay   DeviceType = "AIRPLAY"
 	DeviceTypeBluetooth DeviceType = "BLUETOOTH"
-	DeviceTypeLocal     DeviceType = "LOCAL"
 )
 
 type EndpointConfig struct {
@@ -37,13 +46,20 @@ type EndpointConfig struct {
 	// It takes priority over Name, if used in Bridge.DestEndpoint.
 	IP string `json:"ip"`
 
-	// Name has two functions:
+	// Name is applicable to both AirPlay and Bluetooth source/dest devices.
 	//
-	// 1). MUST be populated in Bridge.SourceEndpoint (used as the name of the AirPlay server advertisement)
+	// For destination devices, (i.e. devices that require discovery)
+	// it is interpreted as a regex string.
 	//
-	// 2). CAN be populated in Bridge.DestEndpoint, but will be ignored if IP is populated.
+	// For source devices, (i.e. servers that are spun up by LedFX)
+	// it is interpreted as a literal and no string-manipulation
+	// or pattern matching will occur.
 	Name string `json:"name"`
 
 	// Mac is only applicable to Bluetooth destination devices.
 	Mac string `json:"mac"`
+
+	// Verbose, if true, prints all sorts of debug information
+	// that may be valuable/insightful.
+	Verbose bool `json:"verbose"`
 }

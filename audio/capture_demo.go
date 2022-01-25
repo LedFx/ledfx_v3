@@ -17,25 +17,24 @@ var onset *aubio.Onset
 
 const fft_size uint = 1024
 
-func CaptureDemo(c config.AudioConfig) {
+func CaptureDemo() {
 
 	// REMOVE THIS ONCE WE HAVE CONFIG VALIDATION
-	c.FrameRate = 60
+	config.GlobalConfig.Audio.FrameRate = 60
 
-	err := portaudio.Initialize()
-	if err != nil {
+	if err := portaudio.Initialize(); err != nil {
 		logger.Logger.Error(err)
 		return
 	}
 	defer portaudio.Terminate()
 	// match our config device to a real portaudio device
-	di, err := GetPaDeviceInfo(c.Device)
+	di, err := GetPaDeviceInfo(config.GlobalConfig.Audio.Device)
 	if err != nil {
 		logger.Logger.Errorf("Audio device does not exist")
 		return
 	}
 	// frames per buffer
-	fpb := int(di.DefaultSampleRate) / c.FrameRate
+	fpb := int(di.DefaultSampleRate) / config.GlobalConfig.Audio.FrameRate
 
 	// phase vocoder
 	pvoc, err = aubio.NewPhaseVoc(fft_size, uint(fpb))

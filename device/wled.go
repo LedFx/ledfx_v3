@@ -100,7 +100,7 @@ func DetectWled(ip net.IP, id string) bool {
 		},
 		Type: "wled",
 		Id:   id,
-	}, "goconfig")
+	})
 	if err != nil {
 		logger.Logger.Warn(err)
 	}
@@ -131,7 +131,7 @@ func DetectWled(ip net.IP, id string) bool {
 		Segments: [][]interface{}{{id, 0, wledInfo1.Leds.Count - 1, false}},
 		IsDevice: id,
 		Id:       id,
-	}, "goconfig")
+	})
 	if err != nil {
 		logger.Logger.Warn(err)
 	}

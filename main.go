@@ -112,7 +112,7 @@ func main() {
 	// REMOVEME: END
 
 	audio.LogAudioDevices()
-	go audio.CaptureDemo(config.GlobalConfig.Audio)
+	go audio.CaptureDemo()
 
 	go func() {
 		utils.SetupRoutes()

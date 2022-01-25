@@ -114,8 +114,9 @@ type Config struct {
 }
 
 var configPath string
-var GlobalConfig Config
-var OldConfig Config
+var GlobalConfig *Config
+
+//var OldConfig Config
 var GlobalViper *viper.Viper
 var OldViper *viper.Viper
 
@@ -214,8 +215,10 @@ func loadConfig(configName string) (err error) {
 
 	if configName == "goconfig" {
 		err = v.Unmarshal(&GlobalConfig)
-	} else if configName == "config" {
-		err = v.Unmarshal(&OldConfig)
 	}
+	// TODO
+	// } else if configName == "config" {
+	// 	err = v.Unmarshal(OldConfig)
+	// }
 	return
 }

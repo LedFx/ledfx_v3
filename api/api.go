@@ -33,10 +33,6 @@ type Resp struct {
 var LastColor string
 
 func HandleApi() {
-	http.HandleFunc("/api/oldconfig", func(w http.ResponseWriter, r *http.Request) {
-		SetHeader(w)
-		json.NewEncoder(w).Encode(config.OldConfig)
-	})
 	http.HandleFunc("/api/audio", func(w http.ResponseWriter, r *http.Request) {
 		SetHeader(w)
 		audioDevices, err := audio.GetAudioDevices()

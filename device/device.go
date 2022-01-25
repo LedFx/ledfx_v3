@@ -15,20 +15,15 @@ type Device interface {
 	Close() error
 }
 
-func AddDeviceToConfig(device config.Device, configName string) (err error) {
+func AddDeviceToConfig(device config.Device) (err error) {
 	if device.Id == "" {
 		err = errors.New("Device id is empty. Please provide Id to add device to config")
 		return
 	}
 	var c *config.Config
 	var v *viper.Viper
-	if configName == "goconfig" {
-		v = config.GlobalViper
-		c = &config.GlobalConfig
-	} else if configName == "config" {
-		v = config.OldViper
-		c = &config.OldConfig
-	}
+	v = config.GlobalViper
+	c = config.GlobalConfig
 
 	var deviceExists bool
 	for _, d := range c.Devices {
@@ -48,20 +43,15 @@ func AddDeviceToConfig(device config.Device, configName string) (err error) {
 	return
 }
 
-func AddDeviceAsVirtualToConfig(virtual config.Virtual, configName string) (exists bool, err error) {
+func AddDeviceAsVirtualToConfig(virtual config.Virtual) (exists bool, err error) {
 	if virtual.Id == "" {
 		err = errors.New("Virtual id is empty. Please provide Id to add virtual to config")
 		return
 	}
 	var c *config.Config
 	var v *viper.Viper
-	if configName == "goconfig" {
-		v = config.GlobalViper
-		c = &config.GlobalConfig
-	} else if configName == "config" {
-		v = config.OldViper
-		c = &config.OldConfig
-	}
+	v = config.GlobalViper
+	c = config.GlobalConfig
 
 	var virtualExists bool
 	for _, d := range c.Virtuals {

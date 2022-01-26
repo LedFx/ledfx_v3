@@ -20,16 +20,6 @@ require (
 )
 
 require (
-	github.com/gordonklaus/portaudio v0.0.0-20200911161147-bb74aa485641
-	github.com/simonassank/aubio-go v0.0.0-20210318191226-729d3d668592
-)
-
-require (
-	github.com/maghul/alac v0.0.0-20161106215514-129591bceef4
-	github.com/sirupsen/logrus v1.8.1
-)
-
-require (
 	github.com/alexbrainman/sspi v0.0.0-20210105120005-909beea2cc74 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -42,7 +32,6 @@ require (
 	github.com/getlantern/ops v0.0.0-20190325191751-d70cb0d6f85f // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/godbus/dbus/v5 v5.0.6 // indirect
-	github.com/hajimehoshi/oto v1.0.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/maghul/alac v0.0.0-20161106215514-129591bceef4 // indirect
 	github.com/maghul/go.alac v0.0.0-20161106215514-129591bceef4 // indirect
@@ -71,22 +60,8 @@ require (
 	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.zx2c4.com/wireguard/windows v0.4.10 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	golang.org/x/mod v0.5.1 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	inet.af/netaddr v0.0.0-20211027220019-c74959edd3b6 // indirect
 	tailscale.com v1.20.2 // indirect
-)
-
-require (
-	github.com/carterpeel/bobcaygeon v0.0.0-20220113222227-3916ab601458
-	github.com/miekg/dns v1.1.45 // indirect
-	github.com/muka/go-bluetooth v0.0.0-20211227073548-985739196620
-	github.com/nathan-fiscaletti/consolesize-go v0.0.0-20210105204122-a87d9f614b9d
-	go.uber.org/atomic v1.9.0 // indirect
-	go.uber.org/multierr v1.7.0 // indirect
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
-	golang.org/x/tools v0.1.8 // indirect
 )

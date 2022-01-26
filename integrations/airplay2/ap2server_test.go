@@ -1,14 +1,15 @@
 package airplay2
 
 import (
-	"github.com/hajimehoshi/oto"
 	"ledfx/config"
 	log "ledfx/logger"
 	"testing"
+
+	"github.com/hajimehoshi/oto"
 )
 
 func TestServer(t *testing.T) {
-	if _, err := log.Init(config.Config{
+	if _, err := log.Init(&config.Config{
 		Verbose: true,
 	}); err != nil {
 		t.Fatalf("Error initializing logger: %v\n", err)
@@ -38,7 +39,7 @@ func TestServer(t *testing.T) {
 
 // TestServerSlowedAudio just sounds cool. Try it.
 func TestServerSlowedAudio(t *testing.T) {
-	if _, err := log.Init(config.Config{
+	if _, err := log.Init(&config.Config{
 		Verbose: true,
 	}); err != nil {
 		t.Fatalf("Error initializing logger: %v\n", err)

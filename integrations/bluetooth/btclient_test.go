@@ -8,7 +8,7 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
-	if _, err := log.Init(config.Config{
+	if _, err := log.Init(&config.Config{
 		Verbose: true,
 	}); err != nil {
 		t.Fatalf("Error initializing logger: %v\n", err)

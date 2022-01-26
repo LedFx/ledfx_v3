@@ -3,11 +3,12 @@ package bluetooth
 import (
 	"ledfx/config"
 	"testing"
+
+	log "ledfx/logger"
 )
-import log "ledfx/logger"
 
 func init() {
-	log.Init(config.Config{Verbose: true})
+	log.Init(&config.Config{Verbose: true})
 }
 
 func TestNewServer(t *testing.T) {

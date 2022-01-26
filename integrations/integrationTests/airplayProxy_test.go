@@ -1,15 +1,16 @@
 package integrationTests
 
 import (
-	"github.com/hajimehoshi/oto"
 	"ledfx/config"
 	"ledfx/integrations/airplay2"
 	log "ledfx/logger"
 	"testing"
+
+	"github.com/hajimehoshi/oto"
 )
 
 func init() {
-	_, _ = log.Init(config.Config{
+	_, _ = log.Init(&config.Config{
 		Verbose: true,
 	})
 }

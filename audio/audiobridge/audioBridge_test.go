@@ -101,30 +101,25 @@ func TestAudioBridge_Ap2Ap(t *testing.T) {
 }
 
 func TestAudioBridge_Ap2Bt(t *testing.T) {
-	// srcConf is the config for the endpoint from which
-	// audio will be ingested, processed, converted, and
-	// redistributed.
 	srcConf := EndpointConfig{
-		Type:    DeviceTypeAirPlay,  // Spin up an AirPlay server
-		Name:    "LedFX-Input-Test", // It will be advertised as "LedFX-Input-Test"
-		Verbose: true,               // Enable verbosity because this is a test package.
+		Type:    DeviceTypeAirPlay,
+		Name:    "LedFX-Input-Test",
+		Verbose: true,
 	}
 
 	dstConf := EndpointConfig{
-		Type: DeviceTypeBluetooth, // Connect to an airplay server
+		Type: DeviceTypeBluetooth,
 
-		Name: "(?i)k850$", // Regular expressions are required here.
+		Name: "(?i)k850$",
 
-		Verbose: true, // Enable verbosity because this is a test package.
+		Verbose: true,
 	}
 
-	// Initialize the bridge. This will start everything, too.
 	bridge, err := NewBridge(srcConf, dstConf, io.Discard)
 	if err != nil {
 		t.Fatalf("error creating new audio bridge: %v\n", err)
 	}
 
-	// Wait until the bridge loop stops. This can be called with Stop()
 	bridge.Wait()
 
 }

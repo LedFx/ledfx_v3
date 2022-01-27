@@ -13,10 +13,6 @@ import (
 	"time"
 )
 
-var (
-	emptyConf = EndpointConfig{}
-)
-
 // NewBridge initializes a new bridge between a source and destination audio device.
 func NewBridge(srcConfig EndpointConfig, dstConfig EndpointConfig, ledFxWriter io.Writer) (br *Bridge, err error) {
 	br = &Bridge{

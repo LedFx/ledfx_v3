@@ -3,8 +3,8 @@ package codec
 import (
 	"strings"
 
-	"github.com/carterpeel/bobcaygeon/rtsp"
 	alac "github.com/carterpeel/go.alac"
+	"ledfx/handlers/rtsp"
 )
 
 // Handler is a function type for receiving raw bytes and decoding them using some codec

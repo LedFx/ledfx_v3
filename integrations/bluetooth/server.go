@@ -82,10 +82,11 @@ func NewServer(advertName string) (s *Server, err error) {
 
 func (s *Server) Serve() (err error) {
 	if s.app, err = service.NewApp(service.AppOptions{
-		AdapterID:  s.adapterId,
-		AgentCaps:  agent.CapNoInputNoOutput,
-		UUIDSuffix: "-0000-1000-8000-00805f9b34fb",
-		UUID:       "0000",
+		AdapterID:         s.adapterId,
+		AgentCaps:         agent.CapNoInputNoOutput,
+		AgentSetAsDefault: true,
+		UUIDSuffix:        "-0000-1000-8000-00805f9b34fb",
+		UUID:              "0000",
 	}); err != nil {
 		return fmt.Errorf("error initializing new bluetooth app: %w", err)
 	}
@@ -100,7 +101,6 @@ func (s *Server) Serve() (err error) {
 	if s.audioService, err = s.app.NewService("110b"); err != nil {
 		return fmt.Errorf("error creating new app service: %w", err)
 	}
-
 	if s.audioServiceChar, err = s.audioService.NewChar("3344"); err != nil {
 		return fmt.Errorf("error initializing new service characteristic: %w", err)
 	}
@@ -136,7 +136,7 @@ func (s *Server) Serve() (err error) {
 		return fmt.Errorf("error advertising Bluetooth app: %w", err)
 	}
 
-	log.Logger.Infof("Exposed service %s", s.audioService.Properties.UUID)
+	log.Logger.WithField("category", "BLE Server").Infof("Exposed service %s", s.audioService.Properties.UUID)
 
 	return nil
 }

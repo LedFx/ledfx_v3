@@ -2,9 +2,9 @@ package airplay2
 
 import (
 	"fmt"
-	"github.com/carterpeel/bobcaygeon/raop"
-	"github.com/carterpeel/bobcaygeon/rtsp"
 	"github.com/grantmd/go-airplay"
+	"ledfx/handlers/raop"
+	"ledfx/handlers/rtsp"
 	log "ledfx/logger"
 	"net"
 	"strconv"
@@ -35,7 +35,7 @@ func NewClient(searchParameters ClientDiscoveryParameters) (cl *Client, err erro
 		return nil, fmt.Errorf("error querying for device by name: %w", err)
 	}
 
-	log.Logger.Infof("Establishing session with %s...", device.Name)
+	log.Logger.WithField("category", "AirPlay Client").Infof("Establishing session with %s...", device.Name)
 	session, err := raop.EstablishSession(device.IP.String(), int(device.Port))
 	if err != nil {
 		return nil, fmt.Errorf("error establishing RTSP session: %w", err)
@@ -47,7 +47,7 @@ func NewClient(searchParameters ClientDiscoveryParameters) (cl *Client, err erro
 
 	paramConn, err := rtsp.NewClient(device.IP.String(), int(device.Port))
 	if err != nil {
-		log.Logger.Errorf("Error establishing RTSP session: %v\n", err)
+		log.Logger.WithField("category", "AirPlay Client").Errorf("Error establishing RTSP session: %v\n", err)
 		return
 	}
 
@@ -69,36 +69,36 @@ func (cl *Client) SetParam(par interface{}) {
 
 	switch val := par.(type) {
 	case raop.ParamVolume:
-		log.Logger.Infof("Propagating volume '%f' to destination server\n", val)
+		log.Logger.WithField("category", "AirPlay Client").Infof("Propagating volume '%f' to destination server\n", val)
 
 		req.Headers["Content-Type"] = "text/parameters"
 		req.Body = []byte(fmt.Sprintf("volume: %f", val))
 	case raop.ParamMuted:
-		log.Logger.Infof("Propagating muted value '%v' to destination server\n", val)
+		log.Logger.WithField("category", "AirPlay Client").Infof("Propagating muted value '%v' to destination server\n", val)
 
 		req.Headers["Content-Type"] = "text/parameters"
 		req.Body = []byte("volume: -144")
 	case raop.ParamTrackInfo:
-		log.Logger.Infof("Propagating track info to destination server\n")
+		log.Logger.WithField("category", "AirPlay Client").Infof("Propagating track info to destination server\n")
 
 		req.Headers["Content-Type"] = "application/x-dmap-tagged"
 		if req.Body, err = raop.EncodeDaap(map[string]interface{}{"daap.songalbum": val.Album, "daap.itemname": val.Title, "daap.songartist": val.Artist}); err != nil {
-			log.Logger.Errorf("Error encoding track information as DAAP: %v\n", err)
+			log.Logger.WithField("category", "AirPlay Client").Errorf("Error encoding track information as DAAP: %v\n", err)
 			return
 		}
 	case raop.ParamAlbumArt:
-		log.Logger.Infof("Propagating album art to destination server\n")
+		log.Logger.WithField("category", "AirPlay Client").Infof("Propagating album art to destination server\n")
 		req.Headers["Content-Type"] = "image/jpeg"
 		req.Body = val
 	}
 	resp, err := cl.paramConn.Send(req)
 	if err != nil {
-		log.Logger.Errorf("Error sending volume request: %v\n", err)
+		log.Logger.WithField("category", "AirPlay Client").Errorf("Error sending volume request: %v\n", err)
 		return
 	}
 	if resp.Status != rtsp.Ok {
-		log.Logger.Errorf("Unexpected response code from destination server: %s\n", resp.Status.String())
-		log.Logger.Errorf("Response: \n----\n[%s]\n----\n", resp.String())
+		log.Logger.WithField("category", "AirPlay Client").Errorf("Unexpected response code from destination server: %s\n", resp.Status.String())
+		log.Logger.WithField("category", "AirPlay Client").Errorf("Response: \n----\n[%s]\n----\n", resp.String())
 	}
 }
 

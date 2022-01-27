@@ -2,7 +2,7 @@ package integrationTests
 
 import (
 	"io"
-	"ledfx/integrations/audiobridge"
+	"ledfx/audio/audiobridge"
 	"testing"
 )
 

@@ -1,19 +1,11 @@
 package integrationTests
 
 import (
-	"ledfx/config"
 	"ledfx/integrations/airplay2"
-	log "ledfx/logger"
 	"testing"
 
 	"github.com/hajimehoshi/oto"
 )
-
-func init() {
-	_, _ = log.Init(&config.Config{
-		Verbose: true,
-	})
-}
 
 // Final audio destination (cannot be run on same machine as InputBridge)
 func TestAirPlayProxy_OutputServer(t *testing.T) {

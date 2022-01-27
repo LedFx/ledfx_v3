@@ -1,19 +1,11 @@
 package bluetooth
 
 import (
-	"ledfx/config"
-	log "ledfx/logger"
 	"testing"
 	"time"
 )
 
 func TestNewClient(t *testing.T) {
-	if _, err := log.Init(&config.Config{
-		Verbose: true,
-	}); err != nil {
-		t.Fatalf("Error initializing logger: %v\n", err)
-	}
-
 	// Initialize a Bluetooth client adapter
 	client, err := NewClient()
 	if err != nil {

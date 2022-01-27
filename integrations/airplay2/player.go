@@ -1,10 +1,10 @@
 package airplay2
 
 import (
-	"github.com/carterpeel/bobcaygeon/player"
-	"github.com/carterpeel/bobcaygeon/raop"
-	"github.com/carterpeel/bobcaygeon/rtsp"
 	"io"
+	"ledfx/handlers/player"
+	"ledfx/handlers/raop"
+	"ledfx/handlers/rtsp"
 	"ledfx/integrations/airplay2/codec"
 	log "ledfx/logger"
 	"sync/atomic"
@@ -14,7 +14,9 @@ type audioPlayer struct {
 	recvBuf    []byte
 	encodedBuf []byte
 
-	muted      *atomic.Value
+	muted *atomic.Value
+
+	quit       chan struct{}
 	curSession *rtsp.Session
 
 	// outputs supports 8 writers maximum.
@@ -42,6 +44,7 @@ func newPlayer() *audioPlayer {
 		volume:     1,
 		recvBuf:    make([]byte, 0),
 		encodedBuf: make([]byte, 0),
+		quit:       make(chan struct{}),
 	}
 	p.muted.Store(false)
 
@@ -76,7 +79,7 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 					}
 					defer func() {
 						if err := recover(); err != nil {
-							log.Logger.Errorf("Recovered from panic during playStream: %v\n", err)
+							log.Logger.WithField("category", "AirPlay Player").Warnf("Recovered from panic during playStream: %v\n", err)
 						}
 					}()
 					if p.doEncodedSend {
@@ -91,10 +94,14 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 					}
 					return true
 				}(); !ret {
-					log.Logger.Warnf("Session '%s' closed", session.Description.SessionName)
-					_ = session.DataConn().Close()
-					return
+					go func() {
+						p.quit <- struct{}{}
+					}()
 				}
+			case <-p.quit:
+				_ = session.DataConn().Close()
+				log.Logger.WithField("category", "AirPlay Player").Warnf("Session with peer '%s' closed", session.Description.ConnectData.ConnectionAddress)
+				return
 			}
 		}
 	}(decoder)
@@ -168,6 +175,7 @@ func prepareVolume(vol float64) float64 {
 
 func (p *audioPlayer) Close() {
 	if p.curSession != nil {
+		p.quit <- struct{}{}
 		close(p.curSession.DataChan)
 	}
 }

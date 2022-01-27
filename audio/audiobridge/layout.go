@@ -15,8 +15,7 @@ type Bridge struct {
 	SourceEndpoint *EndpointConfig `json:"source_endpoint"`
 	DestEndpoint   *EndpointConfig `json:"dest_endpoint"`
 
-	switchChan chan struct{}
-	done       chan bool
+	done chan bool
 
 	airplayServer *airplay2.Server
 	airplayClient *airplay2.Client
@@ -24,7 +23,8 @@ type Bridge struct {
 	localAudioCtx  *oto.Context
 	localAudioDest *oto.Player
 
-	localAudioSource *portaudio.Stream
+	localAudioSourceDone chan struct{}
+	localAudioSource     *portaudio.Stream
 
 	bluetoothClient *bluetooth.Client
 	bluetoothServer *bluetooth.Server

@@ -14,10 +14,8 @@ type audioPlayer struct {
 	recvBuf    []byte
 	encodedBuf []byte
 
-	muted *atomic.Value
-	//curSession *rtsp.Session
-
-	closeChan chan struct{}
+	muted      *atomic.Value
+	curSession *rtsp.Session
 
 	// outputs supports 8 writers maximum.
 	// We use a fixed-length array because
@@ -42,7 +40,6 @@ func newPlayer() *audioPlayer {
 		outputs:    [8]io.Writer{},
 		muted:      &atomic.Value{},
 		volume:     1,
-		closeChan:  make(chan struct{}),
 		recvBuf:    make([]byte, 0),
 		encodedBuf: make([]byte, 0),
 	}
@@ -66,26 +63,40 @@ func (p *audioPlayer) AddWriter(wr io.Writer) {
 }
 
 func (p *audioPlayer) Play(session *rtsp.Session) {
+	p.curSession = session
 	decoder := codec.GetCodec(session)
 	go func(dc *codec.Handler) {
-		for p.recvBuf = range session.DataChan {
-			func() {
-				defer func() {
-					if err := recover(); err != nil {
-						log.Logger.Errorf("Recovered from panic during playStream: %v\n", err)
+		var ok bool
+		for {
+			select {
+			case p.recvBuf, ok = <-session.DataChan:
+				if ret := func() bool {
+					if !ok {
+						return false
 					}
-				}()
-				if p.doEncodedSend {
-					_, _ = p.apClient.DataConn.Write(p.recvBuf)
+					defer func() {
+						if err := recover(); err != nil {
+							log.Logger.Errorf("Recovered from panic during playStream: %v\n", err)
+						}
+					}()
+					if p.doEncodedSend {
+						_, _ = p.apClient.DataConn.Write(p.recvBuf)
+					}
+					if p.numOutputs < 0 {
+						p.recvBuf = dc.Decode(p.recvBuf)
+						codec.NormalizeAudio(p.recvBuf, p.volume)
+						for i := 0; i < p.numOutputs; i++ {
+							_, _ = p.outputs[i].Write(p.recvBuf)
+						}
+					}
+					return true
+				}(); !ret {
+					log.Logger.Warnf("Session '%s' closed", session.Description.SessionName)
+					_ = session.DataConn().Close()
+					return
 				}
-				p.recvBuf = dc.Decode(p.recvBuf)
-				codec.NormalizeAudio(p.recvBuf, p.volume)
-				for i := 0; i < p.numOutputs; i++ {
-					_, _ = p.outputs[i].Write(p.recvBuf)
-				}
-			}()
+			}
 		}
-		log.Logger.Warnf("Session '%s' closed", session.Description.SessionName)
 	}(decoder)
 }
 
@@ -152,5 +163,11 @@ func prepareVolume(vol float64) float64 {
 		return 0
 	default:
 		return (vol * 30) - 30
+	}
+}
+
+func (p *audioPlayer) Close() {
+	if p.curSession != nil {
+		close(p.curSession.DataChan)
 	}
 }

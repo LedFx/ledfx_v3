@@ -19,7 +19,7 @@ func init() {
 	Logger.SetOutput(os.Stderr)
 	Logger.SetFormatter(&nested.Formatter{
 		FieldsOrder:     []string{"component", "category"},
-		TimestampFormat: time.Stamp,
+		TimestampFormat: time.StampMilli,
 		HideKeys:        true,
 		ShowFullLevel:   true,
 		TrimMessages:    true,

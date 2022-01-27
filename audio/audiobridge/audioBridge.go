@@ -13,14 +13,18 @@ import (
 	"time"
 )
 
+var (
+	emptyConf = EndpointConfig{}
+)
+
 // NewBridge initializes a new bridge between a source and destination audio device.
 func NewBridge(srcConfig EndpointConfig, dstConfig EndpointConfig, ledFxWriter io.Writer) (br *Bridge, err error) {
 	br = &Bridge{
-		SourceEndpoint: &srcConfig,
-		DestEndpoint:   &dstConfig,
-		switchChan:     make(chan struct{}),
-		done:           make(chan bool),
-		ledFxWriter:    ledFxWriter,
+		SourceEndpoint:       &srcConfig,
+		DestEndpoint:         &dstConfig,
+		done:                 make(chan bool),
+		ledFxWriter:          ledFxWriter,
+		localAudioSourceDone: make(chan struct{}),
 	}
 
 	if err := br.initDevices(); err != nil {
@@ -34,7 +38,7 @@ func (br *Bridge) initDevices() error {
 	srcType := br.SourceEndpoint.Type
 
 	if srcType == DeviceTypeBluetooth && dstType == DeviceTypeAirPlay {
-		return fmt.Errorf("invalid configuration: cannot bridge audio from Bluetooth to AirPlay")
+		return ErrCannotBridgeBT2AP
 	}
 
 	switch dstType {
@@ -171,10 +175,11 @@ func (br *Bridge) initLocalSource(writeTo io.Writer) (err error) {
 	go func() {
 		defer portaudio.Terminate()
 		if err := br.localAudioSource.Start(); err != nil {
-			log.Logger.Errorf("error starting local PortAudio stream as SOURCE: %w", err)
+			log.Logger.Errorf("error starting local PortAudio stream as SOURCE: %v", err)
 			return
 		}
-		defer br.localAudioDest.Close()
+		defer br.localAudioSource.Close()
+		<-br.localAudioSourceDone
 	}()
 	return nil
 }
@@ -213,6 +218,62 @@ func (br *Bridge) Wait() {
 	<-br.done
 }
 
+func (br *Bridge) stop(notifyDone bool) {
+	if notifyDone {
+		defer func() {
+			go func() {
+				br.done <- true
+			}()
+		}()
+	}
+
+	switch br.SourceEndpoint.Type {
+	case DeviceTypeAirPlay:
+		br.airplayServer.Stop()
+		log.Logger.Infof("Stopped AirPlay server")
+	case DeviceTypeBluetooth:
+		br.bluetoothServer.CloseApp()
+		log.Logger.Infof("Stopped Bluetooth server")
+	}
+
+	switch br.DestEndpoint.Type {
+	case DeviceTypeAirPlay:
+		br.airplayClient.Close()
+		log.Logger.Infof("Stopped AirPlay client")
+	case DeviceTypeBluetooth:
+		// Close the player instead of the OTO context.
+		br.bluetoothClient.Close()
+		log.Logger.Infof("Stopped Bluetooth client")
+		br.localAudioDest.Close()
+		log.Logger.Infof("Stopped OTO destination")
+	}
+
+	if br.SourceEndpoint.Type == DeviceTypeBluetooth && br.DestEndpoint.Type == DeviceTypeBluetooth {
+		br.localAudioSourceDone <- struct{}{}
+		log.Logger.Infof("Stopped local audio source")
+	}
+
+}
+
+// Stop stops the bridge. Any further references to 'br *Bridge'
+// may cause a runtime panic.
 func (br *Bridge) Stop() {
-	br.done <- true
+	if br != nil {
+		br.stop(true)
+	}
+}
+
+// Reset resets the bridge and all active services with the newly
+// provided configurations.
+func (br *Bridge) Reset(newSourceConf, newDestConf EndpointConfig) error {
+	if newSourceConf.Type == DeviceTypeBluetooth && newDestConf.Type == DeviceTypeAirPlay {
+		return ErrCannotBridgeBT2AP
+	}
+	br.stop(false)
+	br.DestEndpoint = &newDestConf
+	br.SourceEndpoint = &newSourceConf
+	if err := br.initDevices(); err != nil {
+		return fmt.Errorf("error re-initializing devices: %w", err)
+	}
+	return nil
 }

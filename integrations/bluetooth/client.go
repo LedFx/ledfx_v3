@@ -19,7 +19,8 @@ type Client struct {
 	discoverChan     chan *adapter.DeviceDiscovered
 	cancelDiscoverFn func()
 
-	done chan struct{}
+	done        chan struct{}
+	discovering bool
 }
 
 // NewClient initializes a new Bluetooth adapter client
@@ -30,13 +31,13 @@ func NewClient() (cl *Client, err error) {
 	if cl.adapter, err = adapter.GetDefaultAdapter(); err != nil {
 		return nil, fmt.Errorf("error getting default Bluetooth adapter: %w", err)
 	}
-	log.Logger.Debugf("Default Bluetooth adapter: %s", cl.adapter.Properties.Name)
+	log.Logger.WithField("category", "BLE Client").Debugf("Default Bluetooth adapter: %s", cl.adapter.Properties.Name)
 
 	if err := cl.adapter.SetPowered(true); err != nil {
 		return nil, fmt.Errorf("error powering on Bluetooth adapter: %w", err)
 	}
 
-	log.Logger.Debugf("Powered on Bluetooth adapter...")
+	log.Logger.WithField("category", "BLE Client").Debugf("Powered on Bluetooth adapter...")
 
 	return cl, nil
 }
@@ -68,13 +69,13 @@ func (cl *Client) SearchAndConnect(config SearchTargetConfig) (err error) {
 		}
 	}
 
-	log.Logger.Infof("Starting tryCacheConnect...")
+	log.Logger.WithField("category", "BLE Client").Infof("Starting tryCacheConnect...")
 	if err := cl.tryCacheConnect(matchFunc, config); err != nil {
 		if errors.Is(err, ErrBtDeviceNotFound) {
 			go func() {
-				log.Logger.Infof("Could not find device in cache, starting tryDiscoveryConnect...")
+				log.Logger.WithField("category", "BLE Client").Infof("Could not find device in cache, starting tryDiscoveryConnect...")
 				if err := cl.tryDiscoveryConnect(matchFunc, config); err != nil {
-					log.Logger.Errorf("error attempting connection through discovery: %v", err)
+					log.Logger.WithField("category", "BLE Client").Errorf("error attempting connection through discovery: %v", err)
 				}
 			}()
 			return nil
@@ -99,10 +100,10 @@ func (cl *Client) tryCacheConnect(matchFunc func(mac string, name string) (match
 
 	for _, cl.dev = range devices {
 		if matchFunc(cl.dev.Properties.Address, cl.dev.Properties.Name) {
-			log.Logger.Infof("Found requested device in cache: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
+			log.Logger.WithField("category", "BLE Client").Infof("Found requested device in cache: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
 			break
 		}
-		log.Logger.Debugf("Found non-matching device: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
+		log.Logger.WithField("category", "BLE Client").Debugf("Found non-matching device: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
 		cl.dev = nil
 	}
 
@@ -118,7 +119,11 @@ func (cl *Client) tryDiscoveryConnect(matchFunc func(mac string, name string) (m
 	if cl.discoverChan, cl.cancelDiscoverFn, err = api.Discover(cl.adapter, nil); err != nil {
 		return fmt.Errorf("error starting discovery: %w", err)
 	}
-	defer cl.cancelDiscoverFn()
+	cl.discovering = true
+	defer func() {
+		cl.discovering = false
+		cl.cancelDiscoverFn()
+	}()
 
 	for found := range cl.discoverChan {
 		// If it's removed, ignore it
@@ -127,15 +132,15 @@ func (cl *Client) tryDiscoveryConnect(matchFunc func(mac string, name string) (m
 		}
 
 		if cl.dev, err = device.NewDevice1(found.Path); err != nil {
-			log.Logger.Warnf("Error generating new device from dbus object: %v", err)
+			log.Logger.WithField("category", "BLE Client").Warnf("Error generating new device from dbus object: %v", err)
 			continue
 		}
 
 		if matchFunc(cl.dev.Properties.Address, cl.dev.Properties.Name) {
-			log.Logger.Infof("Found requested device: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
+			log.Logger.WithField("category", "BLE Client").Infof("Found requested device: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
 			break
 		}
-		log.Logger.Debugf("Found non-matching device: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
+		log.Logger.WithField("category", "BLE Client").Debugf("Found non-matching device: (addr=%s, name=%s)", cl.dev.Properties.Address, cl.dev.Properties.Name)
 		cl.dev = nil
 	}
 
@@ -148,23 +153,25 @@ func (cl *Client) tryDiscoveryConnect(matchFunc func(mac string, name string) (m
 
 // tryConnectForever is self-explanatory. It attempts to connect to dev until it succeeds.
 func (cl *Client) tryConnectForever(coolDown time.Duration) {
-	log.Logger.Infof("Attempting to connect to %q indefinitely...", cl.dev.Properties.Address)
+	log.Logger.WithField("category", "BLE Client").Infof("Attempting to connect to %q indefinitely...", cl.dev.Properties.Address)
 	for err := cl.dev.Connect(); err != nil; {
-		log.Logger.Debugf("Error encountered during connection attempt to Bluetooth device: %v (retrying...)", err)
+		log.Logger.WithField("category", "BLE Client").Debugf("Error encountered during connection attempt to Bluetooth device: %v (retrying...)", err)
 		time.Sleep(coolDown)
 	}
-	log.Logger.Infof("Connection to Bluetooth device with address %q succeeded", cl.dev.Properties.Name)
+	log.Logger.WithField("category", "BLE Client").Infof("Connection to Bluetooth device with address %q succeeded", cl.dev.Properties.Name)
 	cl.done <- struct{}{}
 }
 
 func (cl *Client) Close() {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Logger.Errorf("recovered from panic: %v", r)
+			log.Logger.WithField("category", "BLE Client").Warnf("Recovered from panic: %v", r)
 		}
 	}()
-	cl.cancelDiscoverFn()
+	if cl.discovering {
+		cl.cancelDiscoverFn()
+		close(cl.discoverChan)
+	}
 	cl.dev.Close()
 	cl.adapter.Close()
-	close(cl.discoverChan)
 }

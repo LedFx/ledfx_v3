@@ -171,7 +171,7 @@ func (br *Bridge) initLocalSource(writeTo io.Writer) (err error) {
 	go func() {
 		defer portaudio.Terminate()
 		if err := br.localAudioSource.Start(); err != nil {
-			log.Logger.Errorf("error starting local PortAudio stream as SOURCE: %v", err)
+			log.Logger.WithField("category", "AudioBridge").Errorf("error starting local PortAudio stream as SOURCE: %v", err)
 			return
 		}
 		defer br.localAudioSource.Close()
@@ -226,27 +226,27 @@ func (br *Bridge) stop(notifyDone bool) {
 	switch br.SourceEndpoint.Type {
 	case DeviceTypeAirPlay:
 		br.airplayServer.Stop()
-		log.Logger.Infof("Stopped AirPlay server")
+		log.Logger.WithField("category", "AudioBridge").Infof("Stopped AirPlay server")
 	case DeviceTypeBluetooth:
 		br.bluetoothServer.CloseApp()
-		log.Logger.Infof("Stopped Bluetooth server")
+		log.Logger.WithField("category", "AudioBridge").Infof("Stopped Bluetooth server")
 	}
 
 	switch br.DestEndpoint.Type {
 	case DeviceTypeAirPlay:
 		br.airplayClient.Close()
-		log.Logger.Infof("Stopped AirPlay client")
+		log.Logger.WithField("category", "AudioBridge").Infof("Stopped AirPlay client")
 	case DeviceTypeBluetooth:
 		// Close the player instead of the OTO context.
 		br.bluetoothClient.Close()
-		log.Logger.Infof("Stopped Bluetooth client")
+		log.Logger.WithField("category", "AudioBridge").Infof("Stopped Bluetooth client")
 		br.localAudioDest.Close()
-		log.Logger.Infof("Stopped OTO destination")
+		log.Logger.WithField("category", "AudioBridge").Infof("Stopped OTO destination")
 	}
 
 	if br.SourceEndpoint.Type == DeviceTypeBluetooth && br.DestEndpoint.Type == DeviceTypeBluetooth {
 		br.localAudioSourceDone <- struct{}{}
-		log.Logger.Infof("Stopped local audio source")
+		log.Logger.WithField("category", "AudioBridge").Infof("Stopped local audio source")
 	}
 
 }

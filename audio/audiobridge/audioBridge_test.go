@@ -3,17 +3,10 @@ package audiobridge
 import (
 	"github.com/pkg/errors"
 	"io"
-	"ledfx/config"
 	log "ledfx/logger"
 	"testing"
 	"time"
 )
-
-func init() {
-	log.Init(&config.Config{
-		Verbose: true,
-	})
-}
 
 // NOTE: All the tests below will only succeed if the following instructions are followed:
 // 1). Must be run on a Raspberry Pi with Bluez
@@ -48,29 +41,29 @@ func TestAudioBridge_Reset(t *testing.T) {
 	}
 
 	time.Sleep(10 * time.Second)
-	log.Logger.Warnf("Success: AP -> AP")
+	log.Logger.WithField("component", "AP -> AP").Infoln("Success!")
 
 	if err := bridge.Reset(srcConfAP, dstConfBT); err != nil {
 		t.Fatalf("Error resetting bridge (AP -> BT): %v", err)
 	}
 
 	time.Sleep(10 * time.Second)
-	log.Logger.Warnf("Success: AP -> BT\n")
+	log.Logger.WithField("component", "AP -> BT").Infoln("Success!")
 
 	if err := bridge.Reset(srcConfBT, dstConfBT); err != nil {
 		t.Fatalf("Error resetting bridge (BT -> BT): %v", err)
 	}
 
 	time.Sleep(10 * time.Second)
-	log.Logger.Warnf("Success: BT -> BT")
+	log.Logger.WithField("component", "BT -> BT").Infoln("Success!")
 
 	if err := bridge.Reset(srcConfBT, dstConfAP); !errors.Is(err, ErrCannotBridgeBT2AP) {
 		t.Fatalf("Invalid error returned (BT -> AP, expected 'ErrCannotBridgeBT2AP'): %v\n", err)
 	}
 
-	log.Logger.Warnf("Success (Proper error returned): BT -> AP")
+	log.Logger.WithField("component", "BT -> AP").Infoln("Success! (Proper error returned)")
 	bridge.Stop()
-	log.Logger.Warnf("Success: 'bridge.Stop()'")
+	log.Logger.WithField("component", "Kill Bridge").Infoln("Success!")
 
 }
 

@@ -116,13 +116,10 @@ type Config struct {
 var configPath string
 var GlobalConfig *Config
 
-//var OldConfig Config
 var GlobalViper *viper.Viper
-var OldViper *viper.Viper
 
 func InitConfig() error {
 	GlobalViper = viper.New()
-	OldViper = viper.New()
 
 	pflag.StringVarP(&configPath, "config", "c", "", "Directory that contains the configuration files")
 	pflag.IntP("port", "p", 8080, "Web interface port")
@@ -140,14 +137,8 @@ func InitConfig() error {
 		return err
 	}
 
-	// Load new config
-	err = loadConfig("goconfig")
-	if err != nil {
-		return err
-	}
-
-	// Load old config
-	err = loadConfig("config")
+	// Load config
+	err = loadConfig("go_config")
 	if err != nil {
 		return err
 	}
@@ -174,7 +165,6 @@ func createConfigIfNotExists(configName string) error {
 }
 
 // LoadConfig reads in config file and ENV variables if set.
-// TODO: once we are fully backwards compatible, we can just use config.json for GlobalConfig
 func loadConfig(configName string) (err error) {
 
 	if configPath == "" {
@@ -191,13 +181,8 @@ func loadConfig(configName string) (err error) {
 		return err
 	}
 
-	var v *viper.Viper
+	v := GlobalViper
 
-	if configName == "goconfig" {
-		v = GlobalViper
-	} else if configName == "config" {
-		v = OldViper
-	}
 	if err != nil {
 		return err
 	}
@@ -213,12 +198,7 @@ func loadConfig(configName string) (err error) {
 		return nil
 	}
 
-	if configName == "goconfig" {
-		err = v.Unmarshal(&GlobalConfig)
-	}
-	// TODO
-	// } else if configName == "config" {
-	// 	err = v.Unmarshal(OldConfig)
-	// }
+	err = v.Unmarshal(&GlobalConfig)
+
 	return
 }

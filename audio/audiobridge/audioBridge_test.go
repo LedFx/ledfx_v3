@@ -15,6 +15,10 @@ func init() {
 	})
 }
 
+// NOTE: All the tests below will only succeed if the following instructions are followed:
+// 1). Must be run on a Raspberry Pi with Bluez
+// 2). 'dstConfAP.Name' must be changed to a regex pattern that matches an AirPlay advertisement within range of the Pi.
+// 3). 'dstConfBT.Name' must be changed to a regex pattern that matches a Bluetooth advertisement within range of the Pi.
 func TestAudioBridge_Reset(t *testing.T) {
 	srcConfAP := EndpointConfig{
 		Type:    DeviceTypeAirPlay,

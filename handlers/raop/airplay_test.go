@@ -151,7 +151,7 @@ func TestNotMuteNoHeader(t *testing.T) {
 
 	localAddress := "192.168.0.15"
 	remoteAddress := "10.0.0.0"
-	a.handlSetParameter(req, resp, localAddress, remoteAddress)
+	a.handleSetParameter(req, resp, localAddress, remoteAddress)
 	if resp.Status != rtsp.Ok {
 		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String()))
 	}
@@ -172,7 +172,7 @@ func TestMuteWithHeader(t *testing.T) {
 
 	localAddress := "192.168.0.15"
 	remoteAddress := "10.0.0.0"
-	a.handlSetParameter(req, resp, localAddress, remoteAddress)
+	a.handleSetParameter(req, resp, localAddress, remoteAddress)
 	if resp.Status != rtsp.Ok {
 		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String()))
 	}
@@ -193,7 +193,7 @@ func TestUnMuteWithHeader(t *testing.T) {
 
 	localAddress := "192.168.0.15"
 	remoteAddress := "10.0.0.0"
-	a.handlSetParameter(req, resp, localAddress, remoteAddress)
+	a.handleSetParameter(req, resp, localAddress, remoteAddress)
 	if resp.Status != rtsp.Ok {
 		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String()))
 	}
@@ -213,7 +213,7 @@ func TestChangeVolumeDoesntUnmute(t *testing.T) {
 
 	localAddress := "192.168.0.15"
 	remoteAddress := "10.0.0.0"
-	a.handlSetParameter(req, resp, localAddress, remoteAddress)
+	a.handleSetParameter(req, resp, localAddress, remoteAddress)
 	if resp.Status != rtsp.Ok {
 		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String()))
 	}
@@ -233,7 +233,7 @@ func TestSetMetadata(t *testing.T) {
 
 	localAddress := "192.168.0.15"
 	remoteAddress := "10.0.0.0"
-	a.handlSetParameter(req, resp, localAddress, remoteAddress)
+	a.handleSetParameter(req, resp, localAddress, remoteAddress)
 	if resp.Status != rtsp.Ok {
 		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String()))
 	}

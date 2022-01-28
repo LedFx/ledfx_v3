@@ -43,7 +43,7 @@ func (r *Server) Stop() {
 }
 
 // Start creates listening socket for the RTSP connection
-func (r *Server) Start(verbose bool) {
+func (r *Server) Start(verbose bool, doneCh chan struct{}) {
 	// Get the default outbound interface address
 	_, myIP, ok := interfaces.LikelyHomeRouterIP()
 	if !ok {
@@ -58,8 +58,6 @@ func (r *Server) Start(verbose bool) {
 		log.Logger.WithField("category", "RTSP Server").Errorln("Error listening:", err.Error())
 		return
 	}
-
-	defer tcpListen.Close()
 
 	// Handle TCP connections.
 	go func() {
@@ -76,7 +74,11 @@ func (r *Server) Start(verbose bool) {
 		}
 	}()
 
-	<-r.done
+	go func() {
+		<-r.done
+		defer tcpListen.Close()
+		doneCh <- struct{}{}
+	}()
 }
 
 func (r *Server) read(conn net.Conn, handlers map[Method]RequestHandler, verbose bool) {
@@ -115,7 +117,6 @@ func (r *Server) read(conn net.Conn, handlers map[Method]RequestHandler, verbose
 			log.Logger.WithField("category", "RTSP Server").Println("Outbound Response")
 			log.Logger.WithField("category", "RTSP Server").Println(resp.String())
 		}
-
 		_, _ = writeResponse(conn, resp)
 	}
 }

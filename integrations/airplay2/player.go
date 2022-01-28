@@ -2,6 +2,7 @@ package airplay2
 
 import (
 	"io"
+	"ledfx/color"
 	"ledfx/handlers/player"
 	"ledfx/handlers/raop"
 	"ledfx/handlers/rtsp"
@@ -66,6 +67,7 @@ func (p *audioPlayer) AddWriter(wr io.Writer) {
 }
 
 func (p *audioPlayer) Play(session *rtsp.Session) {
+	log.Logger.WithField("category", "AirPlay Player").Warnf("Starting new session")
 	p.curSession = session
 	decoder := codec.GetCodec(session)
 	go func(dc *codec.Handler) {
@@ -73,10 +75,10 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 		for {
 			select {
 			case p.recvBuf, ok = <-session.DataChan:
-				if ret := func() bool {
-					if !ok {
-						return false
-					}
+				if !ok {
+					return
+				}
+				func() {
 					defer func() {
 						if err := recover(); err != nil {
 							log.Logger.WithField("category", "AirPlay Player").Warnf("Recovered from panic during playStream: %v\n", err)
@@ -85,21 +87,15 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 					if p.doEncodedSend {
 						_, _ = p.apClient.DataConn.Write(p.recvBuf)
 					}
-					if p.numOutputs < 0 {
+					if p.numOutputs > 0 {
 						p.recvBuf = dc.Decode(p.recvBuf)
 						codec.NormalizeAudio(p.recvBuf, p.volume)
 						for i := 0; i < p.numOutputs; i++ {
 							_, _ = p.outputs[i].Write(p.recvBuf)
 						}
 					}
-					return true
-				}(); !ret {
-					go func() {
-						p.quit <- struct{}{}
-					}()
-				}
+				}()
 			case <-p.quit:
-				_ = session.DataConn().Close()
 				log.Logger.WithField("category", "AirPlay Player").Warnf("Session with peer '%s' closed", session.Description.ConnectData.ConnectionAddress)
 				return
 			}
@@ -150,6 +146,10 @@ func (p *audioPlayer) SetAlbumArt(artwork []byte) {
 	p.artwork = artwork
 }
 
+func (p *audioPlayer) GetGradientFromArtwork(resolution int) (*color.Gradient, error) {
+	return color.GradientFromPNG(p.artwork, resolution, 75)
+}
+
 func (p *audioPlayer) GetTrack() player.Track {
 	return player.Track{
 		Artist:  p.artist,
@@ -176,6 +176,5 @@ func prepareVolume(vol float64) float64 {
 func (p *audioPlayer) Close() {
 	if p.curSession != nil {
 		p.quit <- struct{}{}
-		close(p.curSession.DataChan)
 	}
 }

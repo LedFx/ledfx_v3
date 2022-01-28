@@ -3,6 +3,7 @@ package audiobridge
 import (
 	"github.com/pkg/errors"
 	"io"
+	"io/ioutil"
 	log "ledfx/logger"
 	"testing"
 	"time"
@@ -64,7 +65,6 @@ func TestAudioBridge_Reset(t *testing.T) {
 	log.Logger.WithField("component", "BT -> AP").Infoln("Success! (Proper error returned)")
 	bridge.Stop()
 	log.Logger.WithField("component", "Kill Bridge").Infoln("Success!")
-
 }
 
 func TestAudioBridge_Ap2Ap(t *testing.T) {
@@ -114,9 +114,45 @@ func TestAudioBridge_Ap2Bt(t *testing.T) {
 
 	bridge, err := NewBridge(srcConf, dstConf, io.Discard)
 	if err != nil {
-		t.Fatalf("error creating new audio bridge: %v\n", err)
+		t.Fatalf("Error creating new audio bridge: %v\n", err)
 	}
 
 	bridge.Wait()
 
+}
+
+func TestAudioBridge_ArtworkGradient(t *testing.T) {
+	srcConf := EndpointConfig{
+		Type:    DeviceTypeAirPlay,
+		Name:    "LedFX-Input-Test",
+		Verbose: false,
+	}
+
+	dstConf := EndpointConfig{
+		Type:    DeviceTypeBluetooth,
+		Name:    "(?i)k850$",
+		Verbose: false,
+	}
+
+	bridge, err := NewBridge(srcConf, dstConf, io.Discard)
+	if err != nil {
+		t.Fatalf("Error creating new audio bridge: %v\n", err)
+	}
+
+	time.Sleep(25 * time.Second)
+
+	gradient, err := bridge.GetGradientFromArtwork(25)
+	if err != nil {
+		t.Fatalf("Error generating gradient from current artwork: %v\n", err)
+	}
+
+	link, err := gradient.WebServe()
+	if err != nil {
+		t.Fatalf("Error serving PNG to web: %v\n", err)
+	}
+
+	log.Logger.WithField("category", "Gradient Test").Infof("Gradient URL: %s\n", link.String())
+	ioutil.WriteFile("gradient.out", []byte(gradient.String()), 0777)
+
+	bridge.Wait()
 }

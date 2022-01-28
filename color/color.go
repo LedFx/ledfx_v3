@@ -17,7 +17,7 @@ type Color [3]float64
 
 var errInvalidColor = errors.New("invalid color")
 
-// Parses string to ledfx color. "#ff00ff" / "rgb(255,0,255)" / "red" -> [1., 0., 1.]
+// NewColor Parses string to ledfx color. "#ff00ff" / "rgb(255,0,255)" / "red" -> [1., 0., 1.]
 func NewColor(c string) (col Color, err error) {
 	c = strings.ToLower(c)
 	predef, isPredef := LedFxColors[c]

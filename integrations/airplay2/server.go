@@ -2,6 +2,7 @@ package airplay2
 
 import (
 	"io"
+	"ledfx/color"
 	"ledfx/handlers/raop"
 	"math/rand"
 	"sync"
@@ -49,13 +50,15 @@ func (s *Server) SetClient(client *Client) {
 }
 
 func (s *Server) Start() error {
+	errCh := make(chan error)
 	go func() {
+		errCh <- s.svc.Start(s.conf.VerboseLogging, true)
+		s.svc.Wait()
 		defer func() {
 			s.done <- struct{}{}
 		}()
-		s.svc.Start(s.conf.VerboseLogging, true)
 	}()
-	return nil
+	return <-errCh
 }
 
 func (s *Server) Wait() {
@@ -69,4 +72,8 @@ func (s *Server) Stop() {
 	if s.player != nil {
 		s.player.Close()
 	}
+}
+
+func (s *Server) GetAlbumGradient(resolution int) (*color.Gradient, error) {
+	return s.player.GetGradientFromArtwork(resolution)
 }

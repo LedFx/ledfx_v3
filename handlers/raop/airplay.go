@@ -25,6 +25,7 @@ const (
 	domain              = "local."
 	localTimingPort     = 6002
 	localControlPort    = 6001
+	headerTextParams    = "text/parameters"
 )
 
 var airtunesServiceProperties = []string{"txtvers=1",
@@ -49,6 +50,7 @@ type AirplayServer struct {
 	zerconfServer *zeroconf.Server
 	sessions      *sessionMap
 	player        player.Player
+	doneCh        chan struct{}
 }
 
 // Parameter types
@@ -119,9 +121,11 @@ func NewAirplayServer(port int, name string, player player.Player) *AirplayServe
 }
 
 // Start starts the airplay server, broadcasting on bonjour, ready to accept requests
-func (a *AirplayServer) Start(verbose bool, advertise bool) {
+func (a *AirplayServer) Start(verbose bool, advertise bool) (err error) {
 	if advertise {
-		a.initAdvertise()
+		if err = a.initAdvertise(); err != nil {
+			return err
+		}
 	}
 
 	rtspServer := rtsp.NewServer(a.port)
@@ -132,14 +136,20 @@ func (a *AirplayServer) Start(verbose bool, advertise bool) {
 	rtspServer.AddHandler(rtsp.Announce, a.handleAnnounce)
 	rtspServer.AddHandler(rtsp.Setup, a.handleSetup)
 	rtspServer.AddHandler(rtsp.Record, a.handleRecord)
-	rtspServer.AddHandler(rtsp.Set_Parameter, a.handlSetParameter)
-	rtspServer.AddHandler(rtsp.Flush, handlFlush)
+	rtspServer.AddHandler(rtsp.Set_Parameter, a.handleSetParameter)
+	rtspServer.AddHandler(rtsp.Flush, handleFlush)
 	rtspServer.AddHandler(rtsp.Teardown, a.handleTeardown)
-	rtspServer.Start(verbose)
+	a.doneCh = make(chan struct{})
+	rtspServer.Start(verbose, a.doneCh)
+	return nil
 }
 
-// ToggleAdvertise will toggle whether or not to advertise as an airplay service
-func (a *AirplayServer) ToggleAdvertise(shouldAdvertise bool) {
+func (a *AirplayServer) Wait() {
+	<-a.doneCh
+}
+
+// ToggleAdvertise will toggle whether to advertise as an airplay service
+func (a *AirplayServer) ToggleAdvertise(shouldAdvertise bool) (err error) {
 	if !shouldAdvertise {
 		if a.zerconfServer == nil {
 			log.Logger.WithField("category", "RAOP Airplay").Println("Currently not advertising, ignoring turn off advertise request")
@@ -147,22 +157,25 @@ func (a *AirplayServer) ToggleAdvertise(shouldAdvertise bool) {
 		}
 		// if we have a zerconfServer reference it means we are already advertising, so
 		// stop it
-		log.Logger.WithField("category", "RAOP Airplay").Printf("Shutting down broadcasting of %s\n", a.name)
+		log.Logger.WithField("category", "RAOP Airplay").Printf("Shutting down broadcasting of %s", a.name)
 		a.zerconfServer.Shutdown()
 		a.zerconfServer = nil
 	} else {
 		if a.zerconfServer != nil {
 			log.Logger.WithField("category", "RAOP Airplay").Println("Currently advertising, ignoring turn on advertise request")
-			return
+			return nil
 		}
-		a.initAdvertise()
+		if err = a.initAdvertise(); err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-//ChangeName will change the name of the broadcast service
-func (a *AirplayServer) ChangeName(newName string) error {
+// ChangeName will change the name of the broadcast service
+func (a *AirplayServer) ChangeName(newName string) (err error) {
 	if strings.TrimSpace(newName) == "" {
-		return errors.New("New name must be non-empty")
+		return errors.New("new name must be non-empty")
 	}
 	a.name = strings.TrimSpace(newName)
 	// if we are advertising, stop the zeroconf server and start it so it
@@ -170,29 +183,27 @@ func (a *AirplayServer) ChangeName(newName string) error {
 	if a.zerconfServer != nil {
 		a.zerconfServer.Shutdown()
 		a.zerconfServer = nil
-		a.initAdvertise()
+		if err = a.initAdvertise(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func (a *AirplayServer) initAdvertise() {
+func (a *AirplayServer) initAdvertise() (err error) {
 	// as per the protocol, the mac address makes up part of the service name
-	macAddr := strings.ReplaceAll(getMacAddr().String(), ":", "")
+	serviceName := fmt.Sprintf("%s@%s", strings.ReplaceAll(getMacAddr().String(), ":", ""), a.name)
 
-	serviceName := fmt.Sprintf("%s@%s", macAddr, a.name)
-
-	server, err := zeroconf.Register(serviceName, airTunesServiceType, domain, a.port, airtunesServiceProperties, nil)
-	if err != nil {
-		log.Logger.WithField("category", "RAOP Airplay").Fatal("couldn't start zeroconf: ", err)
+	if a.zerconfServer, err = zeroconf.Register(serviceName, airTunesServiceType, domain, a.port, airtunesServiceProperties, nil); err != nil {
+		return fmt.Errorf("failed to start ZeroConf server: %w", err)
 	}
 
-	log.Logger.WithField("category", "RAOP Airplay").Println("Published service:")
-	log.Logger.WithField("category", "RAOP Airplay").Println("- Name:", serviceName)
-	log.Logger.WithField("category", "RAOP Airplay").Println("- Type:", airTunesServiceType)
-	log.Logger.WithField("category", "RAOP Airplay").Println("- Domain:", domain)
-	log.Logger.WithField("category", "RAOP Airplay").Println("- Port:", a.port)
-
-	a.zerconfServer = server
+	log.Logger.WithField("category", "RAOP Advert").Println("Published service:")
+	log.Logger.WithField("category", "RAOP Advert").Println("  - Name:", serviceName)
+	log.Logger.WithField("category", "RAOP Advert").Println("  - Type:", airTunesServiceType)
+	log.Logger.WithField("category", "RAOP Advert").Println("  - Domain:", domain)
+	log.Logger.WithField("category", "RAOP Advert").Println("  - Port:", a.port)
+	return nil
 }
 
 func handleOptions(req *rtsp.Request, resp *rtsp.Response, localAddress string, remoteAddress string) {
@@ -202,20 +213,19 @@ func handleOptions(req *rtsp.Request, resp *rtsp.Response, localAddress string, 
 	if !exists {
 		return
 	}
-	log.Logger.WithField("category", "RAOP Airplay").Printf("Apple Challenge detected: %s\n", appleChallenge)
+	log.Logger.WithField("category", "RAOP Handler: Options").Printf("Apple Challenge detected: %s\n", appleChallenge)
 	challengResponse, err := generateChallengeResponse(appleChallenge, getMacAddr(), localAddress)
 	if err != nil {
-		log.Logger.WithField("category", "RAOP Airplay").Println("Error generating challenge response: ", err.Error())
+		log.Logger.WithField("category", "RAOP Handler: Options").Println("Error generating challenge response: ", err.Error())
 	}
 	resp.Headers["Apple-Response"] = challengResponse
-
 }
 
 func (a *AirplayServer) handleAnnounce(req *rtsp.Request, resp *rtsp.Response, localAddress string, remoteAddress string) {
 	if req.Headers["Content-Type"] == "application/sdp" {
 		description, err := sdp.Parse(bytes.NewReader(req.Body))
 		if err != nil {
-			log.Logger.WithField("category", "RAOP Airplay").Println("error parsing SDP payload: ", err)
+			log.Logger.WithField("category", "RAOP Handler: Announce").Println("error parsing SDP payload: ", err)
 			resp.Status = rtsp.BadRequest
 			return
 		}
@@ -226,7 +236,7 @@ func (a *AirplayServer) handleAnnounce(req *rtsp.Request, resp *rtsp.Response, l
 		if key, ok := description.Attributes["rsaaeskey"]; ok {
 			aesKey, err := aeskeyFromRsa(key)
 			if err != nil {
-				log.Logger.WithField("category", "RAOP Airplay").Println("error retrieving aes key", err)
+				log.Logger.WithField("category", "RAOP Handler: Announce").Println("Error retrieving aes key", err)
 				resp.Status = rtsp.InternalServerError
 				return
 			}
@@ -235,12 +245,12 @@ func (a *AirplayServer) handleAnnounce(req *rtsp.Request, resp *rtsp.Response, l
 			aesIv64 = base64pad(aesIv64)
 			aesIv, err := base64.StdEncoding.DecodeString(aesIv64)
 			if err != nil {
-				log.Logger.WithField("category", "RAOP Airplay").Println("error retrieving aes IV", err)
+				log.Logger.WithField("category", "RAOP Handler: Announce").Println("Error retrieving aes IV", err)
 				resp.Status = rtsp.InternalServerError
 				return
 			}
 			if decoder = NewAesDecrypter(aesKey, aesIv); err != nil {
-				log.Logger.WithField("category", "RAOP Airplay").Printf("error creating new AES decryption object: %v\n", err)
+				log.Logger.WithField("category", "RAOP Handler: Announce").Printf("Error creating new AES decryption object: %v\n", err)
 				resp.Status = rtsp.InternalServerError
 				return
 			}
@@ -250,9 +260,8 @@ func (a *AirplayServer) handleAnnounce(req *rtsp.Request, resp *rtsp.Response, l
 		activeRemote := req.Headers["Active-Remote"]
 		dacpClient := DiscoverDacpClient(dacpID, activeRemote)
 		s := rtsp.NewSession(description, decoder)
-		err = s.InitReceive()
-		if err != nil {
-			log.Logger.WithField("category", "RAOP Airplay").Println("error intializing data receiving", err)
+		if err = s.InitReceive(); err != nil {
+			log.Logger.WithField("category", "RAOP Handler: Announce").Println("error initializing data receiving", err)
 			resp.Status = rtsp.InternalServerError
 			return
 		}
@@ -297,17 +306,16 @@ func (a *AirplayServer) handleRecord(req *rtsp.Request, resp *rtsp.Response, loc
 	as := a.sessions.getSession(remoteAddress)
 	err := as.session.StartReceiving()
 	if err != nil {
-		log.Logger.WithField("category", "RAOP Airplay").Println("could not start streaming session: ", err)
+		log.Logger.WithField("category", "RAOP Handler: Record").Println("could not start streaming session: ", err)
 		resp.Status = rtsp.InternalServerError
 		return
 	}
 	a.player.Play(as.session)
 	resp.Headers["Audio-Latency"] = "2205"
 	resp.Status = rtsp.Ok
-
 }
 
-func (a *AirplayServer) handlSetParameter(req *rtsp.Request, resp *rtsp.Response, localAddress string, remoteAddress string) {
+func (a *AirplayServer) handleSetParameter(req *rtsp.Request, resp *rtsp.Response, localAddress string, remoteAddress string) {
 	if req.Headers["Content-Type"] == "application/x-dmap-tagged" {
 		daapData := parseDaap(req.Body)
 		album := ""
@@ -325,13 +333,13 @@ func (a *AirplayServer) handlSetParameter(req *rtsp.Request, resp *rtsp.Response
 		a.player.SetTrack(album, artist, title)
 	} else if req.Headers["Content-Type"] == "image/jpeg" {
 		a.player.SetAlbumArt(req.Body)
-	} else if req.Headers["Content-Type"] == "text/parameters" {
+	} else if req.Headers["Content-Type"] == headerTextParams {
 		body := string(req.Body)
 		if strings.Contains(body, "volume") {
 			volStr := strings.TrimSpace(strings.Split(body, "volume:")[1])
 			vol, err := strconv.ParseFloat(volStr, 32)
 			if err != nil {
-				log.Logger.WithField("category", "RAOP Airplay").Println("Error converting volume to float: ", err)
+				log.Logger.WithField("category", "RAOP Handler: SetParameter").Printf("Error converting volume to float: %v", err)
 				resp.Status = rtsp.BadRequest
 				return
 			}
@@ -346,13 +354,12 @@ func (a *AirplayServer) handlSetParameter(req *rtsp.Request, resp *rtsp.Response
 				a.player.SetMute(false)
 			}
 			a.player.SetVolume(normalizeVolume(vol))
-
 		}
 	}
 	resp.Status = rtsp.Ok
 }
 
-func handlFlush(req *rtsp.Request, resp *rtsp.Response, localAddress string, remoteAddress string) {
+func handleFlush(req *rtsp.Request, resp *rtsp.Response, localAddress string, remoteAddress string) {
 	resp.Status = rtsp.Ok
 }
 
@@ -361,14 +368,14 @@ func (a *AirplayServer) handleTeardown(req *rtsp.Request, resp *rtsp.Response, l
 	resp.Status = rtsp.Ok
 }
 
-// Stop stops thes airplay server
+// Stop stops the airplay server
 func (a *AirplayServer) Stop() {
+	log.Logger.WithField("category", "AirPlay").Warnln("Stopping AirPlay server")
 	a.closeAllSessions()
 	a.rtspServer.Stop()
 	if a.zerconfServer != nil {
 		a.zerconfServer.Shutdown()
 	}
-
 }
 
 func (a *AirplayServer) closeSession(remoteAddress string) {
@@ -396,34 +403,34 @@ func (a *AirplayServer) closeAllSessions() {
 
 // getMacAddr gets the MAC hardware
 // address of the host machine: https://gist.github.com/rucuriousyet/ab2ab3dc1a339de612e162512be39283
-func getMacAddr() (addr net.HardwareAddr) {
+func getMacAddr() net.HardwareAddr {
 	interfaces, err := net.Interfaces()
 	if err == nil {
 		for _, i := range interfaces {
-			if i.Flags&net.FlagUp != 0 && bytes.Compare(i.HardwareAddr, nil) != 0 {
+			if i.Flags&net.FlagUp != 0 && !bytes.Equal(i.HardwareAddr, nil) {
 				// Don't use random as we have a real address
-				addr = i.HardwareAddr
-				break
+				return i.HardwareAddr
 			}
 		}
 	}
-	return
+	return nil
 }
 
-// normalizeVolume maps airplay volume values to a range betweeon 0 and 1
+// normalizeVolume maps airplay volume values to a range between 0 and 1
 func normalizeVolume(volume float64) float64 {
 	// according to: https://nto.github.io/AirPlay.html#audio
 	// -144 is mute
-	if volume == -144 {
-		return 0
-	}
-	if volume == 0 {
-		return 1
-	}
 	// the remaining values will between -30 and 0,
 	// so map that to a range between 0 and 1
 	// simple range mapping formula: https://gamedev.stackexchange.com/questions/33441/how-to-convert-a-number-from-one-min-max-set-to-another-min-max-set
 	// then simplified down and adjusted to make sure the number was positive
-	adjusted := (volume + 30) / 30
-	return adjusted
+
+	switch volume {
+	case -144:
+		return 0
+	case 0:
+		return 1
+	default:
+		return (volume + 30) / 30
+	}
 }

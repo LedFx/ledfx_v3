@@ -1,7 +1,6 @@
 package audiobridge
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"github.com/gordonklaus/portaudio"
@@ -21,6 +20,10 @@ func NewBridge(srcConfig EndpointConfig, dstConfig EndpointConfig, ledFxWriter i
 		done:                 make(chan bool),
 		ledFxWriter:          ledFxWriter,
 		localAudioSourceDone: make(chan struct{}),
+	}
+
+	if br.callbackHandler, err = NewCallbackHandler(); err != nil {
+		return nil, fmt.Errorf("error initializing callback handler: %w", err)
 	}
 
 	if err := br.initDevices(); err != nil {
@@ -153,21 +156,27 @@ func (br *Bridge) initLocalSource(writeTo io.Writer) (err error) {
 	if err = portaudio.Initialize(); err != nil {
 		return fmt.Errorf("error initializing PortAudio: %w", err)
 	}
-	buffer := bytes.NewBuffer(make([]byte, 44100*2))
-	if br.localAudioSource, err = portaudio.OpenDefaultStream(
-		2,
-		0,
-		44100,
-		buffer.Len(),
-		func(in []float32) {
-			for i := range in {
-				buffer.WriteByte(byte(in[i]))
-			}
-			buffer.WriteTo(writeTo)
+	defaultDevice, err := portaudio.DefaultOutputDevice()
+	if err != nil {
+		return fmt.Errorf("error getting default output device: %w", err)
+	}
+
+	br.callbackHandler.setWriteTo(writeTo)
+
+	if br.localAudioSource, err = portaudio.OpenStream(
+		portaudio.StreamParameters{
+			Input: portaudio.StreamDeviceParameters{
+				Device:   defaultDevice,
+				Channels: 1,
+			},
+			SampleRate:      44100,
+			FramesPerBuffer: 44100 / 60,
 		},
+		br.callbackHandler.audioCallback,
 	); err != nil {
 		return fmt.Errorf("error opening default PortAudio stream: %w", err)
 	}
+
 	go func() {
 		defer portaudio.Terminate()
 		if err := br.localAudioSource.Start(); err != nil {

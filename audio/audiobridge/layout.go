@@ -104,7 +104,7 @@ func (c *CallbackHandler) audioCallback(in audio.Buffer) {
 	c.pvoc.Do(c.buf)
 	c.melbank.Do(c.pvoc.Grain())
 	c.onset.Do(c.buf)
-	
+
 	if c.onset.Buffer().Slice()[0] != 0 {
 		fmt.Println("nice clap!")
 	}

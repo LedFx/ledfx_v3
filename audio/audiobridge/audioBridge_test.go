@@ -1,19 +1,10 @@
 package audiobridge
 
-import (
-	"github.com/pkg/errors"
-	"io"
-	"io/ioutil"
-	log "ledfx/logger"
-	"testing"
-	"time"
-)
-
 // NOTE: All the tests below will only succeed if the following instructions are followed:
 // 1). Must be run on a Raspberry Pi with Bluez
 // 2). 'dstConfAP.Name' must be changed to a regex pattern that matches an AirPlay advertisement within range of the Pi.
 // 3). 'dstConfBT.Name' must be changed to a regex pattern that matches a Bluetooth advertisement within range of the Pi.
-func TestAudioBridge_Reset(t *testing.T) {
+/*func TestAudioBridge_Reset(t *testing.T) {
 	srcConfAP := EndpointConfig{
 		Type:    DeviceTypeAirPlay,
 		Name:    "LedFX-Input-Test",
@@ -65,9 +56,9 @@ func TestAudioBridge_Reset(t *testing.T) {
 	log.Logger.WithField("component", "BT -> AP").Infoln("Success! (Proper error returned)")
 	bridge.Stop()
 	log.Logger.WithField("component", "Kill Bridge").Infoln("Success!")
-}
+}*/
 
-func TestAudioBridge_Ap2Ap(t *testing.T) {
+/*func TestAudioBridge_Ap2Ap(t *testing.T) {
 	// srcConf is the config for the endpoint from which
 	// audio will be ingested, processed, converted, and
 	// redistributed.
@@ -95,9 +86,9 @@ func TestAudioBridge_Ap2Ap(t *testing.T) {
 	// Wait until the bridge loop stops. This can be called with Stop()
 	bridge.Wait()
 
-}
+}*/
 
-func TestAudioBridge_Ap2Bt(t *testing.T) {
+/*func TestAudioBridge_Ap2Bt(t *testing.T) {
 	srcConf := EndpointConfig{
 		Type:    DeviceTypeAirPlay,
 		Name:    "LedFX-Input-Test",
@@ -119,9 +110,9 @@ func TestAudioBridge_Ap2Bt(t *testing.T) {
 
 	bridge.Wait()
 
-}
+}*/
 
-func TestAudioBridge_ArtworkGradient(t *testing.T) {
+/*func TestAudioBridge_ArtworkGradient(t *testing.T) {
 	srcConf := EndpointConfig{
 		Type:    DeviceTypeAirPlay,
 		Name:    "LedFX-Input-Test",
@@ -151,8 +142,42 @@ func TestAudioBridge_ArtworkGradient(t *testing.T) {
 		t.Fatalf("Error serving PNG to web: %v\n", err)
 	}
 
-	log.Logger.WithField("category", "Gradient Test").Infof("Gradient URL: %s\n", link.String())
-	ioutil.WriteFile("gradient.out", []byte(gradient.String()), 0777)
+	log.Logger.WithField("category", "Test: Gradient").Infof("Gradient URL: %s\n", link.String())
+	raw, err := gradient.RawNoise(1500, 70, time.Now().UnixNano(), 0.02)
+	if err != nil {
+		t.Fatalf("error generating raw PNG data: %v\n", err)
+	}
+	_ = ioutil.WriteFile("gradient.png", raw, 0777)
 
 	bridge.Wait()
-}
+}*/
+
+/*func TestAudioBridge_ArtworkGIF(t *testing.T) {
+	srcConf := EndpointConfig{
+		Type:    DeviceTypeAirPlay,
+		Name:    "LedFX-Input-Test",
+		Verbose: false,
+	}
+
+	dstConf := EndpointConfig{
+		Type:    DeviceTypeBluetooth,
+		Name:    "(?i)k850$",
+		Verbose: false,
+	}
+
+	bridge, err := NewBridge(srcConf, dstConf, io.Discard)
+	if err != nil {
+		t.Fatalf("Error creating new audio bridge: %v\n", err)
+	}
+
+	time.Sleep(25 * time.Second)
+
+	gradient, err := bridge.AnimateArtwork(150, 150, 10)
+	if err != nil {
+		t.Fatalf("Error generating gradient from current artwork: %v\n", err)
+	}
+
+	_ = ioutil.WriteFile("gradient.gif", gradient, 0777)
+	log.Logger.WithField("category", "Test: Artwork GIF").Infoln("Wrote gradient.gif")
+	bridge.Wait()
+}*/

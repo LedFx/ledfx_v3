@@ -6,7 +6,14 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"github.com/mazznoer/colorgrad"
+	"github.com/muesli/gamut/palette"
+	"github.com/ojrac/opensimplex-go"
+	"github.com/ritchie46/GOPHY/img2gif"
 	"image"
+	"image/color"
+	"image/gif"
+	"image/png"
 	log "ledfx/logger"
 	"math"
 	"net/http"
@@ -23,7 +30,6 @@ import (
 	_ "golang.org/x/image/vp8l"
 	_ "golang.org/x/image/webp"
 	_ "image/draw"
-	_ "image/gif"
 	_ "image/jpeg"
 )
 
@@ -62,29 +68,7 @@ func (g *Gradient) WebServe() (link *url.URL, err error) {
 		return nil, err
 	}
 
-	body := []byte(fmt.Sprintf(`<html><head>
-  <meta charset="utf-8">
-  
-  <style>
-html, body {
-  height: 100%%;
-  margin: 0;
-  overflow: hidden;
-}
-
-/* Items inside body will be centered vertically and horizontally */
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.test-element {
-  width: 1500vw;
-  height: 70vh;
-}
-  </style>
-</head>
-<body><div class="test-element" style="background-image: %s;"></div>`, g.rawCSS))
+	body := gradientBodyBuilder(g.rawCSS)
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "text/html")
 		w.Header().Set("content-length", strconv.Itoa(len(body)))
@@ -92,6 +76,108 @@ body {
 	})
 
 	return
+}
+
+func (g *Gradient) Raw(width, height int) ([]byte, error) {
+	grad, err := colorgrad.NewGradient().Colors(NormalizeColorList(g.colors)...).Build()
+	if err != nil {
+		return nil, fmt.Errorf("error building gradient: %w", err)
+	}
+
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
+
+	fw := float64(width) // We don't want to do a ton of type conversions in the loop
+	for x := 0; x < width; x++ {
+		col := grad.At(float64(x) / fw)
+		for y := 0; y < height; y++ {
+			img.Set(x, y, col)
+		}
+	}
+	buf := new(bytes.Buffer)
+	if err := png.Encode(buf, img); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func (g *Gradient) RawNoise(width, height int, seed int64, evalFactor float64) ([]byte, error) {
+	grad, err := colorgrad.NewGradient().Colors(NormalizeColorList(g.colors)...).Build()
+	if err != nil {
+		return nil, fmt.Errorf("error building gradient: %w", err)
+	}
+
+	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	noise := opensimplex.NewNormalized(seed)
+
+	for x := 0; x < width; x++ {
+		for y := 0; y < height; y++ {
+			img.Set(x, y, grad.At(noise.Eval2(float64(x)*evalFactor, float64(y)*evalFactor)))
+		}
+	}
+	buf := new(bytes.Buffer)
+	if err := png.Encode(buf, img); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func AnimateAlbumArt(data []byte, width, height, numFrames int) ([]byte, error) {
+	gr1, err := GradientFromPNG(data, 2, 90)
+	if err != nil {
+		return nil, fmt.Errorf("error generating gradient from PNG: %w", err)
+	}
+
+	imgs := make([]image.Image, numFrames)
+	for i := 0; i < numFrames; i++ {
+		log.Logger.WithField("category", "Cover Animator").Infof("Computing frame %d", i)
+		noisy, err := gr1.RawNoise(width, height, 996, 0.02)
+		if err != nil {
+			return nil, fmt.Errorf("error generating raw noisy PNG: %w", err)
+		}
+		if imgs[i], _, err = image.Decode(bytes.NewReader(noisy)); err != nil {
+			return nil, fmt.Errorf("error decoding noisy PNG: %w", err)
+		}
+	}
+	imgsP := img2gif.EncodeImgPaletted(&imgs)
+
+	g := &gif.GIF{
+		Image:     make([]*image.Paletted, 0),
+		Delay:     make([]int, 0),
+		LoopCount: 0,
+		Config: image.Config{
+			Width:  width,
+			Height: height,
+		},
+	}
+	for _, i := range imgsP {
+		g.Image = append(g.Image, i)
+		g.Delay = append(g.Delay, 0)
+	}
+
+	buf := bytes.NewBuffer(make([]byte, 0))
+
+	if err := gif.EncodeAll(buf, g); err != nil {
+		return nil, fmt.Errorf("error encoding GIF: %w", err)
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (g *Gradient) RawNoiseWithPalette(width, height int, seed int64, pal []color.Color) (*image.Paletted, error) {
+	grad, err := colorgrad.NewGradient().Colors(NormalizeColorList(g.colors)...).Build()
+	if err != nil {
+		return nil, fmt.Errorf("error building gradient: %w", err)
+	}
+
+	img := image.NewPaletted(image.Rect(0, 0, width, height), pal)
+	noise := opensimplex.NewNormalized(seed)
+
+	for x := 0; x < width; x++ {
+		for y := 0; y < height; y++ {
+			img.Set(x, y, grad.At(noise.Eval2(float64(x)*0.02, float64(y)*0.02)))
+		}
+	}
+	return img, nil
 }
 
 func NewGradient(gs string) (g *Gradient, err error) {
@@ -191,4 +277,20 @@ func parseGradient(gs string) (g *Gradient, err error) {
 		return nil, err
 	}
 	return g, err
+}
+
+func minMax(a, b int) (min, max int) {
+	if a > b {
+		return b, a
+	}
+	return a, b
+}
+
+// GeneratePalette generates palette with the given number of colors
+func GeneratePalette(n int) (p []color.Color) {
+	p = make([]color.Color, n)
+	for i := range p {
+		p[i] = palette.Wikipedia.Colors()[i].Color
+	}
+	return p
 }

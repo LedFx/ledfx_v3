@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/carterpeel/go.alac v0.0.0-20220120210858-abcf099555b4
+	github.com/fatih/color v1.13.0
 	github.com/getlantern/systray v1.1.0
 	github.com/gordonklaus/portaudio v0.0.0-20200911161147-bb74aa485641
 	github.com/gorilla/websocket v1.4.2
@@ -13,12 +14,20 @@ require (
 	github.com/hajimehoshi/oto v1.0.1
 	github.com/maghul/alac v0.0.0-20161106215514-129591bceef4
 	github.com/mazznoer/colorgrad v0.8.1
+	github.com/muesli/gamut v0.3.0
 	github.com/muka/go-bluetooth v0.0.0-20211227073548-985739196620
 	github.com/nathan-fiscaletti/consolesize-go v0.0.0-20210105204122-a87d9f614b9d
+	github.com/ojrac/opensimplex-go v1.0.2
+	github.com/oov/audio v0.0.0-20171004131523-88a2be6dbe38
+	github.com/ritchie46/GOPHY v0.0.0-20170315173114-9b8a7f05cfa1
 	github.com/simonassank/aubio-go v0.0.0-20210318191226-729d3d668592
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.10.1
-	golang.org/x/image v0.0.0-20190802002840-cff245a6509b
+	github.com/zaf/resample v0.0.0-20220109201959-aca35f45e6fa
+	github.com/zenwerk/go-wave v0.0.0-20190102022600-1be84bfef50c
+	github.com/zikichombo/sio v0.0.5
+	github.com/zikichombo/sound v0.2.1
+	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
 	golang.org/x/text v0.3.7
 	tailscale.com v1.20.2
 )
@@ -39,15 +48,20 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mazznoer/csscolorparser v0.1.0 // indirect
 	github.com/miekg/dns v1.1.43 // indirect
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
+	github.com/muesli/clusters v0.0.0-20200529215643-2700303c1762 // indirect
+	github.com/muesli/kmeans v0.3.0 // indirect
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
+	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go4.org/intern v0.0.0-20211027215823-ae77deb06f29 // indirect
 	go4.org/mem v0.0.0-20210711025021-927187094b94 // indirect
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20211027215541-db492cf91b37 // indirect
@@ -66,6 +80,6 @@ require (
 require (
 	github.com/maghul/go.alac v0.0.0-20161106215514-129591bceef4 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
-	github.com/pkg/errors v0.9.1
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.8.1
 )

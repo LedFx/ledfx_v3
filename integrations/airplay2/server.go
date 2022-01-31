@@ -45,8 +45,8 @@ func (s *Server) AddOutput(output io.Writer) {
 	s.player.AddWriter(output)
 }
 
-func (s *Server) SetClient(client *Client) {
-	s.player.SetClient(client)
+func (s *Server) AddClient(client *Client) {
+	s.player.AddClient(client)
 }
 
 func (s *Server) Start() error {
@@ -76,4 +76,8 @@ func (s *Server) Stop() {
 
 func (s *Server) GetAlbumGradient(resolution int) (*color.Gradient, error) {
 	return s.player.GetGradientFromArtwork(resolution)
+}
+
+func (s *Server) AnimateArtwork(width, height, frames int) ([]byte, error) {
+	return color.AnimateAlbumArt(s.player.artwork, width, height, frames)
 }

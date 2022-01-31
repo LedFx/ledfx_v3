@@ -45,7 +45,7 @@ func TestAirPlayProxy_InputServer(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error connecting to AirPlay server: %v\n", err)
 	}
-	inputServer.SetClient(client)
+	inputServer.AddClient(client)
 	if err := inputServer.Start(); err != nil {
 		t.Fatalf("Error starting AirPlay inputServer: %v\n", err)
 	}

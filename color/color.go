@@ -3,6 +3,7 @@ package color
 
 import (
 	"errors"
+	"image/color"
 	"strconv"
 	"strings"
 )
@@ -70,4 +71,25 @@ func parseHex(c string) (col Color, err error) {
 	col[1] = float64(hexToByte(c[3])<<4+hexToByte(c[4])) / 255
 	col[2] = float64(hexToByte(c[5])<<4+hexToByte(c[6])) / 255
 	return col, err
+}
+
+func (col Color) NRGBA() color.NRGBA {
+	return color.NRGBA{
+		R: NormalizeFloat(col[0]),
+		G: NormalizeFloat(col[1]),
+		B: NormalizeFloat(col[2]),
+		A: 255,
+	}
+}
+
+func NormalizeFloat(f float64) uint8 {
+	return uint8(f * 255)
+}
+
+func NormalizeColorList(cols []Color) []color.Color {
+	nc := make([]color.Color, len(cols))
+	for i := range cols {
+		nc[i] = cols[i].NRGBA()
+	}
+	return nc
 }

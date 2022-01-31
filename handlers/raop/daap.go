@@ -3,7 +3,13 @@ package raop
 import (
 	"encoding/binary"
 	"fmt"
+	pretty "github.com/fatih/color"
 	log "ledfx/logger"
+)
+
+var (
+	trackInfoPrinter = pretty.New(pretty.BgBlue, pretty.FgWhite, pretty.Bold).Set()
+	lastSong         string
 )
 
 const (
@@ -36,8 +42,27 @@ func parseDaap(daap []byte) map[string]interface{} {
 		}
 		i = i + itemLength + 8
 	}
-	log.Logger.WithField("category", "DAAP Parser").Println(parsedData)
+	logTrackInfo(parsedData)
 	return parsedData
+}
+
+func logTrackInfo(data map[string]interface{}) {
+	curSong := data["dmap.itemname"]
+	switch {
+	case curSong == nil:
+		fallthrough
+	case curSong == lastSong:
+		fallthrough
+	case curSong == "Loading…":
+		return
+	default:
+		s, ok := curSong.(string)
+		if !ok {
+			return
+		}
+		lastSong = s
+		log.Logger.WithField("category", "Track Info").Info(trackInfoPrinter.Sprintf("🎵 Now playing: %s by %s", curSong, data["daap.songartist"]))
+	}
 }
 
 // EncodeDaap will take a map and encode it in daap format

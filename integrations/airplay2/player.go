@@ -8,17 +8,14 @@ import (
 	"ledfx/handlers/rtsp"
 	"ledfx/integrations/airplay2/codec"
 	log "ledfx/logger"
-	"sync/atomic"
 )
 
 type audioPlayer struct {
-	recvBuf    []byte
-	encodedBuf []byte
+	/* Variables that are looped through often belong at the top of the struct */
+	doEncodedSend, hasDecodedOutputs, sessionActive, muted bool
 
-	muted *atomic.Value
-
-	quit       chan struct{}
-	curSession *rtsp.Session
+	numClients int
+	apClients  [8]*Client
 
 	// outputs supports 8 writers maximum.
 	// We use a fixed-length array because
@@ -27,28 +24,23 @@ type audioPlayer struct {
 	numOutputs int
 	outputs    [8]io.Writer
 
-	apClient      *Client
-	doEncodedSend bool
+	quit chan bool
 
-	volume  float64
 	artwork []byte
+	album   string
+	artist  string
+	title   string
 
-	album  string
-	artist string
-	title  string
+	volume float64
 }
 
 func newPlayer() *audioPlayer {
 	p := &audioPlayer{
-		outputs:    [8]io.Writer{},
-		muted:      &atomic.Value{},
-		volume:     1,
-		recvBuf:    make([]byte, 0),
-		encodedBuf: make([]byte, 0),
-		quit:       make(chan struct{}),
+		outputs:   [8]io.Writer{},
+		apClients: [8]*Client{},
+		volume:    1,
+		quit:      make(chan bool),
 	}
-	p.muted.Store(false)
-
 	return p
 }
 
@@ -62,39 +54,50 @@ func newPlayer() *audioPlayer {
 // If an io.MultiWriter() is provided, the already mediocre time complexity
 // of this operation will go from O(n) to O(n^2). We don't want that.
 func (p *audioPlayer) AddWriter(wr io.Writer) {
+	p.hasDecodedOutputs = true
 	p.outputs[p.numOutputs] = wr
 	p.numOutputs++
 }
 
 func (p *audioPlayer) Play(session *rtsp.Session) {
 	log.Logger.WithField("category", "AirPlay Player").Warnf("Starting new session")
-	p.curSession = session
+	p.sessionActive = true
 	decoder := codec.GetCodec(session)
 	go func(dc *codec.Handler) {
-		var ok bool
+		defer func() {
+			p.sessionActive = false
+		}()
 		for {
 			select {
-			case p.recvBuf, ok = <-session.DataChan:
-				if !ok {
+			case recvBuf, ok := <-session.DataChan:
+				switch {
+				case !ok:
 					return
-				}
-				func() {
-					defer func() {
-						if err := recover(); err != nil {
-							log.Logger.WithField("category", "AirPlay Player").Warnf("Recovered from panic during playStream: %v\n", err)
+				case p.muted:
+					continue
+				case !p.doEncodedSend && !p.hasDecodedOutputs:
+					continue
+				default:
+					func() {
+						defer func() {
+							if err := recover(); err != nil {
+								log.Logger.WithField("category", "AirPlay Player").Warnf("Recovered from panic during playStream: %v\n", err)
+							}
+						}()
+
+						if p.doEncodedSend {
+							p.broadcastEncoded(recvBuf)
+						}
+
+						if p.hasDecodedOutputs {
+							recvBuf = dc.Decode(recvBuf)
+							codec.NormalizeAudio(recvBuf, p.volume)
+							for i := 0; i < p.numOutputs; i++ {
+								_, _ = p.outputs[i].Write(recvBuf)
+							}
 						}
 					}()
-					if p.doEncodedSend {
-						_, _ = p.apClient.DataConn.Write(p.recvBuf)
-					}
-					if p.numOutputs > 0 {
-						p.recvBuf = dc.Decode(p.recvBuf)
-						codec.NormalizeAudio(p.recvBuf, p.volume)
-						for i := 0; i < p.numOutputs; i++ {
-							_, _ = p.outputs[i].Write(p.recvBuf)
-						}
-					}
-				}()
+				}
 			case <-p.quit:
 				log.Logger.WithField("category", "AirPlay Player").Warnf("Session with peer '%s' closed", session.Description.ConnectData.ConnectionAddress)
 				return
@@ -103,47 +106,52 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 	}(decoder)
 }
 
-func (p *audioPlayer) SetClient(client *Client) {
-	p.apClient = client
+func (p *audioPlayer) AddClient(client *Client) {
 	p.doEncodedSend = true
+	p.apClients[p.numClients] = client
+	p.numClients++
 }
 
 func (p *audioPlayer) SetVolume(volume float64) {
-	if p.doEncodedSend {
-		p.apClient.SetParam(raop.ParamVolume(prepareVolume(volume)))
-	}
 	p.volume = volume
+	if p.doEncodedSend {
+		p.broadcastParam(raop.ParamVolume(prepareVolume(volume)))
+	}
+	p.SetMute(volume == 0)
 }
 
 func (p *audioPlayer) SetMute(isMuted bool) {
+	p.muted = isMuted
 	if p.doEncodedSend {
-		p.apClient.SetParam(raop.ParamMuted(isMuted))
+		p.broadcastParam(raop.ParamMuted(isMuted))
 	}
-	p.muted.Store(isMuted)
+	if isMuted {
+		log.Logger.WithField("category", "AirPlay Player").Infoln("Muting stream...")
+	}
 }
 
 func (p *audioPlayer) GetIsMuted() bool {
-	return p.muted.Load().(bool)
+	return p.muted
 }
 
 func (p *audioPlayer) SetTrack(album string, artist string, title string) {
+	p.album = album
+	p.artist = artist
+	p.title = title
 	if p.doEncodedSend {
-		p.apClient.SetParam(raop.ParamTrackInfo{
+		p.broadcastParam(raop.ParamTrackInfo{
 			Album:  album,
 			Artist: artist,
 			Title:  title,
 		})
 	}
-	p.album = album
-	p.artist = artist
-	p.title = title
 }
 
 func (p *audioPlayer) SetAlbumArt(artwork []byte) {
-	if p.doEncodedSend {
-		p.apClient.SetParam(raop.ParamAlbumArt(artwork))
-	}
 	p.artwork = artwork
+	if p.doEncodedSend {
+		p.broadcastParam(raop.ParamAlbumArt(artwork))
+	}
 }
 
 func (p *audioPlayer) GetGradientFromArtwork(resolution int) (*color.Gradient, error) {
@@ -174,7 +182,19 @@ func prepareVolume(vol float64) float64 {
 }
 
 func (p *audioPlayer) Close() {
-	if p.curSession != nil {
-		p.quit <- struct{}{}
+	if p.sessionActive {
+		p.quit <- true
+	}
+}
+
+func (p *audioPlayer) broadcastParam(par interface{}) {
+	for i := range p.apClients {
+		go p.apClients[i].SetParam(par)
+	}
+}
+
+func (p *audioPlayer) broadcastEncoded(data []byte) {
+	for i := 0; i < p.numClients; i++ {
+		_, _ = p.apClients[i].DataConn.Write(data)
 	}
 }

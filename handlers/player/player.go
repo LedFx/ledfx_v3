@@ -1,7 +1,6 @@
 package player
 
 import (
-	"bytes"
 	"encoding/binary"
 	"log"
 	"sync"
@@ -94,44 +93,28 @@ func (lp *LocalPlayer) playStream(session *rtsp.Session) {
 		if err != nil {
 			log.Println("Problem decoding packet")
 		}
-		p.Write(AdjustAudio(decoded, vol))
+		AdjustAudio(decoded, vol)
+		p.Write(decoded)
 	}
 	log.Println("Data stream ended closing player")
 	p.Close()
 }
 
 // AdjustAudio takes a raw data frame of audio and a volume value between 0 and 1, 1 being full volume, 0 being mute
-func AdjustAudio(raw []byte, vol float64) []byte {
+func AdjustAudio(raw []byte, vol float64) {
 	if vol == 1 {
-		return raw
+		return
 	}
-	adjusted := new(bytes.Buffer)
-	for i := 0; i < len(raw); i = i + 2 {
-		var val int16
-		b := raw[i : i+2]
-		buf := bytes.NewReader(b)
-		err := binary.Read(buf, binary.LittleEndian, &val)
-		if err != nil {
-			log.Println(err)
-		}
-		mod := vol * float64(val)
-		val = int16(mod)
-		val = min(32767, val)
-		val = max(-32767, val)
-		binary.Write(adjusted, binary.LittleEndian, val)
-
+	for i := 0; i < len(raw); i += 2 {
+		binary.LittleEndian.PutUint16(raw[i:i+2], uint16(max(-32767, min(32767, int16(vol*float64(int16(binary.LittleEndian.Uint16(raw[i:i+2]))))))))
 	}
-
-	return adjusted.Bytes()
 }
-
 func min(a, b int16) int16 {
 	if a < b {
 		return a
 	}
 	return b
 }
-
 func max(a, b int16) int16 {
 	if a > b {
 		return a

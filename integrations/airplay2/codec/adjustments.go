@@ -1,8 +1,6 @@
 package codec
 
-import (
-	"encoding/binary"
-)
+import "encoding/binary"
 
 func NormalizeAudio(audioBytes []byte, volume float64) {
 	if volume == 1 {

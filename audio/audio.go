@@ -1,6 +1,6 @@
 package audio
 
-type Buffer []float32
+type Buffer []int16
 
 func BufferToF64(b *Buffer) (out []float64) {
 	out = make([]float64, len(*b))

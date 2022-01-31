@@ -37,7 +37,7 @@ func NewDev(l *Loopback) (d *Dev, err error) {
 	if d.e, err = echoExp(l); err != nil {
 		return nil, fmt.Errorf("error initializing new echo device: %w", err)
 	}
-	
+
 	return d, nil
 }
 

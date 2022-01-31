@@ -2,12 +2,13 @@ package logger
 
 import (
 	"fmt"
-	nested "github.com/antonfisher/nested-logrus-formatter"
-	"github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"runtime"
 	"time"
+
+	nested "github.com/antonfisher/nested-logrus-formatter"
+	"github.com/sirupsen/logrus"
 )
 
 var Logger *logrus.Logger

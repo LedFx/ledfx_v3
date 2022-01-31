@@ -18,7 +18,6 @@ var onset *aubio.Onset
 const fft_size uint = 1024
 
 func CaptureDemo() {
-
 	// REMOVE THIS ONCE WE HAVE CONFIG VALIDATION
 	config.GlobalConfig.Audio.FrameRate = 60
 

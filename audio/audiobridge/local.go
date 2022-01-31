@@ -3,7 +3,6 @@ package audiobridge
 import (
 	"fmt"
 	"github.com/hajimehoshi/oto"
-	"ledfx/audio/audiobridge/loopback"
 )
 
 func (br *Bridge) StartLocalInput() (err error) {
@@ -18,7 +17,7 @@ func (br *Bridge) StartLocalInput() (err error) {
 	}
 
 	if br.local.loopback == nil {
-		if br.local.loopback, err = loopback.New(br.ledFxWriter); err != nil {
+		if br.local.loopback, err = capture.New(br.ledFxWriter); err != nil {
 			return fmt.Errorf("error initializing new loopback device: %w", err)
 		}
 	}
@@ -50,7 +49,7 @@ func (br *Bridge) AddLocalOutput() (err error) {
 type LocalHandler struct {
 	ctx      *oto.Context
 	player   *oto.Player
-	loopback *loopback.Loopback
+	loopback *capture.Loopback
 }
 
 func (lh *LocalHandler) Stop() {

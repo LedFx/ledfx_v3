@@ -54,6 +54,7 @@ func GetAudioDevices() (infos []config.AudioDevice, err error) {
 		return
 	}
 	defer portaudio.Terminate()
+
 	hs, err := portaudio.HostApis()
 	if err != nil {
 		logger.Logger.Error(err)

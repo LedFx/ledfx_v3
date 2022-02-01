@@ -2,33 +2,34 @@ package audiobridge
 
 import (
 	"fmt"
-	"github.com/hajimehoshi/oto"
+	"io"
 	"ledfx/integrations/airplay2"
-	log "ledfx/logger"
 )
 
-func (br *Bridge) wireAirPlayOutput(client *airplay2.Client) error {
+func (br *Bridge) wireAirPlayOutput(client *airplay2.Client) (err error) {
 	switch br.inputType {
 	case -1:
-		return fmt.Errorf("input source has not been defined")
+		err = fmt.Errorf("input source has not been defined")
 	case inputTypeAirPlayServer:
 		br.airplay.server.AddClient(client)
 	case inputTypeLocal:
-		br.local.loopback.AddOutput(client)
-		log.Logger.Fatalf("implement me!")
+		br.local.capture.AddByteWriters(client.DataConn)
+	default:
+		err = fmt.Errorf("unrecognized input type")
 	}
-	return fmt.Errorf("unrecognized input type")
+	return err
 }
 
-func (br *Bridge) wireLocalOutput(player *oto.Player) error {
+func (br *Bridge) AddOutputWriter(wr io.Writer) (err error) {
 	switch br.inputType {
 	case -1:
-		return fmt.Errorf("input source has not been defined")
+		err = fmt.Errorf("input source has not been defined")
 	case inputTypeAirPlayServer:
-		br.airplay.server.AddOutput(player)
+		br.airplay.server.AddOutput(wr)
 	case inputTypeLocal:
-		br.local.loopback.AddOutput(player)
-		log.Logger.Fatalf("implement me!")
+		br.local.capture.AddByteWriters(wr)
+	default:
+		err = fmt.Errorf("unrecognized input type '%d'", br.inputType)
 	}
-	return fmt.Errorf("unrecognized input type")
+	return err
 }

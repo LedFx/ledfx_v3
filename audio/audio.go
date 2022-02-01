@@ -9,3 +9,11 @@ func BufferToF64(b *Buffer) (out []float64) {
 	}
 	return out
 }
+
+func (b Buffer) Sum() int64 {
+	var sum int64
+	for i := range b {
+		sum += int64(b[i])
+	}
+	return sum
+}

@@ -1,13 +1,16 @@
 package airplay2
 
 import (
+	"github.com/dustin/go-broadcast"
 	"io"
+	"ledfx/audio"
 	"ledfx/color"
 	"ledfx/handlers/player"
 	"ledfx/handlers/raop"
 	"ledfx/handlers/rtsp"
 	"ledfx/integrations/airplay2/codec"
 	log "ledfx/logger"
+	"unsafe"
 )
 
 type audioPlayer struct {
@@ -32,14 +35,17 @@ type audioPlayer struct {
 	title   string
 
 	volume float64
+
+	hermes broadcast.Broadcaster
 }
 
-func newPlayer() *audioPlayer {
+func newPlayer(hermes broadcast.Broadcaster) *audioPlayer {
 	p := &audioPlayer{
 		outputs:   [8]io.Writer{},
 		apClients: [8]*Client{},
 		volume:    1,
 		quit:      make(chan bool),
+		hermes:    hermes,
 	}
 	return p
 }
@@ -89,9 +95,12 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 							p.broadcastEncoded(recvBuf)
 						}
 
+						recvBuf = dc.Decode(recvBuf)
+						codec.NormalizeAudio(recvBuf, p.volume)
+
+						p.hermes.Submit(audioBufFromBytes(recvBuf))
+
 						if p.hasDecodedOutputs {
-							recvBuf = dc.Decode(recvBuf)
-							codec.NormalizeAudio(recvBuf, p.volume)
 							for i := 0; i < p.numOutputs; i++ {
 								_, _ = p.outputs[i].Write(recvBuf)
 							}
@@ -104,6 +113,20 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 			}
 		}
 	}(decoder)
+}
+
+func audioBufFromBytes(recvBuf []byte) audio.Buffer {
+	audioBuf := audio.Buffer{}
+	var offset int
+	for i := 0; i < len(recvBuf); i += 2 {
+		audioBuf = append(audioBuf, readInt16Unsafe(recvBuf[i:i+2]))
+		offset++
+	}
+	return audioBuf
+}
+
+func readInt16Unsafe(b []byte) int16 {
+	return *(*int16)(unsafe.Pointer(&b[0]))
 }
 
 func (p *audioPlayer) AddClient(client *Client) {

@@ -2,10 +2,31 @@ package audiobridge
 
 import (
 	"fmt"
-	"github.com/hajimehoshi/oto"
+	"github.com/dustin/go-broadcast"
+	"ledfx/audio"
+	"ledfx/audio/audiobridge/capture"
+	"ledfx/audio/audiobridge/playback"
+	"ledfx/config"
+	log "ledfx/logger"
 )
 
-func (br *Bridge) StartLocalInput() (err error) {
+type LocalHandler struct {
+	playback   *playback.Handler
+	capture    *capture.Handler
+	hermes     broadcast.Broadcaster // Hermes is a messenger for audio buffers.
+	hermesChan chan interface{}
+}
+
+func newLocalHandler(hermes broadcast.Broadcaster) *LocalHandler {
+	lh := &LocalHandler{
+		hermes:     hermes,
+		hermesChan: make(chan interface{}),
+	}
+	lh.hermes.Register(lh.hermesChan)
+	return lh
+}
+
+func (br *Bridge) StartLocalInput(audioDevice config.AudioDevice) (err error) {
 	if br.inputType != -1 {
 		return fmt.Errorf("an input source has already been defined for this bridge")
 	}
@@ -13,47 +34,45 @@ func (br *Bridge) StartLocalInput() (err error) {
 	br.inputType = inputTypeLocal
 
 	if br.local == nil {
-		br.local = new(LocalHandler)
+		br.local = newLocalHandler(br.hermes)
 	}
 
-	if br.local.loopback == nil {
-		if br.local.loopback, err = capture.New(br.ledFxWriter); err != nil {
-			return fmt.Errorf("error initializing new loopback device: %w", err)
+	if br.local.capture == nil {
+		if br.local.capture, err = capture.NewHandler(audioDevice, br.local.hermes); err != nil {
+			return fmt.Errorf("error initializing new capture handler: %w", err)
 		}
 	}
+
+	go func() {
+		for captured := range br.local.hermesChan {
+			br.bufferCallback(captured.(audio.Buffer))
+		}
+	}()
 
 	return nil
 }
 
-func (br *Bridge) AddLocalOutput() (err error) {
+func (br *Bridge) AddLocalOutput(audioDevice config.AudioDevice) (err error) {
 	if br.local == nil {
-		br.local = new(LocalHandler)
+		br.local = newLocalHandler(br.hermes)
 	}
-	if br.local.ctx == nil {
-		if br.local.ctx, err = oto.NewContext(44100, 2, 2, 12000); err != nil {
-			return fmt.Errorf("error creating new OTO context: %w", err)
+
+	if br.local.playback == nil {
+		if br.local.playback, err = playback.NewHandler(audioDevice, br.local.hermes); err != nil {
+			return fmt.Errorf("error initializing new playback handler: %w", err)
 		}
 	}
 
-	if br.local.player == nil {
-		br.local.player = br.local.ctx.NewPlayer()
-	}
-
-	if err = br.wireLocalOutput(br.local.player); err != nil {
-		return fmt.Errorf("error wiring local output: %w", err)
-	}
-
 	return nil
-}
-
-type LocalHandler struct {
-	ctx      *oto.Context
-	player   *oto.Player
-	loopback *capture.Loopback
 }
 
 func (lh *LocalHandler) Stop() {
-	if lh.ctx != nil {
-		_ = lh.ctx.Close()
+	if lh.capture != nil {
+		log.Logger.WithField("category", "Local Audio Handler").Warnf("Stopping capture handler...")
+		lh.capture.Quit()
+	}
+	if lh.playback != nil {
+		log.Logger.WithField("category", "Local Audio Handler").Warnf("Stopping playback handler...")
+		lh.playback.Quit()
 	}
 }

@@ -1,183 +1,74 @@
 package audiobridge
 
-// NOTE: All the tests below will only succeed if the following instructions are followed:
-// 1). Must be run on a Raspberry Pi with Bluez
-// 2). 'dstConfAP.Name' must be changed to a regex pattern that matches an AirPlay advertisement within range of the Pi.
-// 3). 'dstConfBT.Name' must be changed to a regex pattern that matches a Bluetooth advertisement within range of the Pi.
-/*func TestAudioBridge_Reset(t *testing.T) {
-	srcConfAP := EndpointConfig{
-		Type:    DeviceTypeAirPlay,
-		Name:    "LedFX-Input-Test",
-		Verbose: true,
-	}
-	srcConfBT := EndpointConfig{
-		Type:    DeviceTypeBluetooth,
-		Name:    "LedFX-Input-Test",
-		Verbose: true,
-	}
+import (
+	"github.com/hajimehoshi/oto"
+	"io"
+	"ledfx/audio"
+	"ledfx/config"
+	log "ledfx/logger"
+	"os"
+	"strings"
+	"testing"
+	"time"
+)
 
-	dstConfAP := EndpointConfig{
-		Type:    DeviceTypeAirPlay,
-		Name:    "(?i)Output$",
-		Verbose: true,
-	}
-	dstConfBT := EndpointConfig{
-		Type:    DeviceTypeBluetooth,
-		Name:    "(?i)K850$",
-		Verbose: true,
-	}
-
-	bridge, err := NewBridge(srcConfAP, dstConfAP, io.Discard)
+func TestAudioBridge_Darwin(t *testing.T) {
+	br, err := NewBridge(func(buf audio.Buffer) {})
 	if err != nil {
-		t.Fatalf("Error initializing new bridge (AP -> AP): %v\n", err)
+		t.Fatalf("Error creating new bridge: %v\n", err)
 	}
 
+	devices, err := audio.GetAudioDevices()
+	if err != nil {
+		t.Fatalf("Error getting available audio devices: %v\n", err)
+	}
+
+	var inputDev *config.AudioDevice
+	for i := range devices {
+		if strings.Contains(strings.ToLower(devices[i].Name), "mic") {
+			inputDev = &devices[i]
+			log.Logger.WithField("category", "AudioBridge Test").Infof("Input Device: %s\n", inputDev.Name)
+		}
+	}
+
+	if inputDev == nil {
+		t.Fatalf("Could not find input audio device containing string 'mic'\n")
+	}
+
+	if err := br.StartLocalInput(*inputDev); err != nil {
+		t.Fatalf("Error starting local input: %v\n", err)
+	}
+
+	fi, err := os.Create("./captured.out")
+	if err != nil {
+		t.Fatalf("Error creating output file: %v\n", err)
+	}
+	defer func() {
+		fi.Close()
+		os.Remove("./captured.out")
+	}()
+
+	if err := br.AddOutputWriter(fi); err != nil {
+		t.Fatalf("Error adding output writer: %v\n", err)
+	}
+
+	log.Logger.WithField("category", "AudioBridge Test").Infof("Make some noise!")
 	time.Sleep(10 * time.Second)
-	log.Logger.WithField("component", "AP -> AP").Infoln("Success!")
+	br.Stop()
 
-	if err := bridge.Reset(srcConfAP, dstConfBT); err != nil {
-		t.Fatalf("Error resetting bridge (AP -> BT): %v", err)
+	// Rewind the file
+	if _, err := fi.Seek(0, 0); err != nil {
+		t.Fatalf("Error rewinding file: %v\n", err)
 	}
 
-	time.Sleep(10 * time.Second)
-	log.Logger.WithField("component", "AP -> BT").Infoln("Success!")
-
-	if err := bridge.Reset(srcConfBT, dstConfBT); err != nil {
-		t.Fatalf("Error resetting bridge (BT -> BT): %v", err)
-	}
-
-	time.Sleep(10 * time.Second)
-	log.Logger.WithField("component", "BT -> BT").Infoln("Success!")
-
-	if err := bridge.Reset(srcConfBT, dstConfAP); !errors.Is(err, ErrCannotBridgeBT2AP) {
-		t.Fatalf("Invalid error returned (BT -> AP, expected 'ErrCannotBridgeBT2AP'): %v\n", err)
-	}
-
-	log.Logger.WithField("component", "BT -> AP").Infoln("Success! (Proper error returned)")
-	bridge.Stop()
-	log.Logger.WithField("component", "Kill Bridge").Infoln("Success!")
-}*/
-
-/*func TestAudioBridge_Ap2Ap(t *testing.T) {
-	// srcConf is the config for the endpoint from which
-	// audio will be ingested, processed, converted, and
-	// redistributed.
-	srcConf := EndpointConfig{
-		Type:    DeviceTypeAirPlay,  // Spin up an AirPlay server
-		Name:    "LedFX-Input-Test", // It will be advertised as "LedFX-Input-Test"
-		Verbose: true,               // Enable verbosity because this is a test package.
-	}
-
-	dstConf := EndpointConfig{
-		Type: DeviceTypeAirPlay, // Connect to an airplay server
-
-		// We will connect to any AirPlay server that contains the string "Output" (case-insensitive)
-		Name: "(?i)Output$", // Regular expressions are required here.
-
-		Verbose: true, // Enable verbosity because this is a test package.
-	}
-
-	// Initialize the bridge. This will start everything, too.
-	bridge, err := NewBridge(srcConf, dstConf, io.Discard)
+	otoCtx, err := oto.NewContext(int(inputDev.SampleRate), inputDev.Channels, 2, 100)
 	if err != nil {
-		t.Fatalf("error creating new audio bridge: %v\n", err)
+		t.Fatalf("Error initializing new OTO context: %v\n", err)
 	}
 
-	// Wait until the bridge loop stops. This can be called with Stop()
-	bridge.Wait()
-
-}*/
-
-/*func TestAudioBridge_Ap2Bt(t *testing.T) {
-	srcConf := EndpointConfig{
-		Type:    DeviceTypeAirPlay,
-		Name:    "LedFX-Input-Test",
-		Verbose: true,
-	}
-
-	dstConf := EndpointConfig{
-		Type: DeviceTypeBluetooth,
-
-		Name: "(?i)k850$",
-
-		Verbose: true,
-	}
-
-	bridge, err := NewBridge(srcConf, dstConf, io.Discard)
-	if err != nil {
-		t.Fatalf("Error creating new audio bridge: %v\n", err)
-	}
-
-	bridge.Wait()
-
-}*/
-
-/*func TestAudioBridge_ArtworkGradient(t *testing.T) {
-	srcConf := EndpointConfig{
-		Type:    DeviceTypeAirPlay,
-		Name:    "LedFX-Input-Test",
-		Verbose: false,
-	}
-
-	dstConf := EndpointConfig{
-		Type:    DeviceTypeBluetooth,
-		Name:    "(?i)k850$",
-		Verbose: false,
-	}
-
-	bridge, err := NewBridge(srcConf, dstConf, io.Discard)
-	if err != nil {
-		t.Fatalf("Error creating new audio bridge: %v\n", err)
-	}
-
-	time.Sleep(25 * time.Second)
-
-	gradient, err := bridge.GetGradientFromArtwork(25)
-	if err != nil {
-		t.Fatalf("Error generating gradient from current artwork: %v\n", err)
-	}
-
-	link, err := gradient.WebServe()
-	if err != nil {
-		t.Fatalf("Error serving PNG to web: %v\n", err)
-	}
-
-	log.Logger.WithField("category", "Test: Gradient").Infof("Gradient URL: %s\n", link.String())
-	raw, err := gradient.RawNoise(1500, 70, time.Now().UnixNano(), 0.02)
-	if err != nil {
-		t.Fatalf("error generating raw PNG data: %v\n", err)
-	}
-	_ = ioutil.WriteFile("gradient.png", raw, 0777)
-
-	bridge.Wait()
-}*/
-
-/*func TestAudioBridge_ArtworkGIF(t *testing.T) {
-	srcConf := EndpointConfig{
-		Type:    DeviceTypeAirPlay,
-		Name:    "LedFX-Input-Test",
-		Verbose: false,
-	}
-
-	dstConf := EndpointConfig{
-		Type:    DeviceTypeBluetooth,
-		Name:    "(?i)k850$",
-		Verbose: false,
-	}
-
-	bridge, err := NewBridge(srcConf, dstConf, io.Discard)
-	if err != nil {
-		t.Fatalf("Error creating new audio bridge: %v\n", err)
-	}
-
-	time.Sleep(25 * time.Second)
-
-	gradient, err := bridge.AnimateArtwork(150, 150, 10)
-	if err != nil {
-		t.Fatalf("Error generating gradient from current artwork: %v\n", err)
-	}
-
-	_ = ioutil.WriteFile("gradient.gif", gradient, 0777)
-	log.Logger.WithField("category", "Test: Artwork GIF").Infoln("Wrote gradient.gif")
-	bridge.Wait()
-}*/
+	player := otoCtx.NewPlayer()
+	defer player.Close()
+	log.Logger.WithField("category", "AudioBridge Test").Infof("Audio capture finished. Playing back audio...")
+	io.Copy(player, fi)
+	log.Logger.WithField("category", "AudioBridge Test").Infof("Did you hear yourself?")
+}

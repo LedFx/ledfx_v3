@@ -1,6 +1,7 @@
 package airplay2
 
 import (
+	"github.com/dustin/go-broadcast"
 	"io"
 	"ledfx/color"
 	"ledfx/handlers/raop"
@@ -20,11 +21,12 @@ type Server struct {
 	conf   *Config
 	svc    *raop.AirplayServer
 
-	done chan struct{}
+	done   chan struct{}
+	hermes broadcast.Broadcaster
 }
 
-func NewServer(conf Config) (s *Server) {
-	pl := newPlayer()
+func NewServer(conf Config, hermes broadcast.Broadcaster) (s *Server) {
+	pl := newPlayer(hermes)
 
 	if conf.Port == 0 {
 		conf.Port = 7000
@@ -36,6 +38,7 @@ func NewServer(conf Config) (s *Server) {
 		player: pl, // Port range: 1024 through 65530
 		done:   make(chan struct{}),
 		svc:    raop.NewAirplayServer(conf.Port, conf.AdvertisementName, pl),
+		hermes: hermes,
 	}
 
 	return s

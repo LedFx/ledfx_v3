@@ -1,46 +1,39 @@
 package audiobridge
 
 import (
-	"io"
+	"fmt"
+	"github.com/dustin/go-broadcast"
+	"github.com/gordonklaus/portaudio"
+	"ledfx/audio"
+	log "ledfx/logger"
 )
 
 // NewBridge initializes a new bridge between a source and destination audio device.
-func NewBridge(ledFxWriter io.Writer) (br *Bridge, err error) {
+func NewBridge(bufferCallback func(buf audio.Buffer)) (br *Bridge, err error) {
+	if err := portaudio.Initialize(); err != nil {
+		return nil, fmt.Errorf("error initializing PortAudio: %w", err)
+	}
 	br = &Bridge{
-		ledFxWriter: ledFxWriter,
-		done:        make(chan bool),
-		inputType:   inputType(-1), // -1 signifies undefined
+		bufferCallback: bufferCallback,
+		hermes:         broadcast.NewBroadcaster(60),
+		inputType:      inputType(-1), // -1 signifies undefined
 	}
 	return br, nil
-}
-
-func (br *Bridge) Wait() {
-	<-br.done
-}
-
-func (br *Bridge) stop(notifyDone bool) {
-	if notifyDone {
-		defer func() {
-			go func() {
-				br.done <- true
-			}()
-		}()
-	}
-
-	if br.airplay != nil {
-		br.airplay.Stop()
-	}
-
-	if br.local != nil {
-		br.local.Stop()
-	}
-
 }
 
 // Stop stops the bridge. Any further references to 'br *Bridge'
 // may cause a runtime panic.
 func (br *Bridge) Stop() {
-	if br != nil {
-		br.stop(true)
+	if br.airplay != nil {
+		log.Logger.WithField("category", "Audio Bridge").Warnf("Stopping AirPlay handler...")
+		br.airplay.Stop()
 	}
+
+	if br.local != nil {
+		log.Logger.WithField("category", "Audio Bridge").Warnf("Stopping local audio handler...")
+		br.local.Stop()
+	}
+
+	log.Logger.WithField("category", "Audio Bridge").Warnf("Terminating PortAudio...")
+	_ = portaudio.Terminate()
 }

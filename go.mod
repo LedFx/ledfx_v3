@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/carterpeel/go.alac v0.0.0-20220120210858-abcf099555b4
+	github.com/dustin/go-broadcast v0.0.0-20211018055107-71439988bd91
 	github.com/fatih/color v1.13.0
 	github.com/getlantern/systray v1.1.0
 	github.com/gordonklaus/portaudio v0.0.0-20200911161147-bb74aa485641
@@ -12,21 +13,17 @@ require (
 	github.com/grandcat/zeroconf v1.0.0
 	github.com/grantmd/go-airplay v0.0.0-20150101054745-99b46766924c
 	github.com/hajimehoshi/oto v1.0.1
+	github.com/itsmontoya/mailbox v0.0.0-20161129212003-753ba88087ad
 	github.com/maghul/alac v0.0.0-20161106215514-129591bceef4
 	github.com/mazznoer/colorgrad v0.8.1
 	github.com/muesli/gamut v0.3.0
 	github.com/muka/go-bluetooth v0.0.0-20211227073548-985739196620
 	github.com/nathan-fiscaletti/consolesize-go v0.0.0-20210105204122-a87d9f614b9d
 	github.com/ojrac/opensimplex-go v1.0.2
-	github.com/oov/audio v0.0.0-20171004131523-88a2be6dbe38
 	github.com/ritchie46/GOPHY v0.0.0-20170315173114-9b8a7f05cfa1
 	github.com/simonassank/aubio-go v0.0.0-20210318191226-729d3d668592
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.10.1
-	github.com/zaf/resample v0.0.0-20220109201959-aca35f45e6fa
-	github.com/zenwerk/go-wave v0.0.0-20190102022600-1be84bfef50c
-	github.com/zikichombo/sio v0.0.5
-	github.com/zikichombo/sound v0.2.1
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
 	golang.org/x/text v0.3.7
 	tailscale.com v1.20.2
@@ -46,6 +43,7 @@ require (
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/godbus/dbus/v5 v5.0.6 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/joeshaw/gengen v0.0.0-20190604015154-c77d87825f5a // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect

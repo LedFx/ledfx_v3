@@ -3,8 +3,8 @@ package capture
 import (
 	"encoding/binary"
 	"fmt"
+	"github.com/dustin/go-broadcast"
 	"github.com/gordonklaus/portaudio"
-	"github.com/oov/audio/converter"
 	"io"
 	"ledfx/audio"
 	"ledfx/config"
@@ -13,27 +13,18 @@ import (
 
 type Handler struct {
 	*portaudio.Stream
-	buffer      audio.Buffer
 	byteWriters []io.Writer
-	done        chan bool
-	floatChan   chan []float64
+	hermes      broadcast.Broadcaster
 }
 
 func (h *Handler) AddByteWriters(byteWriters ...io.Writer) {
 	h.byteWriters = append(h.byteWriters, byteWriters...)
 }
 
-func NewHandler(audioDevice config.AudioDevice, floatChan chan []float64, byteWriters ...io.Writer) (*Handler, error) {
-	h, err := portaudio.DefaultHostApi()
-	if err != nil {
-		return nil, fmt.Errorf("error getting default Portaudio host API: %w", err)
-	}
-
-	log.Logger.Infof("Input device: %s\n", h.DefaultInputDevice.Name)
-
+func NewHandler(audioDevice config.AudioDevice, hermes broadcast.Broadcaster, byteWriters ...io.Writer) (h *Handler, err error) {
 	dev, err := audio.GetPaDeviceInfo(audioDevice)
 	if err != nil {
-		return nil, fmt.Errorf("error getting Pulseaudio device info: %w", err)
+		return nil, fmt.Errorf("error getting PortAudio device info: %w", err)
 	}
 
 	p := portaudio.StreamParameters{
@@ -45,31 +36,25 @@ func NewHandler(audioDevice config.AudioDevice, floatChan chan []float64, byteWr
 		FramesPerBuffer: int(dev.DefaultSampleRate / 60),
 	}
 
-	e := &Handler{
-		buffer:      audio.Buffer{},
-		done:        make(chan bool),
+	h = &Handler{
 		byteWriters: byteWriters,
-		floatChan:   floatChan,
+		hermes:      hermes,
 	}
 
-	if e.Stream, err = portaudio.OpenStream(p, e.audioSampleCallback); err != nil {
+	if h.Stream, err = portaudio.OpenStream(p, h.captureSampleCallback); err != nil {
 		return nil, fmt.Errorf("error opening Portaudio stream: %w", err)
 	}
 
-	e.Stream.Start()
-
-	return e, nil
-}
-
-func (h *Handler) audioSampleCallback(in audio.Buffer) {
-	byteBuf := make([]byte, len(in)*2)
-	floatBuf := make([]float64, len(in))
-
-	for i := range in {
-		floatBuf[i] = converter.Int16ToFloat64(in[i])
+	if err = h.Stream.Start(); err != nil {
+		return nil, fmt.Errorf("error starting capture stream: %w", err)
 	}
 
-	h.floatChan <- floatBuf
+	return h, nil
+}
+
+func (h *Handler) captureSampleCallback(in audio.Buffer) {
+	h.hermes.Submit(in)
+	byteBuf := make([]byte, len(in)*2)
 
 	var offset int
 	for i := range in {
@@ -82,44 +67,9 @@ func (h *Handler) audioSampleCallback(in audio.Buffer) {
 	}
 }
 
-func (h *Handler) Wait() {
-	<-h.done
-	h.Stream.Stop()
-	h.Stream.Close()
-	portaudio.Terminate()
-}
-
 func (h *Handler) Quit() {
-	h.done <- true
+	log.Logger.WithField("category", "Capture Handler").Warnf("Aborting stream...")
+	h.Stream.Abort()
+	log.Logger.WithField("category", "Capture Handler").Warnf("Closing stream...")
+	h.Stream.Close()
 }
-
-/*func echoExp(l *Loopback) (e *echoExperimental, err error) {
-	e = new(echoExperimental)
-
-	if e.Source, err = sio.CaptureWith(sound.StereoCd(), sample.Codecs[2], 64); err != nil {
-		return nil, fmt.Errorf("error opening audio capture source: %w", err)
-	}
-
-	floatBuf := make([]float64, 64)
-	outWriter := io.MultiWriter(l.outputs...)
-
-	go func() {
-		for {
-			if _, err := e.Source.Receive(floatBuf); err != nil {
-				log.Logger.Errorf("error recieving audio: %v", err)
-			}
-
-			intBuf := make([]int16, 64)
-
-			for i := range floatBuf {
-				intBuf[i] = int16(floatBuf[i] * 32767)
-
-			}
-
-			if _, err := outWriter.Write(byteBuf); err != nil {
-				log.Logger.Errorf("error streaming to output writer: %v", err)
-			}
-		}
-	}()
-	return e, nil
-}*/

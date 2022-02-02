@@ -21,7 +21,7 @@ func decodeAlac(data []byte) ([]byte, error) {
 	return decoder.Decode(data), nil
 }
 
-// GetCodec determins the appropriate codec from the rtsp session
+// GetCodec determines the appropriate codec from the rtsp session
 func GetCodec(session *rtsp.Session) CodecHandler {
 	var decoder CodecHandler
 	rtpmap := session.Description.Attributes["rtpmap"]

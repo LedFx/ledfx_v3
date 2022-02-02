@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/carterpeel/go.alac v0.0.0-20220120210858-abcf099555b4
+	github.com/carterpeel/oto/v2 v2.1.0-alpha.5.0.20220202193513-0289740273b1
 	github.com/dustin/go-broadcast v0.0.0-20211018055107-71439988bd91
 	github.com/fatih/color v1.13.0
 	github.com/getlantern/systray v1.1.0
@@ -12,9 +13,6 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/grandcat/zeroconf v1.0.0
 	github.com/grantmd/go-airplay v0.0.0-20150101054745-99b46766924c
-	github.com/hajimehoshi/oto v1.0.1
-	github.com/itsmontoya/mailbox v0.0.0-20161129212003-753ba88087ad
-	github.com/maghul/alac v0.0.0-20161106215514-129591bceef4
 	github.com/mazznoer/colorgrad v0.8.1
 	github.com/muesli/gamut v0.3.0
 	github.com/muka/go-bluetooth v0.0.0-20211227073548-985739196620
@@ -43,7 +41,6 @@ require (
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/godbus/dbus/v5 v5.0.6 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/joeshaw/gengen v0.0.0-20190604015154-c77d87825f5a // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
@@ -55,17 +52,17 @@ require (
 	github.com/muesli/kmeans v0.3.0 // indirect
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
 	go4.org/intern v0.0.0-20211027215823-ae77deb06f29 // indirect
 	go4.org/mem v0.0.0-20210711025021-927187094b94 // indirect
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20211027215541-db492cf91b37 // indirect
 	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e // indirect
-	golang.org/x/exp v0.0.0-20200331195152-e8c3332aa8e5 // indirect
-	golang.org/x/mobile v0.0.0-20190719004257-d2bd2a29d028 // indirect
 	golang.org/x/net v0.0.0-20220111093109-d55c255bac03 // indirect
 	golang.org/x/sys v0.0.0-20211210111614-af8b64212486 // indirect
 	golang.zx2c4.com/wireguard/windows v0.4.10 // indirect
@@ -76,8 +73,8 @@ require (
 )
 
 require (
+	github.com/maghul/alac v0.0.0-20161106215514-129591bceef4
 	github.com/maghul/go.alac v0.0.0-20161106215514-129591bceef4 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.8.1
 )

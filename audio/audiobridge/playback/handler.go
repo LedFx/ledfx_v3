@@ -2,70 +2,65 @@ package playback
 
 import (
 	"fmt"
-	"github.com/dustin/go-broadcast"
-	"github.com/gordonklaus/portaudio"
+	"github.com/carterpeel/oto/v2"
 	"io"
-	"ledfx/audio"
-	"ledfx/config"
+)
+
+func initCtx() error {
+	if ctx == nil {
+		var ready chan struct{}
+		var err error
+		ctx, ready, err = oto.NewContext(44100, 2, 2)
+		if err != nil {
+			return fmt.Errorf("error initializing new OTO context: %w", err)
+		}
+		<-ready
+	}
+	return nil
+}
+
+var (
+	ctx *oto.Context
 )
 
 type Handler struct {
-	*portaudio.Stream
-	buffer      audio.Buffer
-	byteWriters []io.Writer
-	hermes      broadcast.Broadcaster
-	hermesChan  chan interface{}
+	// pl is the player
+	pl oto.Player
+
+	// pr is the pipe reader
+	pr *io.PipeReader
+
+	// pw is the pipe writer
+	pw *io.PipeWriter
 }
 
-func NewHandler(audioDevice config.AudioDevice, hermes broadcast.Broadcaster, byteWriters ...io.Writer) (h *Handler, err error) {
-	dev, err := audio.GetPaDeviceInfo(audioDevice)
-	if err != nil {
-		return nil, fmt.Errorf("error getting PortAudio device info: %w", err)
+func NewHandler() (h *Handler, err error) {
+	if err = initCtx(); err != nil {
+		return nil, err
 	}
 
-	p := portaudio.StreamParameters{
-		Output: portaudio.StreamDeviceParameters{
-			Device:   dev,
-			Channels: dev.MaxInputChannels,
-		},
-		SampleRate:      dev.DefaultSampleRate,
-		FramesPerBuffer: int(dev.DefaultSampleRate / 60),
-	}
+	pr, pw := io.Pipe()
+
+	pl := ctx.NewPlayer(pr)
 
 	h = &Handler{
-		buffer:      audio.Buffer{},
-		byteWriters: byteWriters,
-		hermes:      hermes,
-		hermesChan:  make(chan interface{}),
+		pr: pr,
+		pw: pw,
+		pl: pl,
 	}
 
-	if h.Stream, err = portaudio.OpenStream(p, h.buffer); err != nil {
-		return nil, fmt.Errorf("error opening PortAudio: %w", err)
-	}
-
-	if err = h.Stream.Start(); err != nil {
-		return nil, fmt.Errorf("error starting playback stream: %w", err)
-	}
-
-	go func() {
-		h.hermes.Register(h.hermesChan)
-		defer h.hermes.Unregister(h.hermesChan)
-		for msg := range h.hermesChan {
-			h.buffer = msg.(audio.Buffer)
-			h.Stream.Write()
-		}
-	}()
+	h.pl.Play(false)
 
 	return h, nil
 }
 
 func (h *Handler) Quit() {
-	h.Stream.Stop()
-	h.Stream.Close()
-	h.Stream = nil
+	h.pr.CloseWithError(io.EOF)
+	h.pw.CloseWithError(io.EOF)
+	h.pl.Close()
+	h.pl = nil
+}
 
-	h.hermes.Unregister(h.hermesChan)
-	close(h.hermesChan)
-	h.buffer = nil
-
+func (h *Handler) Write(b []byte) (n int, err error) {
+	return h.pw.Write(b)
 }

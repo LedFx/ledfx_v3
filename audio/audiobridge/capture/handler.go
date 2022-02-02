@@ -41,8 +41,17 @@ func NewHandler(audioDevice config.AudioDevice, hermes broadcast.Broadcaster, by
 		hermes:      hermes,
 	}
 
-	if h.Stream, err = portaudio.OpenStream(p, h.captureSampleCallback); err != nil {
-		return nil, fmt.Errorf("error opening Portaudio stream: %w", err)
+	switch p.Input.Channels {
+	case 1:
+		if h.Stream, err = portaudio.OpenStream(p, h.monoToStereoCallback); err != nil {
+			return nil, fmt.Errorf("error opening mono Portaudio stream: %w", err)
+		}
+	case 2:
+		if h.Stream, err = portaudio.OpenStream(p, h.stereoCallback); err != nil {
+			return nil, fmt.Errorf("error opening stereo Portaudio stream: %w", err)
+		}
+	default:
+		return nil, fmt.Errorf("%d channel audio is unsupported (LedFX only supports stereo/mono)", p.Input.Channels)
 	}
 
 	if err = h.Stream.Start(); err != nil {
@@ -52,7 +61,7 @@ func NewHandler(audioDevice config.AudioDevice, hermes broadcast.Broadcaster, by
 	return h, nil
 }
 
-func (h *Handler) captureSampleCallback(in audio.Buffer) {
+func (h *Handler) stereoCallback(in audio.Buffer) {
 	h.hermes.Submit(in)
 	byteBuf := make([]byte, len(in)*2)
 
@@ -65,6 +74,10 @@ func (h *Handler) captureSampleCallback(in audio.Buffer) {
 	for i := range h.byteWriters {
 		_, _ = h.byteWriters[i].Write(byteBuf)
 	}
+}
+
+func (h *Handler) monoToStereoCallback(in audio.Buffer) {
+	h.stereoCallback(in.Mono2Stereo())
 }
 
 func (h *Handler) Quit() {

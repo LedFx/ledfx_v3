@@ -52,15 +52,19 @@ func (br *Bridge) StartLocalInput(audioDevice config.AudioDevice) (err error) {
 	return nil
 }
 
-func (br *Bridge) AddLocalOutput(audioDevice config.AudioDevice) (err error) {
+func (br *Bridge) AddLocalOutput() (err error) {
 	if br.local == nil {
 		br.local = newLocalHandler(br.hermes)
 	}
 
 	if br.local.playback == nil {
-		if br.local.playback, err = playback.NewHandler(audioDevice, br.local.hermes); err != nil {
+		if br.local.playback, err = playback.NewHandler(); err != nil {
 			return fmt.Errorf("error initializing new playback handler: %w", err)
 		}
+	}
+
+	if err = br.wireLocalOutput(br.local.playback); err != nil {
+		return fmt.Errorf("error wiring local output: %w", err)
 	}
 
 	return nil

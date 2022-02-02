@@ -17,3 +17,13 @@ func (b Buffer) Sum() int64 {
 	}
 	return sum
 }
+
+func (b Buffer) Mono2Stereo() Buffer {
+	stereo := Buffer(make([]int16, len(b)*2))
+	for i := range b {
+		magnitude := b[i]
+		stereo[i*2] = magnitude
+		stereo[(i*2)+1] = magnitude
+	}
+	return stereo
+}

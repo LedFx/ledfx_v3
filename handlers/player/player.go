@@ -2,11 +2,10 @@ package player
 
 import (
 	"encoding/binary"
-	"io"
 	"log"
 	"sync"
 
-	"github.com/carterpeel/oto/v2"
+	"github.com/hajimehoshi/oto"
 	"ledfx/handlers/rtsp"
 )
 
@@ -79,15 +78,12 @@ func (lp *LocalPlayer) GetTrack() Track {
 }
 
 func (lp *LocalPlayer) playStream(session *rtsp.Session) {
-	pctx, _, err := oto.NewContext(44100, 2, 2)
+	pctx, err := oto.NewContext(44100, 2, 2, 10000)
 	if err != nil {
 		log.Println("error initializing player", err)
 		return
 	}
-	rd, wr := io.Pipe()
-
-	p := pctx.NewPlayer(rd)
-	p.Play(false)
+	p := pctx.NewPlayer()
 	decoder := GetCodec(session)
 	for d := range session.DataChan {
 		lp.volLock.RLock()
@@ -98,7 +94,7 @@ func (lp *LocalPlayer) playStream(session *rtsp.Session) {
 			log.Println("Problem decoding packet")
 		}
 		AdjustAudio(decoded, vol)
-		wr.Write(decoded)
+		p.Write(decoded)
 	}
 	log.Println("Data stream ended closing player")
 	p.Close()

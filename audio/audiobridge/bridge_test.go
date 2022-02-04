@@ -9,8 +9,10 @@ import (
 	"time"
 )
 
-func TestBridgeMic2Speaker(t *testing.T) {
-	br, err := NewBridge(func(buf audio.Buffer) {})
+func TestBridgeMic2Local(t *testing.T) {
+	br, err := NewBridge(func(buf audio.Buffer) {
+		// No audio buffer callback because we aren't processing it into blinky lights
+	})
 	if err != nil {
 		t.Fatalf("Error initializing new bridge: %v\n", err)
 	}
@@ -25,11 +27,9 @@ func TestBridgeMic2Speaker(t *testing.T) {
 	for i := range devices {
 		if strings.Contains(strings.ToLower(devices[i].Name), "mic") {
 			inputDev = &devices[i]
-			numChannels = inputDev.Channels
-			sampleRate = int(inputDev.SampleRate)
 			log.Logger.WithField("category", "Mic2Speaker").Infof("Mic Device: %s", inputDev.Name)
-			log.Logger.WithField("category", "Mic2Speaker").Infof("Mic Input Channels: %d", numChannels)
-			log.Logger.WithField("category", "Mic2Speaker").Infof("Mic Sample Rate: %d", sampleRate)
+			log.Logger.WithField("category", "Mic2Speaker").Infof("Mic Input Channels: %d", inputDev.Channels)
+			log.Logger.WithField("category", "Mic2Speaker").Infof("Mic Sample Rate: %f", inputDev.SampleRate)
 			break
 		}
 	}
@@ -47,4 +47,24 @@ func TestBridgeMic2Speaker(t *testing.T) {
 	}
 
 	time.Sleep(10 * time.Second)
+}
+
+func TestBridgeAirplay2Local(t *testing.T) {
+	br, err := NewBridge(func(buf audio.Buffer) {
+		// No audio buffer callback because we aren't processing it into blinky lights
+	})
+	if err != nil {
+		t.Fatalf("Error initializing new bridge: %v\n", err)
+	}
+	defer br.Stop()
+
+	if err := br.StartAirPlayInput("LedFX-Test", 7000, false); err != nil {
+		t.Fatalf("Error initializing AirPlay input: %v\n", err)
+	}
+
+	if err := br.AddLocalOutput(); err != nil {
+		t.Fatalf("Error initializing local output: %v\n", err)
+	}
+
+	br.Wait()
 }

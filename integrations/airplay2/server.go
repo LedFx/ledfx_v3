@@ -1,10 +1,9 @@
 package airplay2
 
 import (
-	"github.com/dustin/go-broadcast"
-	"io"
-	"ledfx/color"
+	"ledfx/audio"
 	"ledfx/handlers/raop"
+	log "ledfx/logger"
 	"math/rand"
 	"sync"
 	"time"
@@ -21,12 +20,11 @@ type Server struct {
 	conf   *Config
 	svc    *raop.AirplayServer
 
-	done   chan struct{}
-	hermes broadcast.Broadcaster
+	done chan struct{}
 }
 
-func NewServer(conf Config, hermes broadcast.Broadcaster) (s *Server) {
-	pl := newPlayer(hermes)
+func NewServer(conf Config, intWriter audio.IntWriter, byteWriter *audio.ByteWriter) (s *Server) {
+	pl := newPlayer(intWriter, byteWriter)
 
 	if conf.Port == 0 {
 		conf.Port = 7000
@@ -38,14 +36,9 @@ func NewServer(conf Config, hermes broadcast.Broadcaster) (s *Server) {
 		player: pl, // Port range: 1024 through 65530
 		done:   make(chan struct{}),
 		svc:    raop.NewAirplayServer(conf.Port, conf.AdvertisementName, pl),
-		hermes: hermes,
 	}
 
 	return s
-}
-
-func (s *Server) AddOutput(output io.Writer) {
-	s.player.AddWriter(output)
 }
 
 func (s *Server) AddClient(client *Client) {
@@ -55,11 +48,16 @@ func (s *Server) AddClient(client *Client) {
 func (s *Server) Start() error {
 	errCh := make(chan error)
 	go func() {
-		errCh <- s.svc.Start(s.conf.VerboseLogging, true)
-		s.svc.Wait()
 		defer func() {
 			s.done <- struct{}{}
 		}()
+		err := s.svc.Start(s.conf.VerboseLogging, true)
+		errCh <- err
+		if err != nil {
+			log.Logger.WithField("category", "AirPlay Server").Errorf("Error starting AirPlay server: %v", err)
+			return
+		}
+		s.svc.Wait()
 	}()
 	return <-errCh
 }
@@ -75,12 +73,4 @@ func (s *Server) Stop() {
 	if s.player != nil {
 		s.player.Close()
 	}
-}
-
-func (s *Server) GetAlbumGradient(resolution int) (*color.Gradient, error) {
-	return s.player.GetGradientFromArtwork(resolution)
-}
-
-func (s *Server) AnimateArtwork(width, height, frames int) ([]byte, error) {
-	return color.AnimateAlbumArt(s.player.artwork, width, height, frames)
 }

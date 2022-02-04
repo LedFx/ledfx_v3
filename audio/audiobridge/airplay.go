@@ -2,8 +2,6 @@ package audiobridge
 
 import (
 	"fmt"
-	"github.com/dustin/go-broadcast"
-	"ledfx/audio"
 	"ledfx/integrations/airplay2"
 )
 
@@ -14,7 +12,7 @@ func (br *Bridge) StartAirPlayInput(name string, port int, verbose bool) error {
 	br.inputType = inputTypeAirPlayServer
 
 	if br.airplay == nil {
-		br.airplay = newAirPlayHandler(br.hermes)
+		br.airplay = newAirPlayHandler()
 	}
 
 	if br.airplay.server == nil {
@@ -22,14 +20,8 @@ func (br *Bridge) StartAirPlayInput(name string, port int, verbose bool) error {
 			AdvertisementName: name,
 			Port:              port,
 			VerboseLogging:    verbose,
-		}, br.local.hermes)
+		}, br.intWriter, br.byteWriter)
 	}
-
-	go func() {
-		for audioFrame := range br.local.hermesChan {
-			br.bufferCallback(audioFrame.(audio.Buffer))
-		}
-	}()
 
 	if err := br.airplay.server.Start(); err != nil {
 		return fmt.Errorf("error starting AirPlay server: %w", err)
@@ -43,7 +35,7 @@ func (br *Bridge) AddAirPlayOutput(searchKey string, searchType AirPlaySearchTyp
 	}
 
 	if br.airplay == nil {
-		br.airplay = newAirPlayHandler(br.hermes)
+		br.airplay = newAirPlayHandler()
 	}
 
 	if br.airplay.clients == nil {
@@ -77,19 +69,12 @@ func (br *Bridge) AddAirPlayOutput(searchKey string, searchType AirPlaySearchTyp
 }
 
 type AirPlayHandler struct {
-	server     *airplay2.Server
-	clients    []*airplay2.Client
-	hermes     broadcast.Broadcaster
-	hermesChan chan interface{}
+	server  *airplay2.Server
+	clients []*airplay2.Client
 }
 
-func newAirPlayHandler(hermes broadcast.Broadcaster) *AirPlayHandler {
-	a := &AirPlayHandler{
-		hermes:     hermes,
-		hermesChan: make(chan interface{}),
-	}
-	a.hermes.Register(a.hermesChan)
-	return a
+func newAirPlayHandler() *AirPlayHandler {
+	return &AirPlayHandler{}
 }
 
 func (aph *AirPlayHandler) Stop() {

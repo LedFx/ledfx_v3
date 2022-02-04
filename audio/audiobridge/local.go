@@ -2,8 +2,6 @@ package audiobridge
 
 import (
 	"fmt"
-	"github.com/dustin/go-broadcast"
-	"ledfx/audio"
 	"ledfx/audio/audiobridge/capture"
 	"ledfx/audio/audiobridge/playback"
 	"ledfx/config"
@@ -11,19 +9,12 @@ import (
 )
 
 type LocalHandler struct {
-	playback   *playback.Handler
-	capture    *capture.Handler
-	hermes     broadcast.Broadcaster // Hermes is a messenger for audio buffers.
-	hermesChan chan interface{}
+	playback *playback.Handler
+	capture  *capture.Handler
 }
 
-func newLocalHandler(hermes broadcast.Broadcaster) *LocalHandler {
-	lh := &LocalHandler{
-		hermes:     hermes,
-		hermesChan: make(chan interface{}),
-	}
-	lh.hermes.Register(lh.hermesChan)
-	return lh
+func newLocalHandler() *LocalHandler {
+	return &LocalHandler{}
 }
 
 func (br *Bridge) StartLocalInput(audioDevice config.AudioDevice) (err error) {
@@ -34,27 +25,21 @@ func (br *Bridge) StartLocalInput(audioDevice config.AudioDevice) (err error) {
 	br.inputType = inputTypeLocal
 
 	if br.local == nil {
-		br.local = newLocalHandler(br.hermes)
+		br.local = newLocalHandler()
 	}
 
 	if br.local.capture == nil {
-		if br.local.capture, err = capture.NewHandler(audioDevice, br.local.hermes); err != nil {
+		if br.local.capture, err = capture.NewHandler(audioDevice, br.intWriter, br.byteWriter); err != nil {
 			return fmt.Errorf("error initializing new capture handler: %w", err)
 		}
 	}
-
-	go func() {
-		for captured := range br.local.hermesChan {
-			br.bufferCallback(captured.(audio.Buffer))
-		}
-	}()
 
 	return nil
 }
 
 func (br *Bridge) AddLocalOutput() (err error) {
 	if br.local == nil {
-		br.local = newLocalHandler(br.hermes)
+		br.local = newLocalHandler()
 	}
 
 	if br.local.playback == nil {
@@ -63,9 +48,7 @@ func (br *Bridge) AddLocalOutput() (err error) {
 		}
 	}
 
-	if err = br.wireLocalOutput(br.local.playback); err != nil {
-		return fmt.Errorf("error wiring local output: %w", err)
-	}
+	br.wireLocalOutput(br.local.playback)
 
 	return nil
 }

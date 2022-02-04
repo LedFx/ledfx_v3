@@ -87,7 +87,7 @@ func CaptureDemo() {
 
 func audioSampleCallback(in Buffer) {
 	frameCount += 1
-	buf := aubio.NewSimpleBufferData(uint(len(in)), BufferToF64(&in))
+	buf := aubio.NewSimpleBufferData(uint(len(in)), in.AsFloat64())
 	defer buf.Free()
 	pvoc.Do(buf)
 	melbank.Do(pvoc.Grain())

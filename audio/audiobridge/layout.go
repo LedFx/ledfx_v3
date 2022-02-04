@@ -1,7 +1,6 @@
 package audiobridge
 
 import (
-	"github.com/dustin/go-broadcast"
 	"ledfx/audio"
 )
 
@@ -10,10 +9,13 @@ type Bridge struct {
 	inputType inputType
 
 	bufferCallback func(buf audio.Buffer)
-	hermes         broadcast.Broadcaster
+	byteWriter     *audio.ByteWriter
+	intWriter      audio.IntWriter
 
 	airplay *AirPlayHandler
 	local   *LocalHandler
+
+	done chan bool
 }
 
 type inputType int8
@@ -22,3 +24,7 @@ const (
 	inputTypeAirPlayServer inputType = iota
 	inputTypeLocal
 )
+
+type callbackWrapper struct {
+	callback func(buf audio.Buffer)
+}

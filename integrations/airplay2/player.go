@@ -1,8 +1,6 @@
 package airplay2
 
 import (
-	"github.com/dustin/go-broadcast"
-	"io"
 	"ledfx/audio"
 	"ledfx/color"
 	"ledfx/handlers/player"
@@ -10,22 +8,21 @@ import (
 	"ledfx/handlers/rtsp"
 	"ledfx/integrations/airplay2/codec"
 	log "ledfx/logger"
+	"sync"
 	"unsafe"
 )
 
 type audioPlayer struct {
 	/* Variables that are looped through often belong at the top of the struct */
-	doEncodedSend, hasDecodedOutputs, sessionActive, muted bool
+	wg sync.WaitGroup
+
+	intWriter  audio.IntWriter
+	byteWriter *audio.ByteWriter
+
+	doEncodedSend, hasDecodedOutputs, sessionActive, muted, doBroadcast bool
 
 	numClients int
 	apClients  [8]*Client
-
-	// outputs supports 8 writers maximum.
-	// We use a fixed-length array because
-	// indexing an array is slightly faster
-	// than indexing a slice.
-	numOutputs int
-	outputs    [8]io.Writer
 
 	quit chan bool
 
@@ -35,34 +32,19 @@ type audioPlayer struct {
 	title   string
 
 	volume float64
-
-	hermes broadcast.Broadcaster
 }
 
-func newPlayer(hermes broadcast.Broadcaster) *audioPlayer {
+func newPlayer(intWriter audio.IntWriter, byteWriter *audio.ByteWriter) *audioPlayer {
 	p := &audioPlayer{
-		outputs:   [8]io.Writer{},
-		apClients: [8]*Client{},
-		volume:    1,
-		quit:      make(chan bool),
-		hermes:    hermes,
+		apClients:  [8]*Client{},
+		volume:     1,
+		quit:       make(chan bool),
+		wg:         sync.WaitGroup{},
+		intWriter:  intWriter,
+		byteWriter: byteWriter,
 	}
-	return p
-}
 
-// AddWriter adds a writer to p.output, which is wrapped with an io.MultiWriter().
-//
-//
-// DO NOT provide an io.Writer() wrapped with io.MultiWriter()!
-//
-//------------------------------------------------------------
-//
-// If an io.MultiWriter() is provided, the already mediocre time complexity
-// of this operation will go from O(n) to O(n^2). We don't want that.
-func (p *audioPlayer) AddWriter(wr io.Writer) {
-	p.hasDecodedOutputs = true
-	p.outputs[p.numOutputs] = wr
-	p.numOutputs++
+	return p
 }
 
 func (p *audioPlayer) Play(session *rtsp.Session) {
@@ -76,37 +58,30 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 		for {
 			select {
 			case recvBuf, ok := <-session.DataChan:
-				switch {
-				case !ok:
+				if !ok {
 					return
-				case p.muted:
+				}
+				if p.muted {
 					continue
-				case !p.doEncodedSend && !p.hasDecodedOutputs:
-					continue
-				default:
-					func() {
-						defer func() {
-							if err := recover(); err != nil {
-								log.Logger.WithField("category", "AirPlay Player").Warnf("Recovered from panic during playStream: %v\n", err)
-							}
-						}()
-
-						if p.doEncodedSend {
-							p.broadcastEncoded(recvBuf)
-						}
-
-						recvBuf = dc.Decode(recvBuf)
-						codec.NormalizeAudio(recvBuf, p.volume)
-
-						p.hermes.Submit(audioBufFromBytes(recvBuf))
-
-						if p.hasDecodedOutputs {
-							for i := 0; i < p.numOutputs; i++ {
-								_, _ = p.outputs[i].Write(recvBuf)
-							}
+				}
+				func() {
+					defer func() {
+						if err := recover(); err != nil {
+							log.Logger.WithField("category", "AirPlay Player").Warnf("Recovered from panic during playStream: %v\n", err)
 						}
 					}()
-				}
+
+					if p.doEncodedSend {
+						p.broadcastEncoded(recvBuf)
+					}
+
+					recvBuf = dc.Decode(recvBuf)
+					codec.NormalizeAudio(recvBuf, p.volume)
+
+					p.byteWriter.Write(recvBuf)
+
+					p.intWriter.Write(bytesToAudioBufferUnsafe(recvBuf))
+				}()
 			case <-p.quit:
 				log.Logger.WithField("category", "AirPlay Player").Warnf("Session with peer '%s' closed", session.Description.ConnectData.ConnectionAddress)
 				return
@@ -115,18 +90,34 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 	}(decoder)
 }
 
-func audioBufFromBytes(recvBuf []byte) audio.Buffer {
-	audioBuf := audio.Buffer{}
+func bytesToAudioBufferUnsafe(p []byte) (out audio.Buffer) {
+	out = make([]int16, len(p))
 	var offset int
-	for i := 0; i < len(recvBuf); i += 2 {
-		audioBuf = append(audioBuf, readInt16Unsafe(recvBuf[i:i+2]))
+	for i := 0; i < len(p); i += 2 {
+		out[offset] = twoBytesToInt16Unsafe(p[i : i+2])
 		offset++
 	}
-	return audioBuf
+	return
 }
 
-func readInt16Unsafe(b []byte) int16 {
-	return *(*int16)(unsafe.Pointer(&b[0]))
+func bytesToAudioBuffer(p []byte) (out audio.Buffer) {
+	out = make([]int16, len(p))
+	var offset int
+	for i := 0; i < len(p); i += 2 {
+		out[offset] = twoBytesToInt16(p[i : i+2])
+		offset++
+	}
+	return
+}
+
+func twoBytesToInt16(p []byte) (out int16) {
+	out |= int16(p[0])
+	out |= int16(p[1]) << 8
+	return
+}
+
+func twoBytesToInt16Unsafe(p []byte) (out int16) {
+	return *(*int16)(unsafe.Pointer(&p[0]))
 }
 
 func (p *audioPlayer) AddClient(client *Client) {

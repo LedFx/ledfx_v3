@@ -102,12 +102,12 @@ func (cl *Client) SetParam(par interface{}) {
 	}
 }
 
-func (cl *Client) Write(p []byte) (n int, err error) {
-	return cl.DataConn.Write(p)
-}
-
 func (cl *Client) Close() {
 	if cl.session != nil {
 		_ = cl.DataConn.Close()
 	}
+}
+
+func (cl *Client) Write(p []byte) (int, error) {
+	return cl.DataConn.Write(p)
 }

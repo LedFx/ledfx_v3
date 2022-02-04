@@ -1,11 +1,8 @@
 package capture
 
 import (
-	"encoding/binary"
 	"fmt"
-	"github.com/dustin/go-broadcast"
 	"github.com/gordonklaus/portaudio"
-	"io"
 	"ledfx/audio"
 	"ledfx/config"
 	log "ledfx/logger"
@@ -13,15 +10,11 @@ import (
 
 type Handler struct {
 	*portaudio.Stream
-	byteWriters []io.Writer
-	hermes      broadcast.Broadcaster
+	intWriter  audio.IntWriter
+	byteWriter *audio.ByteWriter
 }
 
-func (h *Handler) AddByteWriters(byteWriters ...io.Writer) {
-	h.byteWriters = append(h.byteWriters, byteWriters...)
-}
-
-func NewHandler(audioDevice config.AudioDevice, hermes broadcast.Broadcaster, byteWriters ...io.Writer) (h *Handler, err error) {
+func NewHandler(audioDevice config.AudioDevice, intWriter audio.IntWriter, byteWriter *audio.ByteWriter) (h *Handler, err error) {
 	dev, err := audio.GetPaDeviceInfo(audioDevice)
 	if err != nil {
 		return nil, fmt.Errorf("error getting PortAudio device info: %w", err)
@@ -37,8 +30,8 @@ func NewHandler(audioDevice config.AudioDevice, hermes broadcast.Broadcaster, by
 	}
 
 	h = &Handler{
-		byteWriters: byteWriters,
-		hermes:      hermes,
+		intWriter:  intWriter,
+		byteWriter: byteWriter,
 	}
 
 	switch p.Input.Channels {
@@ -62,22 +55,12 @@ func NewHandler(audioDevice config.AudioDevice, hermes broadcast.Broadcaster, by
 }
 
 func (h *Handler) stereoCallback(in audio.Buffer) {
-	h.hermes.Submit(in)
-	byteBuf := make([]byte, len(in)*2)
-
-	var offset int
-	for i := range in {
-		binary.LittleEndian.PutUint16(byteBuf[offset:], uint16(in[i]))
-		offset += 2
-	}
-
-	for i := range h.byteWriters {
-		_, _ = h.byteWriters[i].Write(byteBuf)
-	}
+	h.byteWriter.Write(in.AsBytes())
+	h.intWriter.Write(in)
 }
 
 func (h *Handler) monoToStereoCallback(in audio.Buffer) {
-	h.stereoCallback(in.Mono2Stereo())
+	h.stereoCallback(in.ChannelMultiplier(2))
 }
 
 func (h *Handler) Quit() {

@@ -61,6 +61,10 @@ func NewClient(searchParameters ClientDiscoveryParameters) (cl *Client, err erro
 	return cl, nil
 }
 
+func (cl *Client) Identifier() string {
+	return cl.session.RemotePorts.Address
+}
+
 func (cl *Client) SetParam(par interface{}) {
 	var err error
 	req := rtsp.NewRequest()

@@ -12,19 +12,19 @@ func (br *Bridge) wireAirPlayOutput(client *airplay2.Client) (err error) {
 	case -1:
 		err = fmt.Errorf("input source has not been defined")
 	case inputTypeAirPlayServer:
-		br.airplay.server.AddClient(client)
+		err = br.airplay.server.AddClient(client)
 	case inputTypeLocal:
-		br.byteWriter.AppendWriter(client)
+		err = br.byteWriter.AddWriter(client, client.Identifier())
 	default:
 		err = fmt.Errorf("unrecognized input type '%d'", br.inputType)
 	}
 	return err
 }
 
-func (br *Bridge) wireLocalOutput(handler *playback.Handler) {
-	br.byteWriter.AppendWriter(handler)
+func (br *Bridge) wireLocalOutput(handler *playback.Handler) error {
+	return br.byteWriter.AddWriter(handler, handler.Identifier())
 }
 
-func (br *Bridge) AddOutputWriter(wr io.Writer) {
-	br.byteWriter.AppendWriter(wr)
+func (br *Bridge) AddOutputWriter(wr io.Writer, name string) error {
+	return br.byteWriter.AddWriter(wr, name)
 }

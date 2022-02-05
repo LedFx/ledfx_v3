@@ -9,7 +9,7 @@ type Bridge struct {
 	inputType inputType
 
 	bufferCallback func(buf audio.Buffer)
-	byteWriter     *audio.ByteWriter
+	byteWriter     *audio.NamedMultiWriter
 	intWriter      audio.IntWriter
 
 	airplay *AirPlayHandler

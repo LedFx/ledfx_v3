@@ -1,9 +1,12 @@
 package audiobridge
 
 import (
+	"bufio"
+	"io"
 	"ledfx/audio"
 	"ledfx/config"
 	log "ledfx/logger"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -84,6 +87,33 @@ func TestBridgeAirPlay2AirPlay(t *testing.T) {
 
 	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName, true); err != nil {
 		t.Fatalf("Error initializing AirPlay output: %v\n", err)
+	}
+
+	br.Wait()
+}
+
+func TestBridgeAirPlay2AirPlayAsyncWrite(t *testing.T) {
+	br, err := NewBridge(func(buf audio.Buffer) {
+		// No audio buffer callback because we aren't processing it into blinky lights.
+	})
+	if err != nil {
+		t.Fatalf("Error initializing new bridge: %v\n", err)
+	}
+	defer br.Stop()
+
+	if err := br.StartAirPlayInput("LedFX-Test", 7000, false); err != nil {
+		t.Fatalf("Error initializing AirPlay input: %v\n", err)
+	}
+
+	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName, true); err != nil {
+		t.Fatalf("Error initializing AirPlay output: %v\n", err)
+	}
+
+	// Add a bunch of writers, so we can listen for delay issues.
+	for i := 0; i < 10; i++ {
+		if err := br.AddOutputWriter(bufio.NewWriter(io.Discard), strconv.Itoa(i)); err != nil {
+			t.Fatalf("Error adding output writer: %v\n", err)
+		}
 	}
 
 	br.Wait()

@@ -1,6 +1,7 @@
 package airplay2
 
 import (
+	"fmt"
 	"ledfx/audio"
 	"ledfx/color"
 	"ledfx/handlers/player"
@@ -17,7 +18,7 @@ type audioPlayer struct {
 	wg sync.WaitGroup
 
 	intWriter  audio.IntWriter
-	byteWriter *audio.ByteWriter
+	byteWriter *audio.NamedMultiWriter
 
 	hasClients, hasDecodedOutputs, sessionActive, muted, doBroadcast bool
 
@@ -34,7 +35,7 @@ type audioPlayer struct {
 	volume float64
 }
 
-func newPlayer(intWriter audio.IntWriter, byteWriter *audio.ByteWriter) *audioPlayer {
+func newPlayer(intWriter audio.IntWriter, byteWriter *audio.NamedMultiWriter) *audioPlayer {
 	p := &audioPlayer{
 		apClients:  [8]*Client{},
 		volume:     1,
@@ -67,16 +68,20 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 				func() {
 					defer func() {
 						if err := recover(); err != nil {
-							log.Logger.WithField("category", "AirPlay Player").Warnf("Recovered from panic during playStream: %v\n", err)
+							log.Logger.WithField("category", "AirPlay Player").Errorf("Recovered from panic during playStream: %v\n", err)
 						}
 					}()
 
 					recvBuf = dc.Decode(recvBuf)
 					codec.NormalizeAudio(recvBuf, p.volume)
 
-					p.byteWriter.Write(recvBuf)
+					if _, err := p.byteWriter.Write(recvBuf); err != nil {
+						log.Logger.WithField("category", "AirPlay Player").Errorf("Error writing to byteWriter: %v", err)
+					}
 
-					p.intWriter.Write(bytesToAudioBufferUnsafe(recvBuf))
+					if _, err := p.intWriter.Write(bytesToAudioBufferUnsafe(recvBuf)); err != nil {
+						log.Logger.WithField("category", "AirPlay Player").Errorf("Error writing to intWriter: %v", err)
+					}
 				}()
 			case <-p.quit:
 				log.Logger.WithField("category", "AirPlay Player").Warnf("Session with peer '%s' closed", session.Description.ConnectData.ConnectionAddress)
@@ -116,11 +121,14 @@ func twoBytesToInt16Unsafe(p []byte) (out int16) {
 	return *(*int16)(unsafe.Pointer(&p[0]))
 }
 
-func (p *audioPlayer) AddClient(client *Client) {
+func (p *audioPlayer) AddClient(client *Client) (err error) {
 	p.hasClients = true
 	p.apClients[p.numClients] = client
-	p.byteWriter.AppendWriter(p.apClients[p.numClients])
+	if err := p.byteWriter.AddWriter(p.apClients[p.numClients], client.Identifier()); err != nil {
+		return fmt.Errorf("error adding writer: %w", err)
+	}
 	p.numClients++
+	return nil
 }
 
 func (p *audioPlayer) SetVolume(volume float64) {

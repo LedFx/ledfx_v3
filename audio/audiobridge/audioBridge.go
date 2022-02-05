@@ -19,7 +19,7 @@ func NewBridge(bufferCallback func(buf audio.Buffer)) (br *Bridge, err error) {
 
 	br = &Bridge{
 		bufferCallback: bufferCallback,
-		byteWriter:     &audio.ByteWriter{},
+		byteWriter:     audio.NewByteWriter(),
 		intWriter:      cbHandler,
 		inputType:      inputType(-1), // -1 signifies undefined
 		done:           make(chan bool),

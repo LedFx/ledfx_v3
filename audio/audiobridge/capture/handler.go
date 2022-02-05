@@ -11,10 +11,10 @@ import (
 type Handler struct {
 	*portaudio.Stream
 	intWriter  audio.IntWriter
-	byteWriter *audio.ByteWriter
+	byteWriter *audio.NamedMultiWriter
 }
 
-func NewHandler(audioDevice config.AudioDevice, intWriter audio.IntWriter, byteWriter *audio.ByteWriter) (h *Handler, err error) {
+func NewHandler(audioDevice config.AudioDevice, intWriter audio.IntWriter, byteWriter *audio.NamedMultiWriter) (h *Handler, err error) {
 	dev, err := audio.GetPaDeviceInfo(audioDevice)
 	if err != nil {
 		return nil, fmt.Errorf("error getting PortAudio device info: %w", err)

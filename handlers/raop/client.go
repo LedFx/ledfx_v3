@@ -14,18 +14,19 @@ import (
 
 // stateMachine that will handle the handshaking to set up the session with the
 // client(s) we will be forwarding packets to
-type stateFn func(client *rtsp.Client, session *rtsp.Session) (stateFn, error)
+type stateFn func(client *rtsp.Client, session *rtsp.Session, codec CodecType) (stateFn, error)
 
 type stateMachine struct {
 	currentState stateFn
+	codec        CodecType
 }
 
-func newStateMachine() *stateMachine {
-	return &stateMachine{currentState: initial}
+func newStateMachine(codec CodecType) *stateMachine {
+	return &stateMachine{currentState: initial, codec: codec}
 }
 
 func (sm *stateMachine) transition(client *rtsp.Client, session *rtsp.Session) (bool, error) {
-	state, err := sm.currentState(client, session)
+	state, err := sm.currentState(client, session, sm.codec)
 	if err != nil {
 		return true, err
 	}
@@ -33,8 +34,15 @@ func (sm *stateMachine) transition(client *rtsp.Client, session *rtsp.Session) (
 	return sm.currentState != nil, err
 }
 
+type CodecType uint8
+
+const (
+	CodecTypeALAC CodecType = iota
+	CodecTypePCM
+)
+
 // EstablishSession establishes a session that is ready to have data streamed through it
-func EstablishSession(ip string, port int) (*rtsp.Session, error) {
+func EstablishSession(ip string, port int, codec CodecType) (*rtsp.Session, error) {
 	client, err := rtsp.NewClient(ip, port)
 	if err != nil {
 		return nil, err
@@ -43,7 +51,7 @@ func EstablishSession(ip string, port int) (*rtsp.Session, error) {
 	session := rtsp.NewSession(sessionDescription, nil)
 	session.RemotePorts.Address = client.RemoteAddress()
 
-	sm := newStateMachine()
+	sm := newStateMachine(codec)
 	handshaking := true
 
 	for handshaking {
@@ -60,8 +68,8 @@ func EstablishSession(ip string, port int) (*rtsp.Session, error) {
 // our state functions below, emulating the airplay protocol, leaving
 // out things like the encrypting and apple-challenge
 
-// initial initial state, sends an OPTIONS to make sure all is up
-func initial(client *rtsp.Client, session *rtsp.Session) (stateFn, error) {
+// initial state, sends an OPTIONS to make sure all is up
+func initial(client *rtsp.Client, session *rtsp.Session, codec CodecType) (stateFn, error) {
 	req := rtsp.NewRequest()
 	req.Method = rtsp.Options
 	req.RequestURI = "*"
@@ -75,7 +83,7 @@ func initial(client *rtsp.Client, session *rtsp.Session) (stateFn, error) {
 	return announce, nil
 }
 
-func announce(client *rtsp.Client, session *rtsp.Session) (stateFn, error) {
+func announce(client *rtsp.Client, session *rtsp.Session, codec CodecType) (stateFn, error) {
 	req := rtsp.NewRequest()
 	req.Method = rtsp.Announce
 	sessionID := strconv.FormatInt(time.Now().Unix(), 10)
@@ -108,7 +116,12 @@ func announce(client *rtsp.Client, session *rtsp.Session) (stateFn, error) {
 	m[0] = md
 	sessionDescription.MediaDescription = m
 	a := make(map[string]string)
-	a["rtpmap"] = "96 AppleLossless"
+	switch codec {
+	case CodecTypePCM:
+		a["rtpmap"] = "96 PCM"
+	case CodecTypeALAC:
+		a["rtpmap"] = "96 AppleLossless"
+	}
 	sessionDescription.Attributes = a
 	// attach to request
 	var b bytes.Buffer
@@ -123,12 +136,12 @@ func announce(client *rtsp.Client, session *rtsp.Session) (stateFn, error) {
 		return nil, err
 	}
 	if resp.Status != rtsp.Ok {
-		return nil, fmt.Errorf("Non-ok status returned: %s", resp.Status.String())
+		return nil, fmt.Errorf("non-ok status returned: %s", resp.Status.String())
 	}
 	return setup, nil
 }
 
-func setup(client *rtsp.Client, session *rtsp.Session) (stateFn, error) {
+func setup(client *rtsp.Client, session *rtsp.Session, codec CodecType) (stateFn, error) {
 	req := rtsp.NewRequest()
 	req.Method = rtsp.Setup
 	localAddress := client.LocalAddress()
@@ -166,7 +179,7 @@ func setup(client *rtsp.Client, session *rtsp.Session) (stateFn, error) {
 	return record, nil
 }
 
-func record(client *rtsp.Client, session *rtsp.Session) (stateFn, error) {
+func record(client *rtsp.Client, session *rtsp.Session, codecType CodecType) (stateFn, error) {
 	req := rtsp.NewRequest()
 	req.Method = rtsp.Record
 	localAddress := client.LocalAddress()

@@ -36,7 +36,7 @@ func NewClient(searchParameters ClientDiscoveryParameters) (cl *Client, err erro
 	}
 
 	log.Logger.WithField("category", "AirPlay Client").Infof("Establishing session with %s...", device.Name)
-	session, err := raop.EstablishSession(device.IP.String(), int(device.Port))
+	session, err := raop.EstablishSession(device.IP.String(), int(device.Port), raop.CodecTypePCM)
 	if err != nil {
 		return nil, fmt.Errorf("error establishing RTSP session: %w", err)
 	}

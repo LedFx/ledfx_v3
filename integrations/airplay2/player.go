@@ -19,7 +19,7 @@ type audioPlayer struct {
 	intWriter  audio.IntWriter
 	byteWriter *audio.ByteWriter
 
-	doEncodedSend, hasDecodedOutputs, sessionActive, muted, doBroadcast bool
+	hasClients, hasDecodedOutputs, sessionActive, muted, doBroadcast bool
 
 	numClients int
 	apClients  [8]*Client
@@ -71,10 +71,6 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 						}
 					}()
 
-					if p.doEncodedSend {
-						p.broadcastEncoded(recvBuf)
-					}
-
 					recvBuf = dc.Decode(recvBuf)
 					codec.NormalizeAudio(recvBuf, p.volume)
 
@@ -121,22 +117,22 @@ func twoBytesToInt16Unsafe(p []byte) (out int16) {
 }
 
 func (p *audioPlayer) AddClient(client *Client) {
-	p.doEncodedSend = true
+	p.hasClients = true
 	p.apClients[p.numClients] = client
+	p.byteWriter.AppendWriter(p.apClients[p.numClients])
 	p.numClients++
 }
 
 func (p *audioPlayer) SetVolume(volume float64) {
 	p.volume = volume
-	if p.doEncodedSend {
+	if p.hasClients {
 		p.broadcastParam(raop.ParamVolume(prepareVolume(volume)))
 	}
-	p.SetMute(volume == 0)
 }
 
 func (p *audioPlayer) SetMute(isMuted bool) {
 	p.muted = isMuted
-	if p.doEncodedSend {
+	if p.hasClients {
 		p.broadcastParam(raop.ParamMuted(isMuted))
 	}
 	if isMuted {
@@ -152,7 +148,7 @@ func (p *audioPlayer) SetTrack(album string, artist string, title string) {
 	p.album = album
 	p.artist = artist
 	p.title = title
-	if p.doEncodedSend {
+	if p.hasClients {
 		p.broadcastParam(raop.ParamTrackInfo{
 			Album:  album,
 			Artist: artist,
@@ -163,7 +159,7 @@ func (p *audioPlayer) SetTrack(album string, artist string, title string) {
 
 func (p *audioPlayer) SetAlbumArt(artwork []byte) {
 	p.artwork = artwork
-	if p.doEncodedSend {
+	if p.hasClients {
 		p.broadcastParam(raop.ParamAlbumArt(artwork))
 	}
 }
@@ -185,10 +181,10 @@ func (p *audioPlayer) GetTrack() player.Track {
 // we have the raw volume on a scale of 0 to 1,
 // so we build the proper format. (-144 through 0)
 func prepareVolume(vol float64) float64 {
-	switch vol {
-	case 0:
+	switch {
+	case vol == 0:
 		return -144
-	case 1:
+	case vol == 1:
 		return 0
 	default:
 		return (vol * 30) - 30
@@ -202,8 +198,8 @@ func (p *audioPlayer) Close() {
 }
 
 func (p *audioPlayer) broadcastParam(par interface{}) {
-	for i := range p.apClients {
-		go p.apClients[i].SetParam(par)
+	for i := 0; i < p.numClients; i++ {
+		p.apClients[i].SetParam(par)
 	}
 }
 

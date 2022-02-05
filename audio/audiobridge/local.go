@@ -48,7 +48,9 @@ func (br *Bridge) AddLocalOutput() (err error) {
 		}
 	}
 
-	br.wireLocalOutput(br.local.playback)
+	if err := br.wireLocalOutput(br.local.playback); err != nil {
+		return fmt.Errorf("error wiring local output: %v", err)
+	}
 
 	return nil
 }

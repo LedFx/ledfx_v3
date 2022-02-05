@@ -3,6 +3,8 @@ package playback
 import (
 	"fmt"
 	"github.com/hajimehoshi/oto"
+	"math/rand"
+	"strconv"
 )
 
 func initCtx() error {
@@ -21,6 +23,7 @@ var (
 )
 
 type Handler struct {
+	identifier string
 	// pl is the player
 	pl *oto.Player
 }
@@ -30,11 +33,24 @@ func NewHandler() (h *Handler, err error) {
 		return nil, err
 	}
 
+	randStr := func() string {
+		b := make([]byte, 16)
+		for i := 0; i < 16; i++ {
+			b = append(b, []byte(strconv.Itoa(rand.Intn(9)))...)
+		}
+		return string(b)
+	}()
+
 	h = &Handler{
-		pl: ctx.NewPlayer(),
+		pl:         ctx.NewPlayer(),
+		identifier: randStr,
 	}
 
 	return h, nil
+}
+
+func (h *Handler) Identifier() string {
+	return h.identifier
 }
 
 func (h *Handler) Quit() {

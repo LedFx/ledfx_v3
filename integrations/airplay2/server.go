@@ -23,7 +23,7 @@ type Server struct {
 	done chan struct{}
 }
 
-func NewServer(conf Config, intWriter audio.IntWriter, byteWriter *audio.ByteWriter) (s *Server) {
+func NewServer(conf Config, intWriter audio.IntWriter, byteWriter *audio.NamedMultiWriter) (s *Server) {
 	pl := newPlayer(intWriter, byteWriter)
 
 	if conf.Port == 0 {
@@ -41,8 +41,8 @@ func NewServer(conf Config, intWriter audio.IntWriter, byteWriter *audio.ByteWri
 	return s
 }
 
-func (s *Server) AddClient(client *Client) {
-	s.player.AddClient(client)
+func (s *Server) AddClient(client *Client) error {
+	return s.player.AddClient(client)
 }
 
 func (s *Server) Start() error {

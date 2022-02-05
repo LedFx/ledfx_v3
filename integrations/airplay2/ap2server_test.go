@@ -18,7 +18,7 @@ func (iwt intWriterTest) Write(b audio.Buffer) (n int, err error) {
 
 func TestAirPlayServer(t *testing.T) {
 	intWriter := intWriterTest{}
-	byteWriter := &audio.ByteWriter{}
+	byteWriter := audio.NewByteWriter()
 
 	handler, err := playback.NewHandler()
 	if err != nil {
@@ -26,7 +26,9 @@ func TestAirPlayServer(t *testing.T) {
 	}
 	defer handler.Quit()
 
-	byteWriter.AppendWriter(handler)
+	if err := byteWriter.AddWriter(handler, "TEST"); err != nil {
+		t.Fatalf("Error adding writer: %v\n", err)
+	}
 
 	sv := NewServer(Config{
 		AdvertisementName: "LedFX-AirPlay",

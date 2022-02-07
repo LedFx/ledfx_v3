@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestBridgeMic2Local(t *testing.T) {
@@ -41,15 +40,15 @@ func TestBridgeMic2Local(t *testing.T) {
 		t.Fatalf("Could not find input audio device containing string 'mic'\n")
 	}
 
-	if err := br.StartLocalInput(*inputDev); err != nil {
+	if err := br.StartLocalInput(*inputDev, true); err != nil {
 		t.Fatalf("Error starting local input: %v\n", err)
 	}
 
-	if err := br.AddLocalOutput(); err != nil {
+	if err := br.AddLocalOutput(true); err != nil {
 		t.Fatalf("Error adding local output: %v\n", err)
 	}
 
-	time.Sleep(10 * time.Second)
+	br.Wait()
 }
 
 func TestBridgeAirplay2Local(t *testing.T) {
@@ -61,11 +60,11 @@ func TestBridgeAirplay2Local(t *testing.T) {
 	}
 	defer br.Stop()
 
-	if err := br.StartAirPlayInput("LedFX-Test", 7000, false); err != nil {
+	if err := br.StartAirPlayInput("LedFX-AirPlay", 7000, false); err != nil {
 		t.Fatalf("Error initializing AirPlay input: %v\n", err)
 	}
 
-	if err := br.AddLocalOutput(); err != nil {
+	if err := br.AddLocalOutput(true); err != nil {
 		t.Fatalf("Error initializing local output: %v\n", err)
 	}
 
@@ -87,6 +86,30 @@ func TestBridgeAirPlay2AirPlay(t *testing.T) {
 
 	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName, true); err != nil {
 		t.Fatalf("Error initializing AirPlay output: %v\n", err)
+	}
+
+	br.Wait()
+}
+
+func TestBridgeAirPlay2AirPlayAndLocal(t *testing.T) {
+	br, err := NewBridge(func(buf audio.Buffer) {
+		// No audio buffer callback because we aren't processing it into blinky lights.
+	})
+	if err != nil {
+		t.Fatalf("Error initializing new bridge: %v\n", err)
+	}
+	defer br.Stop()
+
+	if err := br.StartAirPlayInput("LedFX-Test-Input", 7000, false); err != nil {
+		t.Fatalf("Error initializing AirPlay input: %v\n", err)
+	}
+
+	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName, true); err != nil {
+		t.Fatalf("Error initializing AirPlay output: %v\n", err)
+	}
+
+	if err := br.AddLocalOutput(true); err != nil {
+		t.Fatalf("Error adding local output")
 	}
 
 	br.Wait()
@@ -148,7 +171,7 @@ func TestBridgeMic2AirPlay(t *testing.T) {
 		t.Fatalf("Could not find input audio device containing string 'mic'\n")
 	}
 
-	if err := br.StartLocalInput(*inputDev); err != nil {
+	if err := br.StartLocalInput(*inputDev, true); err != nil {
 		t.Fatalf("Error starting local input: %v\n", err)
 	}
 

@@ -4,12 +4,10 @@ import (
 	"encoding/binary"
 	"fmt"
 	pretty "github.com/fatih/color"
-	log "ledfx/logger"
 )
 
 var (
-	trackInfoPrinter = pretty.New(pretty.BgBlue, pretty.FgWhite, pretty.Bold).Set()
-	lastSong         string
+	lastSong string
 )
 
 const (
@@ -56,13 +54,35 @@ func logTrackInfo(data map[string]interface{}) {
 	case curSong == "Loading…":
 		return
 	default:
-		s, ok := curSong.(string)
+		if _, ok := curSong.(string); !ok {
+			return
+		}
+
+		artist, ok := data["daap.songartist"]
 		if !ok {
 			return
 		}
-		lastSong = s
-		log.Logger.WithField("category", "Track Info").Info(trackInfoPrinter.Sprintf("🎵 Now playing: %s by %s", curSong, data["daap.songartist"]))
+
+		if _, ok = artist.(string); !ok {
+			return
+		}
+
+		lastSong = curSong.(string)
+
+		PrettyPrintTrackString(curSong.(string), artist.(string))
 	}
+}
+
+func PrettyPrintTrackString(song, artist string) {
+	_, _ = pretty.Set(pretty.BgHiCyan, pretty.FgBlack, pretty.Bold).Print("🎵 Now playing")
+	pretty.Unset()
+
+	_, _ = pretty.Set(pretty.FgHiWhite, pretty.Bold).Print(" ➜ ")
+	pretty.Unset()
+
+	_, _ = pretty.Set(pretty.BgMagenta, pretty.FgWhite, pretty.Bold).Printf("%s by %s", song, artist)
+	pretty.Unset()
+	fmt.Println()
 }
 
 // EncodeDaap will take a map and encode it in daap format

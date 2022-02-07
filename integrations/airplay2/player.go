@@ -23,7 +23,7 @@ type audioPlayer struct {
 	hasClients, hasDecodedOutputs, sessionActive, muted, doBroadcast bool
 
 	numClients int
-	apClients  [8]*Client
+	apClients  []*Client
 
 	quit chan bool
 
@@ -37,7 +37,7 @@ type audioPlayer struct {
 
 func newPlayer(intWriter audio.IntWriter, byteWriter *audio.NamedMultiWriter) *audioPlayer {
 	p := &audioPlayer{
-		apClients:  [8]*Client{},
+		apClients:  make([]*Client, 0),
 		volume:     1,
 		quit:       make(chan bool),
 		wg:         sync.WaitGroup{},
@@ -100,30 +100,13 @@ func bytesToAudioBufferUnsafe(p []byte) (out audio.Buffer) {
 	}
 	return
 }
-
-func bytesToAudioBuffer(p []byte) (out audio.Buffer) {
-	out = make([]int16, len(p))
-	var offset int
-	for i := 0; i < len(p); i += 2 {
-		out[offset] = twoBytesToInt16(p[i : i+2])
-		offset++
-	}
-	return
-}
-
-func twoBytesToInt16(p []byte) (out int16) {
-	out |= int16(p[0])
-	out |= int16(p[1]) << 8
-	return
-}
-
 func twoBytesToInt16Unsafe(p []byte) (out int16) {
 	return *(*int16)(unsafe.Pointer(&p[0]))
 }
 
 func (p *audioPlayer) AddClient(client *Client) (err error) {
 	p.hasClients = true
-	p.apClients[p.numClients] = client
+	p.apClients = append(p.apClients, client)
 	if err := p.byteWriter.AddWriter(p.apClients[p.numClients], client.Identifier()); err != nil {
 		return fmt.Errorf("error adding writer: %w", err)
 	}
@@ -208,11 +191,5 @@ func (p *audioPlayer) Close() {
 func (p *audioPlayer) broadcastParam(par interface{}) {
 	for i := 0; i < p.numClients; i++ {
 		p.apClients[i].SetParam(par)
-	}
-}
-
-func (p *audioPlayer) broadcastEncoded(data []byte) {
-	for i := 0; i < p.numClients; i++ {
-		_, _ = p.apClients[i].DataConn.Write(data)
 	}
 }

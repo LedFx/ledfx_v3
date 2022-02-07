@@ -20,7 +20,7 @@ func TestAirPlayServer(t *testing.T) {
 	intWriter := intWriterTest{}
 	byteWriter := audio.NewByteWriter()
 
-	handler, err := playback.NewHandler()
+	handler, err := playback.NewHandler(true)
 	if err != nil {
 		t.Fatalf("Error initializing playback handler: %v\n", err)
 	}

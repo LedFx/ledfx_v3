@@ -12,9 +12,13 @@ type Handler struct {
 	*portaudio.Stream
 	intWriter  audio.IntWriter
 	byteWriter *audio.NamedMultiWriter
+	verbose    bool
 }
 
-func NewHandler(audioDevice config.AudioDevice, intWriter audio.IntWriter, byteWriter *audio.NamedMultiWriter) (h *Handler, err error) {
+func NewHandler(audioDevice config.AudioDevice, intWriter audio.IntWriter, byteWriter *audio.NamedMultiWriter, verbose bool) (h *Handler, err error) {
+	if verbose {
+		log.Logger.WithField("category", "Local Capture Init").Infof("Getting info for device '%s'...", audioDevice.Name)
+	}
 	dev, err := audio.GetPaDeviceInfo(audioDevice)
 	if err != nil {
 		return nil, fmt.Errorf("error getting PortAudio device info: %w", err)
@@ -32,14 +36,21 @@ func NewHandler(audioDevice config.AudioDevice, intWriter audio.IntWriter, byteW
 	h = &Handler{
 		intWriter:  intWriter,
 		byteWriter: byteWriter,
+		verbose:    verbose,
 	}
 
 	switch p.Input.Channels {
 	case 1:
-		if h.Stream, err = portaudio.OpenStream(p, h.monoToStereoCallback); err != nil {
+		if verbose {
+			log.Logger.WithField("category", "Local Capture Init").Infof("Opening stream with Mono2Stereo callback...")
+		}
+		if h.Stream, err = portaudio.OpenStream(p, h.mono2StereoCallback); err != nil {
 			return nil, fmt.Errorf("error opening mono Portaudio stream: %w", err)
 		}
 	case 2:
+		if verbose {
+			log.Logger.WithField("category", "Local Capture Init").Infof("Opening stream with Stereo callback...")
+		}
 		if h.Stream, err = portaudio.OpenStream(p, h.stereoCallback); err != nil {
 			return nil, fmt.Errorf("error opening stereo Portaudio stream: %w", err)
 		}
@@ -47,6 +58,9 @@ func NewHandler(audioDevice config.AudioDevice, intWriter audio.IntWriter, byteW
 		return nil, fmt.Errorf("%d channel audio is unsupported (LedFX only supports stereo/mono)", p.Input.Channels)
 	}
 
+	if verbose {
+		log.Logger.WithField("category", "Local Capture Init").Infof("Starting stream...")
+	}
 	if err = h.Stream.Start(); err != nil {
 		return nil, fmt.Errorf("error starting capture stream: %w", err)
 	}
@@ -59,7 +73,7 @@ func (h *Handler) stereoCallback(in audio.Buffer) {
 	h.intWriter.Write(in)
 }
 
-func (h *Handler) monoToStereoCallback(in audio.Buffer) {
+func (h *Handler) mono2StereoCallback(in audio.Buffer) {
 	h.stereoCallback(in.ChannelMultiplier(2))
 }
 

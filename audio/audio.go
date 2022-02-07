@@ -29,7 +29,7 @@ func NewByteWriter() *NamedMultiWriter {
 		mu:             &sync.Mutex{},
 		writers:        make([]io.Writer, 0),
 		indexMap:       make(map[string]int),
-		asyncThreshold: 4,
+		asyncThreshold: 2,
 		wg:             &sync.WaitGroup{},
 	}
 

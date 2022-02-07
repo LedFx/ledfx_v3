@@ -48,7 +48,7 @@ type VirtualConfig struct {
 // 	Active bool
 // }
 
-// func (r *Segment) MarshalJSON() ([]byte, error) {
+// func (r *Segment) AsJSON() ([]byte, error) {
 // 	arr := []interface{}{r.Id, r.Start, r.Stop, r.Active}
 // 	return json.Marshal(arr)
 // }

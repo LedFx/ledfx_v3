@@ -3,11 +3,16 @@ package playback
 import (
 	"fmt"
 	"github.com/hajimehoshi/oto"
-	"math/rand"
-	"strconv"
+	log "ledfx/logger"
+	"ledfx/util"
 )
 
 func initCtx() error {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Logger.WithField("category", "Local Playback Init").Errorf("Recovered during OTO ctx init: %v\n", r)
+		}
+	}()
 	if ctx == nil {
 		var err error
 		ctx, err = oto.NewContext(44100, 2, 2, 1408)
@@ -25,25 +30,23 @@ var (
 type Handler struct {
 	identifier string
 	// pl is the player
-	pl *oto.Player
+	pl      *oto.Player
+	verbose bool
 }
 
-func NewHandler() (h *Handler, err error) {
+func NewHandler(verbose bool) (h *Handler, err error) {
 	if err = initCtx(); err != nil {
 		return nil, err
 	}
 
-	randStr := func() string {
-		b := make([]byte, 16)
-		for i := 0; i < 16; i++ {
-			b = append(b, []byte(strconv.Itoa(rand.Intn(9)))...)
-		}
-		return string(b)
-	}()
-
 	h = &Handler{
 		pl:         ctx.NewPlayer(),
-		identifier: randStr,
+		identifier: util.RandString(8),
+		verbose:    verbose,
+	}
+
+	if verbose {
+		log.Logger.WithField("category", "Local Playback Init").Infof("Identifier: %s\n", h.identifier)
 	}
 
 	return h, nil

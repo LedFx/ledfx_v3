@@ -30,6 +30,10 @@ func NewServer(conf Config, intWriter audio.IntWriter, byteWriter *audio.NamedMu
 		conf.Port = 7000
 	}
 
+	if conf.AdvertisementName == "" {
+		conf.AdvertisementName = "LedFX"
+	}
+
 	s = &Server{
 		mu:     sync.Mutex{},
 		conf:   &conf,

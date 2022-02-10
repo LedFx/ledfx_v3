@@ -18,7 +18,7 @@ func (iwt intWriterTest) Write(b audio.Buffer) (n int, err error) {
 
 func TestAirPlayServer(t *testing.T) {
 	intWriter := intWriterTest{}
-	byteWriter := audio.NewByteWriter()
+	byteWriter := audio.NewAsyncMultiWriter()
 
 	handler, err := playback.NewHandler(true)
 	if err != nil {

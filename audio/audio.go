@@ -7,6 +7,7 @@ import (
 	log "ledfx/logger"
 	"os"
 	"sync"
+	"unsafe"
 )
 
 type IntWriter interface {
@@ -15,7 +16,7 @@ type IntWriter interface {
 type IntReader interface {
 	Read(p Buffer) (n int, err error)
 }
-type NamedMultiWriter struct {
+type AsyncMultiWriter struct {
 	mu             *sync.Mutex
 	writers        []io.Writer
 	indexMap       map[string]int
@@ -24,8 +25,8 @@ type NamedMultiWriter struct {
 	wg             *sync.WaitGroup
 }
 
-func NewByteWriter() *NamedMultiWriter {
-	nmw := &NamedMultiWriter{
+func NewAsyncMultiWriter() *AsyncMultiWriter {
+	nmw := &AsyncMultiWriter{
 		mu:             &sync.Mutex{},
 		writers:        make([]io.Writer, 0),
 		indexMap:       make(map[string]int),
@@ -37,7 +38,7 @@ func NewByteWriter() *NamedMultiWriter {
 	return nmw
 }
 
-func (bw *NamedMultiWriter) SetAsyncThreshold(threshold int) {
+func (bw *AsyncMultiWriter) SetAsyncThreshold(threshold int) {
 	bw.mu.Lock()
 	defer bw.mu.Unlock()
 	bw.asyncThreshold = threshold
@@ -45,7 +46,7 @@ func (bw *NamedMultiWriter) SetAsyncThreshold(threshold int) {
 	bw.checkAsyncThreshold()
 }
 
-func (bw *NamedMultiWriter) checkAsyncThreshold() {
+func (bw *AsyncMultiWriter) checkAsyncThreshold() {
 	// We only check if it's equal since checking for >= would spam the log.
 	if len(bw.writers) == bw.asyncThreshold {
 		log.Logger.WithField("category", "Audio MultiWriter").Infof("Writer threshold reached! (Writers: %d || Threshold: %d)", len(bw.writers), bw.asyncThreshold)
@@ -57,7 +58,7 @@ func (bw *NamedMultiWriter) checkAsyncThreshold() {
 }
 
 // AddWriter adds a writer and ties the writer index to the provided name.
-func (bw *NamedMultiWriter) AddWriter(writer io.Writer, name string) error {
+func (bw *AsyncMultiWriter) AddWriter(writer io.Writer, name string) error {
 	if name == "" {
 		return NameCannotBeOmitted
 	}
@@ -73,7 +74,7 @@ func (bw *NamedMultiWriter) AddWriter(writer io.Writer, name string) error {
 // RemoveWriter removes the writer corresponding with the provided name.
 //
 // Name cannot be omitted.
-func (bw *NamedMultiWriter) RemoveWriter(name string) error {
+func (bw *AsyncMultiWriter) RemoveWriter(name string) error {
 	if name == "" {
 		return NameCannotBeOmitted
 	}
@@ -98,8 +99,8 @@ func (bw *NamedMultiWriter) RemoveWriter(name string) error {
 	return nil
 }
 
-// RemoveAll removes all writers referenced by (bw *NamedMultiWriter).
-func (bw *NamedMultiWriter) RemoveAll() {
+// RemoveAll removes all writers referenced by (bw *AsyncMultiWriter).
+func (bw *AsyncMultiWriter) RemoveAll() {
 	bw.mu.Lock()
 	defer bw.mu.Unlock()
 	bw.writers = bw.writers[:0]
@@ -108,11 +109,11 @@ func (bw *NamedMultiWriter) RemoveAll() {
 	bw.checkAsyncThreshold()
 }
 
-func (bw *NamedMultiWriter) Write(p []byte) (int, error) {
+func (bw *AsyncMultiWriter) Write(p []byte) (int, error) {
 	return bw.writeFn(p)
 }
 
-func (bw *NamedMultiWriter) writeAsync(p []byte) (int, error) {
+func (bw *AsyncMultiWriter) writeAsync(p []byte) (int, error) {
 	bw.mu.Lock()
 	defer bw.mu.Unlock()
 
@@ -130,7 +131,7 @@ func (bw *NamedMultiWriter) writeAsync(p []byte) (int, error) {
 	return len(p), nil
 }
 
-func (bw *NamedMultiWriter) writeSeq(p []byte) (int, error) {
+func (bw *AsyncMultiWriter) writeSeq(p []byte) (int, error) {
 	bw.mu.Lock()
 	defer bw.mu.Unlock()
 
@@ -247,4 +248,17 @@ func HighestFloat(f []float64) float64 {
 		}
 	}
 	return highest
+}
+
+func BytesToAudioBuffer(p []byte) (out Buffer) {
+	out = make([]int16, len(p))
+	var offset int
+	for i := 0; i < len(p); i += 2 {
+		out[offset] = twoBytesToInt16Unsafe(p[i : i+2])
+		offset++
+	}
+	return
+}
+func twoBytesToInt16Unsafe(p []byte) (out int16) {
+	return *(*int16)(unsafe.Pointer(&p[0]))
 }

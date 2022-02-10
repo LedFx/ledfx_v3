@@ -13,7 +13,7 @@ import (
 
 func TestBridgeMic2Local(t *testing.T) {
 	br, err := NewBridge(func(buf audio.Buffer) {
-		// No audio buffer callback because we aren't processing it into blinky lights
+		// No audio buffer Callback because we aren't processing it into blinky lights
 	})
 	if err != nil {
 		t.Fatalf("Error initializing new bridge: %v\n", err)
@@ -53,7 +53,7 @@ func TestBridgeMic2Local(t *testing.T) {
 
 func TestBridgeAirplay2Local(t *testing.T) {
 	br, err := NewBridge(func(buf audio.Buffer) {
-		// No audio buffer callback because we aren't processing it into blinky lights.
+		// No audio buffer Callback because we aren't processing it into blinky lights.
 	})
 	if err != nil {
 		t.Fatalf("Error initializing new bridge: %v\n", err)
@@ -73,7 +73,7 @@ func TestBridgeAirplay2Local(t *testing.T) {
 
 func TestBridgeAirPlay2AirPlay(t *testing.T) {
 	br, err := NewBridge(func(buf audio.Buffer) {
-		// No audio buffer callback because we aren't processing it into blinky lights.
+		// No audio buffer Callback because we aren't processing it into blinky lights.
 	})
 	if err != nil {
 		t.Fatalf("Error initializing new bridge: %v\n", err)
@@ -93,7 +93,7 @@ func TestBridgeAirPlay2AirPlay(t *testing.T) {
 
 func TestBridgeAirPlay2AirPlayAndLocal(t *testing.T) {
 	br, err := NewBridge(func(buf audio.Buffer) {
-		// No audio buffer callback because we aren't processing it into blinky lights.
+		// No audio buffer Callback because we aren't processing it into blinky lights.
 	})
 	if err != nil {
 		t.Fatalf("Error initializing new bridge: %v\n", err)
@@ -117,7 +117,7 @@ func TestBridgeAirPlay2AirPlayAndLocal(t *testing.T) {
 
 func TestBridgeAirPlay2AirPlayAsyncWrite(t *testing.T) {
 	br, err := NewBridge(func(buf audio.Buffer) {
-		// No audio buffer callback because we aren't processing it into blinky lights.
+		// No audio buffer Callback because we aren't processing it into blinky lights.
 	})
 	if err != nil {
 		t.Fatalf("Error initializing new bridge: %v\n", err)
@@ -144,7 +144,7 @@ func TestBridgeAirPlay2AirPlayAsyncWrite(t *testing.T) {
 
 func TestBridgeMic2AirPlay(t *testing.T) {
 	br, err := NewBridge(func(buf audio.Buffer) {
-		// No audio buffer callback because we aren't processing it into blinky lights.
+		// No audio buffer Callback because we aren't processing it into blinky lights.
 	})
 	if err != nil {
 		t.Fatalf("Error initializing new bridge: %v\n", err)

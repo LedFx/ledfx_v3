@@ -13,13 +13,13 @@ func NewBridge(bufferCallback func(buf audio.Buffer)) (br *Bridge, err error) {
 		return nil, fmt.Errorf("error initializing PortAudio: %w", err)
 	}
 
-	cbHandler := &callbackWrapper{
-		callback: bufferCallback,
+	cbHandler := &CallbackWrapper{
+		Callback: bufferCallback,
 	}
 
 	br = &Bridge{
 		bufferCallback: bufferCallback,
-		byteWriter:     audio.NewByteWriter(),
+		byteWriter:     audio.NewAsyncMultiWriter(),
 		intWriter:      cbHandler,
 		inputType:      inputType(-1), // -1 signifies undefined
 		done:           make(chan bool),
@@ -27,8 +27,8 @@ func NewBridge(bufferCallback func(buf audio.Buffer)) (br *Bridge, err error) {
 	return br, nil
 }
 
-func (cbw *callbackWrapper) Write(b audio.Buffer) (int, error) {
-	cbw.callback(b)
+func (cbw *CallbackWrapper) Write(b audio.Buffer) (int, error) {
+	cbw.Callback(b)
 	return len(b), nil
 }
 

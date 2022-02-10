@@ -11,11 +11,11 @@ import (
 type Handler struct {
 	*portaudio.Stream
 	intWriter  audio.IntWriter
-	byteWriter *audio.NamedMultiWriter
+	byteWriter *audio.AsyncMultiWriter
 	verbose    bool
 }
 
-func NewHandler(audioDevice config.AudioDevice, intWriter audio.IntWriter, byteWriter *audio.NamedMultiWriter, verbose bool) (h *Handler, err error) {
+func NewHandler(audioDevice config.AudioDevice, intWriter audio.IntWriter, byteWriter *audio.AsyncMultiWriter, verbose bool) (h *Handler, err error) {
 	if verbose {
 		log.Logger.WithField("category", "Local Capture Init").Infof("Getting info for device '%s'...", audioDevice.Name)
 	}

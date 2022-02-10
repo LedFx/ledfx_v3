@@ -18,7 +18,7 @@ type audioPlayer struct {
 	wg sync.WaitGroup
 
 	intWriter  audio.IntWriter
-	byteWriter *audio.NamedMultiWriter
+	byteWriter *audio.AsyncMultiWriter
 
 	hasClients, hasDecodedOutputs, sessionActive, muted, doBroadcast bool
 
@@ -35,7 +35,7 @@ type audioPlayer struct {
 	volume float64
 }
 
-func newPlayer(intWriter audio.IntWriter, byteWriter *audio.NamedMultiWriter) *audioPlayer {
+func newPlayer(intWriter audio.IntWriter, byteWriter *audio.AsyncMultiWriter) *audioPlayer {
 	p := &audioPlayer{
 		apClients:  make([]*Client, 0),
 		volume:     1,

@@ -11,7 +11,7 @@ import (
 
 func TestBridgeMic2LocalJSON(t *testing.T) {
 	br, err := NewBridge(func(buf audio.Buffer) {
-		// No audio buffer callback because we aren't processing it into blinky lights
+		// No audio buffer Callback because we aren't processing it into blinky lights
 	})
 	if err != nil {
 		t.Fatalf("Error initializing new bridge: %v\n", err)
@@ -38,7 +38,7 @@ func TestBridgeMic2LocalJSON(t *testing.T) {
 		t.Fatalf("Could not find input audio device containing string 'mic'\n")
 	}
 
-	wrapper := br.NewJSONWrapper()
+	wrapper := br.JSONWrapper()
 
 	// BEGIN INPUT CONFIG
 	inConf := LocalInputJSON{
@@ -77,14 +77,14 @@ func TestBridgeMic2LocalJSON(t *testing.T) {
 
 func TestBridgeAirPlay2LocalJSON(t *testing.T) {
 	br, err := NewBridge(func(buf audio.Buffer) {
-		// No audio buffer callback because we aren't processing it into blinky lights
+		// No audio buffer Callback because we aren't processing it into blinky lights
 	})
 	if err != nil {
 		t.Fatalf("Error initializing new bridge: %v\n", err)
 	}
 	defer br.Stop()
 
-	wrapper := br.NewJSONWrapper()
+	wrapper := br.JSONWrapper()
 
 	// BEGIN INPUT CONFIG
 	inConf := AirPlayInputJSON{

@@ -25,9 +25,9 @@ func TestHandlerFunctionality(t *testing.T) {
 
 		},
 	}, wr, false)
-	p, err := h.Play("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+	p, err := h.Play("https://www.youtube.com/watch?v=_RsiXGb1a-U")
 	if err != nil {
-		t.Fatalf("error rickrolling: %v\n", err)
+		t.Fatalf("error playing URL: %v\n", err)
 	}
 	defer p.Stop()
 	go func() {

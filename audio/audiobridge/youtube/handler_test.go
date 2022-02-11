@@ -75,3 +75,27 @@ func TestHandlerFunctionalityPlaylist(t *testing.T) {
 		}
 	}
 }
+
+func TestBonkRepeated(t *testing.T) {
+	ctx, err := oto.NewContext(44100, 2, 2, 1408)
+	if err != nil {
+		t.Fatalf("error starting new OTO context: %v\n", err)
+	}
+
+	wr := audio.NewAsyncMultiWriter()
+	if err := wr.AddWriter(ctx.NewPlayer(), "oto"); err != nil {
+		t.Fatalf("error adding oto player: %v\n", err)
+	}
+
+	h := NewHandler(&audiobridge.CallbackWrapper{
+		Callback: func(buf audio.Buffer) {
+
+		},
+	}, wr, false)
+
+	for {
+		p, _ := h.Play("https://www.youtube.com/watch?v=ZXK427oXjn8")
+		p.Start()
+	}
+
+}

@@ -24,6 +24,7 @@ func NewBridge(bufferCallback func(buf audio.Buffer)) (br *Bridge, err error) {
 		inputType:      inputType(-1), // -1 signifies undefined
 		done:           make(chan bool),
 	}
+	br.ctl = br.newController()
 	return br, nil
 }
 

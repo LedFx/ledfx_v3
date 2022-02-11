@@ -23,6 +23,10 @@ type Player struct {
 }
 
 func (p *Player) Reset(input *os.File) {
+	p.done = true
+	defer func() {
+		p.done = false
+	}()
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if p.in != nil {
@@ -73,7 +77,7 @@ func (p *Player) Unpause() {
 	p.unpause <- true
 }
 
-func (p *Player) Stop() error {
+func (p *Player) Close() error {
 	if p.paused {
 		p.unpause <- true
 	}

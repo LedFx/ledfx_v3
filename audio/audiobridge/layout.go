@@ -15,6 +15,9 @@ type Bridge struct {
 
 	airplay *AirPlayHandler
 	local   *LocalHandler
+	youtube *YoutubeHandler
+
+	ctl *Controller
 
 	done chan bool
 
@@ -25,13 +28,17 @@ type Bridge struct {
 type inputType int8
 
 const (
-	// A Bridge with an input type as inputTypeAirPlayServer will run
+	// A Bridge with an inputType as inputTypeAirPlayServer will run
 	// an AirPlay server for clients to connect and send audio to.
 	inputTypeAirPlayServer inputType = iota
 
-	// A Bridge with an input type as inputTypeLocal will capture
+	// A Bridge with an inputType as inputTypeLocal will capture
 	// system audio from a chosen local device.
 	inputTypeLocal
+
+	// A Bridge with an inputType as inputTypeYoutube will stream audio
+	// from provided videos to all outputs.
+	inputTypeYoutube
 )
 
 // CallbackWrapper wraps a buffer Callback into a struct

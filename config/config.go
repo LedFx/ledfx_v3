@@ -44,12 +44,12 @@ type VirtualConfig struct {
 // type Segment struct {
 // 	Id     string
 // 	Start  int
-// 	Stop   int
+// 	Close   int
 // 	Active bool
 // }
 
 // func (r *Segment) AsJSON() ([]byte, error) {
-// 	arr := []interface{}{r.Id, r.Start, r.Stop, r.Active}
+// 	arr := []interface{}{r.Id, r.Start, r.Close, r.Active}
 // 	return json.Marshal(arr)
 // }
 

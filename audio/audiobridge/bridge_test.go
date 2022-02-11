@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestBridgeMic2Local(t *testing.T) {
@@ -178,6 +179,42 @@ func TestBridgeMic2AirPlay(t *testing.T) {
 	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName, true); err != nil {
 		t.Fatalf("Error adding AirPlay output: %v\n", err)
 	}
+
+	br.Wait()
+}
+
+func TestBridgeYoutube2Local(t *testing.T) {
+	br, err := NewBridge(func(buf audio.Buffer) {
+		// No audio buffer Callback because we aren't processing it into blinky lights.
+	})
+	if err != nil {
+		t.Fatalf("Error initializing new bridge: %v\n", err)
+	}
+	defer br.Stop()
+
+	if err := br.StartYoutubeInput(true); err != nil {
+		t.Fatalf("Error starting YouTube input: %v\n", err)
+	}
+
+	if err := br.AddLocalOutput(true); err != nil {
+		t.Fatalf("Error starting local output: %v\n", err)
+	}
+
+	pp, err := br.Controller().YouTube().PlayPlaylist("https://youtube.com/playlist?list=PLcncP1HGs_p0VaCVjUPyrPiRSbQS8H8W-")
+	if err != nil {
+		t.Fatalf("Error playing YouTube playlist: %v\n", err)
+	}
+	defer pp.Stop()
+
+	go func() {
+		for {
+			if err := pp.Next(); err != nil {
+				log.Logger.Warnf("Error playing: %v", err)
+			}
+			time.Sleep(5 * time.Second)
+		}
+
+	}()
 
 	br.Wait()
 }

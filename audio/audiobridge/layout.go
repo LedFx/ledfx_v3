@@ -48,5 +48,6 @@ type CallbackWrapper struct {
 
 // BridgeJSONWrapper wraps a bridge with a JSON interpreter
 type BridgeJSONWrapper struct {
-	br *Bridge
+	br      *Bridge
+	jsonCTL *JsonCTL
 }

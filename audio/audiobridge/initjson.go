@@ -52,6 +52,14 @@ func (l LocalOutputJSON) AsJSON() ([]byte, error) {
 	return json.Marshal(&l)
 }
 
+type YouTubeInputJSON struct {
+	Verbose bool `json:"verbose"`
+}
+
+func (y YouTubeInputJSON) AsJSON() ([]byte, error) {
+	return json.Marshal(&y)
+}
+
 // JSONWrapper returns an interpreter for JSON-based configuration
 // parameters.
 func (br *Bridge) JSONWrapper() *BridgeJSONWrapper {
@@ -105,6 +113,17 @@ func (w *BridgeJSONWrapper) AddLocalOutput(jsonData []byte) (err error) {
 	}
 	if err := w.br.AddLocalOutput(conf.Verbose); err != nil {
 		return fmt.Errorf("error starting local output (playback): %w", err)
+	}
+	return nil
+}
+
+func (w *BridgeJSONWrapper) StartYouTubeInput(jsonData []byte) (err error) {
+	conf := YouTubeInputJSON{}
+	if err := json.Unmarshal(jsonData, &conf); err != nil {
+		return fmt.Errorf("error unmarshalling JSON: %w", err)
+	}
+	if err := w.br.StartYoutubeInput(conf.Verbose); err != nil {
+		return fmt.Errorf("error starting YouTube input: %w", err)
 	}
 	return nil
 }

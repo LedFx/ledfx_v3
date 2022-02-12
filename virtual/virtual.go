@@ -20,7 +20,7 @@ func PlayVirtual(virtualid string, playState bool, clr string) (err error) {
 	}
 
 	if virtualid == "" {
-		err = errors.New("Virtual id is empty. Please provide Id to add virtual to config")
+		err = errors.New("virtual id is empty. Please provide Id to add virtual to config")
 		return
 	}
 

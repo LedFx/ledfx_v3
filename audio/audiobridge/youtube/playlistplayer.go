@@ -13,6 +13,13 @@ type PlaylistPlayer struct {
 	tracks   []string
 }
 
+func (pp *PlaylistPlayer) Pause() {
+	pp.h.p.Pause()
+}
+func (pp *PlaylistPlayer) Unpause() {
+	pp.h.p.Unpause()
+}
+
 func (pp *PlaylistPlayer) Next() error {
 	pp.inc()
 	p, err := pp.h.Play(pp.tracks[pp.trackNum])

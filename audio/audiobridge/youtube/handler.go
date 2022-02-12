@@ -65,7 +65,7 @@ func (h *Handler) Play(url string) (p *Player, err error) {
 
 	if h.verbose {
 		log.Logger.WithField("category", "YT Player").Infof(
-			"[CREATOR=\"%s\", SAMPLERATE=\"%d\", size=\"%s\", channels=\"%d\", duration=\"%v\"]",
+			"[CREATOR=\"%s\", SAMPLERATE=\"%d\", SIZE=\"%s\", CHANNELS=\"%d\", DURATION=\"%v\"]",
 			videoInfo.Creator,
 			videoInfo.SampleRate,
 			humanize.Bytes(uint64(videoInfo.WavSize)),
@@ -200,7 +200,6 @@ Download:
 
 func cleanTitle(title string) string {
 	// Make a Regex to say we only want letters and numbers
-	reg, _ := regexp.Compile("[^a-zA-Z0-9]+")
-	processedString := reg.ReplaceAllString(title, "")
-	return strings.ReplaceAll(processedString, " ", "_")
+	reg, _ := regexp.Compile("[^a-zA-Z0-9 ]+")
+	return strings.ReplaceAll(reg.ReplaceAllString(title, ""), " ", "_")
 }

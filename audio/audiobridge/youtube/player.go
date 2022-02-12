@@ -38,7 +38,7 @@ func (p *Player) Reset(input *os.File) {
 func (p *Player) Start() error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	buf := make([]byte, 8192)
+	buf := make([]byte, 1408)
 	for {
 		switch {
 		case p.paused:

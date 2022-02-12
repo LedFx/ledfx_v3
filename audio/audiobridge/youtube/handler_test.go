@@ -3,7 +3,6 @@ package youtube
 import (
 	"github.com/hajimehoshi/oto"
 	"ledfx/audio"
-	"ledfx/audio/audiobridge"
 	log "ledfx/logger"
 	"math/rand"
 	"testing"
@@ -21,11 +20,7 @@ func TestHandlerFunctionality(t *testing.T) {
 		t.Fatalf("error adding oto player: %v\n", err)
 	}
 
-	h := NewHandler(&audiobridge.CallbackWrapper{
-		Callback: func(buf audio.Buffer) {
-
-		},
-	}, wr, false)
+	h := NewHandler(nil, wr, false)
 	p, err := h.Play("https://www.youtube.com/watch?v=_RsiXGb1a-U")
 	if err != nil {
 		t.Fatalf("error playing URL: %v\n", err)
@@ -57,11 +52,7 @@ func TestHandlerFunctionalityPlaylist(t *testing.T) {
 		t.Fatalf("error adding oto player: %v\n", err)
 	}
 
-	h := NewHandler(&audiobridge.CallbackWrapper{
-		Callback: func(buf audio.Buffer) {
-
-		},
-	}, wr, false)
+	h := NewHandler(nil, wr, false)
 
 	pp, err := h.PlayPlaylist("https://www.youtube.com/playlist?list=PLcncP1HGs_p0L1SwCfOWMjfy6vLusnJw9")
 	if err != nil {
@@ -87,11 +78,7 @@ func TestBonkRepeated(t *testing.T) {
 		t.Fatalf("error adding oto player: %v\n", err)
 	}
 
-	h := NewHandler(&audiobridge.CallbackWrapper{
-		Callback: func(buf audio.Buffer) {
-
-		},
-	}, wr, false)
+	h := NewHandler(nil, wr, false)
 
 	for {
 		p, _ := h.Play("https://www.youtube.com/watch?v=ZXK427oXjn8")

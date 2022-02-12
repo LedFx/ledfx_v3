@@ -1,7 +1,6 @@
 package youtube
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -39,7 +38,7 @@ func (p *Player) Reset(input *os.File) {
 func (p *Player) Start() error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	buf := bytes.NewBuffer(make([]byte, 1408))
+	buf := make([]byte, 8192)
 	for {
 		switch {
 		case p.paused:
@@ -47,21 +46,27 @@ func (p *Player) Start() error {
 		case p.done:
 			return nil
 		default:
-			if _, err := buf.ReadFrom(io.LimitReader(p.in, 1408)); err != nil {
-				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) {
+			n, err := io.ReadAtLeast(p.in, buf, 1408)
+			if err != nil {
+				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.ErrShortBuffer) {
 					return fmt.Errorf("unexpected error copying to output writer: %w", err)
 				}
 				return nil
 			}
 
-			if _, err := p.intOut.Write(audio.BytesToAudioBuffer(buf.Bytes())); err != nil {
-				return fmt.Errorf("error writing to int writer: %w", err)
+			if p.intOut != nil {
+				if _, err := p.intOut.Write(audio.BytesToAudioBuffer(buf[:n][:])); err != nil {
+					return fmt.Errorf("error writing to int writer: %w", err)
+				}
 			}
 
-			if _, err := buf.WriteTo(p.out); err != nil {
+			if _, err := p.out.Write(buf[:n][:]); err != nil {
 				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) {
 					return fmt.Errorf("unexpected error copying to output writer: %w", err)
 				}
+				return nil
+			}
+			if n < 1408 {
 				return nil
 			}
 		}

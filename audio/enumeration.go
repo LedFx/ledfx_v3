@@ -1,88 +1,102 @@
 package audio
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
+	"ledfx/config"
 	"ledfx/logger"
 	"os"
-	"strings"
 	"text/tabwriter"
 
-	"github.com/gen2brain/malgo"
+	"github.com/gordonklaus/portaudio"
 )
 
-func GetAudioDevices() (infos []AudioDevice, err error) {
-	// Capture devices.
-	backends := []malgo.Backend{
-		malgo.BackendDsound,
-	}
+/*
+Creates a hash of hostapi idx and device name
+This ID should be the same regardless of device idx, meaning
+it won't change when other audio devices are added or removed
+*/
+func createId(i int, n string) string {
+	s := fmt.Sprintf("%d %s", i, n)
+	id := sha1.New()
+	id.Write([]byte(s))
+	return hex.EncodeToString(id.Sum(nil))
+}
 
-	context, err := malgo.InitContext(backends, malgo.ContextConfig{}, func(message string) {
-		logger.Logger.Info(message)
-	})
+func GetPaDeviceInfo(ad config.AudioDevice) (d *portaudio.DeviceInfo, err error) {
+	hs, err := portaudio.HostApis()
+	if err != nil {
+		return
+	}
+	for i, h := range hs {
+		for _, d := range h.Devices {
+			if d.MaxInputChannels < 1 {
+				continue
+			}
+			if ad.Id == createId(i, d.Name) {
+				return d, nil
+			}
+		}
+	}
+	logger.Logger.Warn("Saved audio input device cannot be found. Reverting to default device.")
+	d, err = portaudio.DefaultInputDevice()
+	if err != nil {
+		return &portaudio.DeviceInfo{}, err
+	}
+	return d, err
+}
+
+func GetAudioDevices() (infos []config.AudioDevice, err error) {
+	err = portaudio.Initialize()
 	if err != nil {
 		logger.Logger.Error(err)
 		return
 	}
+	defer portaudio.Terminate()
 
-	defer func() {
-		_ = context.Uninit()
-		context.Free()
-	}()
-
-	audioDeviceTypes := []malgo.DeviceType{
-		malgo.Capture,
-		malgo.Loopback,
+	hs, err := portaudio.HostApis()
+	if err != nil {
+		logger.Logger.Error(err)
+		return
 	}
-
-	var s string
-	for _, dt := range audioDeviceTypes {
-		dtinfos, err := context.Devices(dt)
-		if err != nil {
-			logger.Logger.Errorf("Failed to get capture audio devices: %v", err)
-		}
-		if dt == 2 {
-			s = "capture"
-		} else {
-			s = "loopback"
-		}
-		for _, info := range dtinfos {
-			full, err := context.DeviceInfo(dt, info.ID, malgo.Shared)
-			if err != nil {
+	for i, h := range hs {
+		for _, d := range h.Devices {
+			if d.MaxInputChannels < 1 {
 				continue
 			}
-
-			ad := AudioDevice{
-				Id:         full.ID.String(),
-				SampleRate: int(full.MaxSampleRate),
-				Name:       strings.ReplaceAll(full.Name(), "\u0000", ""),
-				Channels:   int(full.MaxChannels),
-				IsDefault:  full.IsDefault == 1,
-				Source:     s,
+			ad := config.AudioDevice{
+				Id:         createId(i, d.Name),
+				HostApi:    h.Name,
+				SampleRate: d.DefaultSampleRate,
+				Name:       d.Name,
+				Channels:   d.MaxInputChannels,
+				IsDefault:  d.Name == h.DefaultInputDevice.Name,
 			}
 			infos = append(infos, ad)
 		}
 	}
-
 	return infos, err
 }
 
 func LogAudioDevices() {
 	infos, err := GetAudioDevices()
 	if err != nil {
+		logger.Logger.Error(err)
 		return
 	}
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 
 	var icon rune
 
-	for i, info := range infos {
+	for _, info := range infos {
 		if info.IsDefault {
-			icon = '✅'
+			icon = '✓'
 		} else {
-			icon = '❌'
+			icon = '⨯'
 		}
-		fmt.Fprintf(w, "%v\t%d:\t%s,\t%s\tchannels: %d,\tsamplerate: %d,\tdefault: %q\n",
-			info.Source, i, info.Name, info.Id, info.Channels, info.SampleRate, icon)
+		fmt.Fprintf(w, "%s:\t%s,\tchannels: %d,\tsamplerate: %f,\tdefault: %c\n",
+			info.HostApi, info.Name, info.Channels, info.SampleRate, icon)
 	}
 	w.Flush()
 }

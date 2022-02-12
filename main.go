@@ -31,12 +31,6 @@ func init() {
 	if err != nil {
 		log.Println(err)
 	}
-
-	// Initialize Logger
-	_, err = logger.Init(config.GlobalConfig)
-	if err != nil {
-		log.Println(err)
-	}
 }
 
 func main() {
@@ -66,7 +60,7 @@ func main() {
 	*/
 
 	audio.LogAudioDevices()
-	go audio.TestCapture()
+	go audio.CaptureDemo()
 
 	go func() {
 		utils.SetupRoutes()

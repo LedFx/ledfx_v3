@@ -27,7 +27,6 @@ func FindAndPlayVirtual(virtualid string, playState bool, clr string) (err error
 		err = errors.New("Virtual id is empty. Please provide Id to add virtual to config")
 		return
 	}
-
 	c := &config.GlobalConfig
 	v := config.GlobalViper
 
@@ -73,7 +72,6 @@ func FindAndPlayVirtual(virtualid string, playState bool, clr string) (err error
 
 						// FOR TESTING: pulse effect
 						var currentEffect effect.Effect = &effect.PulsingEffect{}
-
 						if playState {
 							if done == nil {
 								done = make(chan bool)
@@ -147,8 +145,8 @@ func FindAndStopVirtual(virtualid string) (err error) {
 	}
 
 	if virtualExists {
-		v.Set("virtuals", c.Virtuals)
-		err = v.WriteConfig()
+		config.GlobalViper.Set("virtuals", config.GlobalConfig.Virtuals)
+		err = config.GlobalViper.WriteConfig()
 	}
 	return
 }

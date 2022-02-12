@@ -44,12 +44,12 @@ type VirtualConfig struct {
 // type Segment struct {
 // 	Id     string
 // 	Start  int
-// 	Stop   int
+// 	Close   int
 // 	Active bool
 // }
 
-// func (r *Segment) MarshalJSON() ([]byte, error) {
-// 	arr := []interface{}{r.Id, r.Start, r.Stop, r.Active}
+// func (r *Segment) AsJSON() ([]byte, error) {
+// 	arr := []interface{}{r.Id, r.Start, r.Close, r.Active}
 // 	return json.Marshal(arr)
 // }
 
@@ -82,29 +82,44 @@ type Virtual struct {
 	// Segments []Segment     `mapstructure:"segments" json:"segments"`
 }
 
+type AudioDevice struct {
+	Id         string  `mapstructure:"id" json:"id"`
+	HostApi    string  `mapstructure:"hostapi" json:"hostapi"`
+	SampleRate float64 `mapstructure:"sample_rate" json:"sample_rate"`
+	Name       string  `mapstructure:"name" json:"name"`
+	Channels   int     `mapstructure:"channels" json:"channels"`
+	IsDefault  bool    `mapstructure:"is_default" json:"is_default"`
+	Source     string  `mapstructure:"source" json:"source"`
+}
+
+type AudioConfig struct {
+	Device    AudioDevice `mapstructure:"device" json:"device"`
+	FftSize   int         `mapstructure:"fft_size" json:"fft_size"`
+	FrameRate int         `mapstructure:"frame_rate" json:"frame_rate"`
+}
+
 type Config struct {
-	Config      string    `mapstructure:"config" json:"config"`
-	Port        int       `mapstructure:"port" json:"port"`
-	Version     bool      `mapstructure:"version" json:"version"`
-	OpenUi      bool      `mapstructure:"open-ui" json:"open-ui"`
-	Verbose     bool      `mapstructure:"verbose" json:"verbose"`
-	VeryVerbose bool      `mapstructure:"very-verbose" json:"very-verbose"`
-	Host        string    `mapstructure:"host" json:"host"`
-	Offline     bool      `mapstructure:"offline" json:"offline"`
-	SentryCrash bool      `mapstructure:"sentry-crash-test" json:"sentry-crash-test"`
-	Devices     []Device  `mapstructure:"devices" json:"devices"`
-	Virtuals    []Virtual `mapstructure:"virtuals" json:"virtuals"`
+	Config      string      `mapstructure:"config" json:"config"`
+	Port        int         `mapstructure:"port" json:"port"`
+	Version     bool        `mapstructure:"version" json:"version"`
+	OpenUi      bool        `mapstructure:"open-ui" json:"open-ui"`
+	Verbose     bool        `mapstructure:"verbose" json:"verbose"`
+	VeryVerbose bool        `mapstructure:"very-verbose" json:"very-verbose"`
+	Host        string      `mapstructure:"host" json:"host"`
+	Offline     bool        `mapstructure:"offline" json:"offline"`
+	SentryCrash bool        `mapstructure:"sentry-crash-test" json:"sentry-crash-test"`
+	Devices     []Device    `mapstructure:"devices" json:"devices"`
+	Virtuals    []Virtual   `mapstructure:"virtuals" json:"virtuals"`
+	Audio       AudioConfig `mapstructure:"audio" json:"audio"`
 }
 
 var configPath string
-var GlobalConfig Config
-var OldConfig Config
+var GlobalConfig *Config
+
 var GlobalViper *viper.Viper
-var OldViper *viper.Viper
 
 func InitConfig() error {
 	GlobalViper = viper.New()
-	OldViper = viper.New()
 
 	pflag.StringVarP(&configPath, "config", "c", "", "Directory that contains the configuration files")
 	pflag.IntP("port", "p", 8080, "Web interface port")
@@ -122,14 +137,8 @@ func InitConfig() error {
 		return err
 	}
 
-	// Load new config
-	err = loadConfig("goconfig")
-	if err != nil {
-		return err
-	}
-
-	// Load old config
-	err = loadConfig("config")
+	// Load config
+	err = loadConfig("go_config")
 	if err != nil {
 		return err
 	}
@@ -156,7 +165,6 @@ func createConfigIfNotExists(configName string) error {
 }
 
 // LoadConfig reads in config file and ENV variables if set.
-// TODO: once we are fully backwards compatible, we can just use config.json for GlobalConfig
 func loadConfig(configName string) (err error) {
 
 	if configPath == "" {
@@ -173,13 +181,8 @@ func loadConfig(configName string) (err error) {
 		return err
 	}
 
-	var v *viper.Viper
+	v := GlobalViper
 
-	if configName == "goconfig" {
-		v = GlobalViper
-	} else if configName == "config" {
-		v = OldViper
-	}
 	if err != nil {
 		return err
 	}
@@ -195,10 +198,7 @@ func loadConfig(configName string) (err error) {
 		return nil
 	}
 
-	if configName == "goconfig" {
-		err = v.Unmarshal(&GlobalConfig)
-	} else if configName == "config" {
-		err = v.Unmarshal(&OldConfig)
-	}
+	err = v.Unmarshal(&GlobalConfig)
+
 	return
 }

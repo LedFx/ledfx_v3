@@ -13,13 +13,29 @@ type Request struct {
 	Method     Method
 	RequestURI string
 	protocol   string
-	Headers    map[string]string
+	Headers    Headers
 	Body       []byte
+}
+
+type Headers map[string]string
+
+func (r Headers) String() string {
+	var buf bytes.Buffer
+	var offset int
+	for k, v := range r {
+		offset++
+		if offset >= len(r) {
+			buf.WriteString(fmt.Sprintf("[%s:%s]", k, v))
+		} else {
+			buf.WriteString(fmt.Sprintf("[%s:%s], ", k, v))
+		}
+	}
+	return buf.String()
 }
 
 // Response RTSP response
 type Response struct {
-	Headers  map[string]string
+	Headers  Headers
 	Body     []byte
 	Status   Status
 	protocol string
@@ -35,20 +51,16 @@ func NewRequest() *Request {
 
 func (r *Request) String() string {
 	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf("Protocol: %s\nMethod: %s\nRequest URI: %s\n", r.protocol, r.Method.String(), r.RequestURI))
-	buffer.WriteString("Headers:\n")
-	for k, v := range r.Headers {
-		buffer.WriteString(fmt.Sprintf("%s: %s\n", k, v))
-	}
+	buffer.WriteString(fmt.Sprintf(`PROTO="%s" METHOD="%s" URI="%s" HEADERS="%s"`, r.protocol, r.Method.String(), r.RequestURI, r.Headers.String()))
+
 	if contentType, ok := r.Headers["Content-Type"]; ok {
 		switch {
 		case fastContains(contentType, "image"):
 			fallthrough
 		case fastContains(contentType, "x-dmap-tagged"):
-			buffer.WriteString("Body: <omitted due to length>")
-			return buffer.String()
+			buffer.WriteString(" BODY=[<omitted due to length>]")
 		default:
-			buffer.WriteString(fmt.Sprintf("Body: \n %s", r.Body))
+			buffer.WriteString(fmt.Sprintf(" BODY=[%s]", strings.ReplaceAll(string(r.Body), "\n", "")))
 		}
 	}
 	return buffer.String()
@@ -56,21 +68,16 @@ func (r *Request) String() string {
 
 func (r *Response) String() string {
 	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf("Protocol: %s\nStatus: %s\n", r.protocol, r.Status.String()))
-	buffer.WriteString("Headers:\n")
-	for k, v := range r.Headers {
-		buffer.WriteString(fmt.Sprintf("%s: %s\n", k, v))
-	}
+	buffer.WriteString(fmt.Sprintf(`PROTO="%s" STATUS="%s" HEADERS="%s"`, r.protocol, r.Status.String(), r.Headers.String()))
 
 	if contentType, ok := r.Headers["Content-Type"]; ok {
 		switch {
 		case fastContains(contentType, "image"):
 			fallthrough
 		case fastContains(contentType, "x-dmap-tagged"):
-			buffer.WriteString("Body: <omitted due to length>")
-			return buffer.String()
+			buffer.WriteString(" BODY=[<omitted due to length>]")
 		default:
-			buffer.WriteString(fmt.Sprintf("Body: \n %s", r.Body))
+			buffer.WriteString(fmt.Sprintf(" BODY=[%s]", strings.ReplaceAll(string(r.Body), "\n", "")))
 		}
 	}
 	return buffer.String()

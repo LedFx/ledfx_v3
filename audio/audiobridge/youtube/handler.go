@@ -30,6 +30,15 @@ type Handler struct {
 	pp         *PlaylistPlayer
 }
 
+func (h *Handler) Quit() {
+	if h.p != nil {
+		h.p.Close()
+	}
+	if h.pp != nil {
+		h.pp.Stop()
+	}
+}
+
 func NewHandler(intWriter audio.IntWriter, byteWriter *audio.AsyncMultiWriter, verbose bool) *Handler {
 	h := &Handler{
 		cl: &yt.Client{

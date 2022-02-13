@@ -1,7 +1,6 @@
 package audiobridge
 
 import (
-	"fmt"
 	"ledfx/audio/audiobridge/youtube"
 )
 
@@ -11,8 +10,9 @@ type YoutubeHandler struct {
 
 func (br *Bridge) StartYoutubeInput(verbose bool) error {
 	if br.inputType != -1 {
-		return fmt.Errorf("an input source has already been defined for this bridge")
+		br.closeInput()
 	}
+
 	br.inputType = inputTypeYoutube
 
 	if br.youtube == nil {

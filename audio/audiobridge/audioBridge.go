@@ -55,6 +55,17 @@ func (br *Bridge) Stop() {
 	_ = portaudio.Terminate()
 }
 
+func (br *Bridge) closeInput() {
+	switch br.inputType {
+	case inputTypeAirPlayServer:
+		br.airplay.server.Stop()
+	case inputTypeLocal:
+		br.local.capture.Quit()
+	case inputTypeYoutube:
+		br.youtube.handler.Quit()
+	}
+}
+
 // Wait waits for the bridge to finish.
 func (br *Bridge) Wait() {
 	<-br.done

@@ -28,13 +28,10 @@ func readRequest(r io.Reader) (*Request, error) {
 		return nil, fmt.Errorf("improperly formatted request line: %s", requestLine)
 	}
 
-	method, err := getMethod(requestLineParts[0])
-
-	if err != nil {
+	if req.Method, err = getMethod(requestLineParts[0]); err != nil {
 		return nil, fmt.Errorf("method does exist in RTSP protocol: %s", requestLineParts[0])
 	}
 
-	req.Method = method
 	req.RequestURI = requestLineParts[1]
 	req.protocol = requestLineParts[2]
 

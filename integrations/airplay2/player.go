@@ -59,30 +59,31 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 		for {
 			select {
 			case recvBuf, ok := <-session.DataChan:
-				if !ok {
+				switch {
+				case !ok:
 					return
-				}
-				if p.muted {
+				case p.muted:
 					continue
-				}
-				func() {
-					defer func() {
-						if err := recover(); err != nil {
-							log.Logger.WithField("category", "AirPlay Player").Errorf("Recovered from panic during playStream: %v\n", err)
+				default:
+					func() {
+						defer func() {
+							if err := recover(); err != nil {
+								log.Logger.WithField("category", "AirPlay Player").Errorf("Recovered from panic during playStream: %v\n", err)
+							}
+						}()
+
+						recvBuf = dc.Decode(recvBuf)
+						codec.NormalizeAudio(recvBuf, p.volume)
+
+						if _, err := p.byteWriter.Write(recvBuf); err != nil {
+							log.Logger.WithField("category", "AirPlay Player").Errorf("Error writing to byteWriter: %v", err)
+						}
+
+						if _, err := p.intWriter.Write(bytesToAudioBufferUnsafe(recvBuf)); err != nil {
+							log.Logger.WithField("category", "AirPlay Player").Errorf("Error writing to intWriter: %v", err)
 						}
 					}()
-
-					recvBuf = dc.Decode(recvBuf)
-					codec.NormalizeAudio(recvBuf, p.volume)
-
-					if _, err := p.byteWriter.Write(recvBuf); err != nil {
-						log.Logger.WithField("category", "AirPlay Player").Errorf("Error writing to byteWriter: %v", err)
-					}
-
-					if _, err := p.intWriter.Write(bytesToAudioBufferUnsafe(recvBuf)); err != nil {
-						log.Logger.WithField("category", "AirPlay Player").Errorf("Error writing to intWriter: %v", err)
-					}
-				}()
+				}
 			case <-p.quit:
 				log.Logger.WithField("category", "AirPlay Player").Warnf("Session with peer '%s' closed", session.Description.ConnectData.ConnectionAddress)
 				return

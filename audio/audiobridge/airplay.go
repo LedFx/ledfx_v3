@@ -7,7 +7,7 @@ import (
 
 func (br *Bridge) StartAirPlayInput(name string, port int, verbose bool) error {
 	if br.inputType != -1 {
-		return fmt.Errorf("an input source has already been defined for this bridge")
+		br.closeInput()
 	}
 	br.inputType = inputTypeAirPlayServer
 
@@ -15,13 +15,11 @@ func (br *Bridge) StartAirPlayInput(name string, port int, verbose bool) error {
 		br.airplay = newAirPlayHandler()
 	}
 
-	if br.airplay.server == nil {
-		br.airplay.server = airplay2.NewServer(airplay2.Config{
-			AdvertisementName: name,
-			Port:              port,
-			VerboseLogging:    verbose,
-		}, br.intWriter, br.byteWriter)
-	}
+	br.airplay.server = airplay2.NewServer(airplay2.Config{
+		AdvertisementName: name,
+		Port:              port,
+		VerboseLogging:    verbose,
+	}, br.intWriter, br.byteWriter)
 
 	if err := br.airplay.server.Start(); err != nil {
 		return fmt.Errorf("error starting AirPlay server: %w", err)

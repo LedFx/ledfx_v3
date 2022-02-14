@@ -2,9 +2,9 @@ package airplay2
 
 import (
 	"fmt"
-	"github.com/grantmd/go-airplay"
+	"github.com/grantmd/go-airplay" //nolint:typecheck
+	log "ledfx/logger"
 	"net"
-	"os"
 	"regexp"
 )
 
@@ -31,7 +31,7 @@ func queryDeviceByIP(ip net.IP, verbose bool) (device *airplay.AirplayDevice, er
 		list := <-ch
 		for _, dev := range list {
 			if verbose {
-				printDevice(dev)
+				printDevice(&dev)
 			}
 			if dev.IP.Equal(ip) {
 				return &dev, nil
@@ -53,7 +53,7 @@ func queryDeviceByName(name string, verbose bool) (device *airplay.AirplayDevice
 		list := <-ch
 		for _, dev := range list {
 			if verbose {
-				printDevice(dev)
+				printDevice(&dev)
 			}
 			if dev.IP == nil || dev.Type != "airplay" {
 				continue
@@ -68,8 +68,35 @@ func queryDeviceByName(name string, verbose bool) (device *airplay.AirplayDevice
 	}
 }
 
-func printDevice(device airplay.AirplayDevice) {
-	_, _ = fmt.Fprintf(os.Stderr, "------BEGIN DEVICE INFO------\n")
-	_, _ = fmt.Fprintf(os.Stderr, "%s\n", device.String())
-	_, _ = fmt.Fprintf(os.Stderr, "-------END DEVICE INFO-------\n")
+func printDevice(device *airplay.AirplayDevice) {
+	log.Logger.WithField("category", "AirPlay Discovery").Infof(
+		`NAME="%s" SERVER="%s:%d" HOSTNAME="%s" AUDIO="%dch/%dhz/%d-bit" PCM="%v" ALAC="%v"`,
+		device.Name,
+		device.IP,
+		device.Port,
+		device.Hostname,
+		device.AudioChannels(),
+		device.AudioSampleRate(),
+		device.AudioSampleSize(),
+		determinePCM(device),
+		determineALAC(device),
+	)
+}
+
+func determinePCM(device *airplay.AirplayDevice) bool {
+	for _, c := range device.AudioCodecs() {
+		if c == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func determineALAC(device *airplay.AirplayDevice) bool {
+	for _, c := range device.AudioCodecs() {
+		if c == 1 {
+			return true
+		}
+	}
+	return false
 }

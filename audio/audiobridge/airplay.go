@@ -3,6 +3,7 @@ package audiobridge
 import (
 	"fmt"
 	"ledfx/integrations/airplay2"
+	log "ledfx/logger"
 )
 
 func (br *Bridge) StartAirPlayInput(name string, port int, verbose bool) error {
@@ -56,6 +57,18 @@ func (br *Bridge) AddAirPlayOutput(searchKey string, searchType AirPlaySearchTyp
 	client, err := airplay2.NewClient(params)
 	if err != nil {
 		return fmt.Errorf("error initializing AirPlay client: %w", err)
+	}
+
+	// Close any connections that would be a duplicate of our current connection.
+	for i := range br.airplay.clients {
+		if br.airplay.clients[i].RemoteIP().Equal(client.RemoteIP()) {
+			log.Logger.WithField("category", "AirPlay Client Init").Warnf("Closing previous session with matching remote address...")
+			br.airplay.clients[i].Close()
+		}
+	}
+
+	if err := client.ConfirmConnect(); err != nil {
+		return fmt.Errorf("error confirming connection for AirPlay client: %w", err)
 	}
 
 	br.airplay.clients = append(br.airplay.clients, client)

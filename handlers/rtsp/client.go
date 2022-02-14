@@ -47,3 +47,7 @@ func (c *Client) LocalAddress() string {
 func (c *Client) RemoteAddress() string {
 	return c.conn.RemoteAddr().(*net.TCPAddr).IP.String()
 }
+
+func (c *Client) Close() error {
+	return c.conn.Close()
+}

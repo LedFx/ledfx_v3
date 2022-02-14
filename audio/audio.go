@@ -19,6 +19,7 @@ type IntReader interface {
 type AsyncMultiWriter struct {
 	mu             *sync.Mutex
 	writers        []io.Writer
+	mapMu          *sync.Mutex
 	indexMap       map[string]int
 	asyncThreshold int
 	writeFn        func(p []byte) (n int, err error)
@@ -29,6 +30,7 @@ func NewAsyncMultiWriter() *AsyncMultiWriter {
 	nmw := &AsyncMultiWriter{
 		mu:             &sync.Mutex{},
 		writers:        make([]io.Writer, 0),
+		mapMu:          &sync.Mutex{},
 		indexMap:       make(map[string]int),
 		asyncThreshold: 2,
 		wg:             &sync.WaitGroup{},
@@ -65,6 +67,7 @@ func (bw *AsyncMultiWriter) AddWriter(writer io.Writer, name string) error {
 	bw.mu.Lock()
 	defer bw.mu.Unlock()
 	bw.writers = append(bw.writers, writer)
+
 	bw.indexMap[name] = len(bw.writers) - 1
 
 	bw.checkAsyncThreshold()
@@ -74,20 +77,21 @@ func (bw *AsyncMultiWriter) AddWriter(writer io.Writer, name string) error {
 // RemoveWriter removes the writer corresponding with the provided name.
 //
 // Name cannot be omitted.
-func (bw *AsyncMultiWriter) RemoveWriter(name string) error {
-	if name == "" {
+func (bw *AsyncMultiWriter) RemoveWriter(id string) error {
+	if id == "" {
 		return NameCannotBeOmitted
 	}
 	bw.mu.Lock()
 	defer bw.mu.Unlock()
 
-	index, ok := bw.indexMap[name]
+	index, ok := bw.indexMap[id]
 	if !ok {
 		return WriterNotFound
 	}
 
 	bw.writers = append(bw.writers[:index], bw.writers[index+1:]...)
-	delete(bw.indexMap, name)
+	delete(bw.indexMap, id)
+
 	for key, val := range bw.indexMap {
 		if val > index {
 			bw.indexMap[key]--
@@ -95,6 +99,33 @@ func (bw *AsyncMultiWriter) RemoveWriter(name string) error {
 	}
 
 	bw.checkAsyncThreshold()
+
+	return nil
+}
+
+func (bw *AsyncMultiWriter) removeByIndex(index int) error {
+	bw.mapMu.Lock()
+	defer bw.mapMu.Unlock()
+
+	var id string
+	for key, val := range bw.indexMap {
+		if val == index {
+			id = key
+			break
+		}
+	}
+
+	if id == "" {
+		return WriterNotFound
+	}
+
+	bw.writers = append(bw.writers[:index], bw.writers[index+1:]...)
+	delete(bw.indexMap, id)
+	for key, val := range bw.indexMap {
+		if val > index {
+			bw.indexMap[key]--
+		}
+	}
 
 	return nil
 }
@@ -124,6 +155,9 @@ func (bw *AsyncMultiWriter) writeAsync(p []byte) (int, error) {
 			defer bw.wg.Done()
 			if _, err := bw.writers[i2].Write(p); err != nil {
 				log.Logger.WithField("category", "Named MultiWriter").Errorf("Error writing to writer with index %d: %v", i2, err)
+				if err = bw.removeByIndex(i2); err != nil {
+					log.Logger.WithField("category", "Named MultiWriter").Errorf("Error removing writer with index '%d': %v", i2, err)
+				}
 			}
 		}(i)
 	}
@@ -137,6 +171,10 @@ func (bw *AsyncMultiWriter) writeSeq(p []byte) (int, error) {
 
 	for i := range bw.writers {
 		if n, err := bw.writers[i].Write(p); err != nil {
+			log.Logger.WithField("category", "Named MultiWriter").Errorf("Error writing to writer with index %d: %v", i, err)
+			if err = bw.removeByIndex(i); err != nil {
+				log.Logger.WithField("category", "Named MultiWriter").Errorf("Error removing writer with index '%d': %v", i, err)
+			}
 			return n, err
 		}
 	}

@@ -112,3 +112,9 @@ func (pp *PlaylistPlayer) Stop() {
 	pp.trackNum = -1
 	pp.tracks = pp.tracks[:0]
 }
+
+func (pp *PlaylistPlayer) StopCurrentTrack() {
+	if pp.h.p.in != nil {
+		pp.h.p.in.Close()
+	}
+}

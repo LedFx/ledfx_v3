@@ -13,6 +13,7 @@ type JsonCTL struct {
 	curYouTubePlayer         *youtube.Player
 	curYouTubePlayerType     youTubePlayerType
 	keepPlaying              *atomic.Bool
+	keepPlayingFn            func(pp *youtube.PlaylistPlayer) error
 
 	// AirPlay stuff
 }

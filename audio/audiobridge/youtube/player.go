@@ -48,7 +48,7 @@ func (p *Player) Start() error {
 		default:
 			n, err := io.ReadAtLeast(p.in, buf, 1408)
 			if err != nil {
-				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.ErrShortBuffer) {
+				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.ErrShortBuffer) && !errors.Is(err, os.ErrClosed) {
 					return fmt.Errorf("unexpected error copying to output writer: %w", err)
 				}
 				return nil

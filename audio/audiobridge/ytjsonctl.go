@@ -95,7 +95,6 @@ func (j *JsonCTL) YouTube(jsonData []byte) (err error) {
 		case youTubePlayerTypeSingle:
 			return errors.New("playlist required for 'Next', 'Previous' and 'PlayAll' action types")
 		case youTubePlayerTypePlaylist:
-			j.keepPlaying.Store(false)
 			return j.curYouTubePlaylistPlayer.Next(false)
 		}
 	case YouTubeActionPrevious:
@@ -103,8 +102,7 @@ func (j *JsonCTL) YouTube(jsonData []byte) (err error) {
 		case youTubePlayerTypeSingle:
 			return errors.New("playlist required for 'Next', 'Previous' and 'PlayAll' action types")
 		case youTubePlayerTypePlaylist:
-			j.keepPlaying.Store(false)
-			return j.curYouTubePlaylistPlayer.Previous()
+			return j.curYouTubePlaylistPlayer.Previous(false)
 		}
 	case YouTubeActionPlayAll:
 		switch j.curYouTubePlayerType {

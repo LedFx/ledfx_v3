@@ -76,7 +76,7 @@ func (s *Server) handleAddOutputAirPlay(w http.ResponseWriter, r *http.Request) 
 	log.Logger.Infoln("Adding AirPlay audio output...")
 	if err := s.br.JSONWrapper().AddAirPlayOutput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Logger.Errorf("Error starting AirPlay input: %v", err)
+		log.Logger.Errorf("Error starting AirPlay output: %v", err)
 		w.Write(errToBytes(err))
 		return
 	}
@@ -145,7 +145,7 @@ func (s *Server) handleSetInputYouTube(w http.ResponseWriter, r *http.Request) {
 	log.Logger.Infoln("Setting input source to YouTube....")
 	if err := s.br.JSONWrapper().StartYouTubeInput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Logger.Errorf("Error starting AirPlay input: %v", err)
+		log.Logger.Errorf("Error starting YouTube input: %v", err)
 		w.Write(errToBytes(err))
 		return
 	}
@@ -182,7 +182,7 @@ func (s *Server) handleSetInputCapture(w http.ResponseWriter, r *http.Request) {
 	log.Logger.Infoln("Setting input source to local capture...")
 	if err := s.br.JSONWrapper().StartLocalInput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Logger.Errorf("Error starting AirPlay input: %v", err)
+		log.Logger.Errorf("Error starting local capture input: %v", err)
 		w.Write(errToBytes(err))
 		return
 	}
@@ -198,7 +198,7 @@ func (s *Server) handleAddOutputLocal(w http.ResponseWriter, r *http.Request) {
 	log.Logger.Infoln("Adding local audio output...")
 	if err := s.br.JSONWrapper().AddLocalOutput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Logger.Errorf("Error starting AirPlay input: %v", err)
+		log.Logger.Errorf("Error starting local output: %v", err)
 		w.Write(errToBytes(err))
 		return
 	}

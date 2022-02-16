@@ -44,21 +44,26 @@ func (pp *PlaylistPlayer) Next(waitDone bool) error {
 	return nil
 }
 
-func (pp *PlaylistPlayer) Previous() error {
+func (pp *PlaylistPlayer) Previous(waitDone bool) error {
 	pp.dec()
 	p, err := pp.h.Play(pp.tracks[pp.trackNum])
 	if err != nil {
 		if errors.Is(err, yt.ErrNotPlayableInEmbed) {
 			log.Logger.WithField("category", "YT Playlist Player").Warnf("Could not play track %d: %v", pp.trackNum, err)
-			return pp.Previous()
+			return pp.Previous(waitDone)
 		}
 		return fmt.Errorf("error playing track %d: %w", pp.trackNum, err)
 	}
-	go func() {
-		if err := p.Start(); err != nil {
-			log.Logger.WithField("category", "YT Playlist Player").Warnf("Error starting playback: %v", err)
-		}
-	}()
+
+	if waitDone {
+		return p.Start()
+	} else {
+		go func() {
+			if err := p.Start(); err != nil {
+				log.Logger.WithField("category", "YT Playlist Player").Warnf("Error starting playback: %v", err)
+			}
+		}()
+	}
 	return nil
 }
 

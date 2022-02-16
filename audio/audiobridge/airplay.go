@@ -99,11 +99,11 @@ func (aph *AirPlayHandler) Stop() {
 	}
 }
 
-type AirPlaySearchType int8
+type AirPlaySearchType string
 
 const (
-	AirPlaySearchByName AirPlaySearchType = iota
-	AirPlaySearchByIP
+	AirPlaySearchByName AirPlaySearchType = "name"
+	AirPlaySearchByIP                     = "ip"
 )
 
 func (a AirPlaySearchType) MarshalJSON() ([]byte, error) {

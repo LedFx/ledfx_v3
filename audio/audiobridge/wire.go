@@ -16,7 +16,7 @@ func (br *Bridge) wireAirPlayOutput(client *airplay2.Client) (err error) {
 	case inputTypeLocal:
 		fallthrough
 	case inputTypeYoutube:
-		err = br.AddOutputWriter(client, client.Identifier())
+		err = br.AddOutputWriter(client, client.WriterID())
 	default:
 		err = fmt.Errorf("unrecognized input type '%d'", br.inputType)
 	}

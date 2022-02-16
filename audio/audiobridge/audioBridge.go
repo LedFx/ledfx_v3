@@ -58,11 +58,18 @@ func (br *Bridge) Stop() {
 func (br *Bridge) closeInput() {
 	switch br.inputType {
 	case inputTypeAirPlayServer:
-		br.airplay.server.Stop()
+		if !br.airplay.server.Stopped() {
+			br.airplay.server.Stop()
+		}
 	case inputTypeLocal:
-		br.local.capture.Quit()
+		if !br.local.capture.Stopped() {
+			br.local.capture.Quit()
+		}
 	case inputTypeYoutube:
-		br.youtube.handler.Quit()
+		if !br.youtube.handler.Stopped() {
+			br.youtube.handler.Quit()
+
+		}
 	}
 }
 

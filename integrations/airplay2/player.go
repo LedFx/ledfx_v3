@@ -108,7 +108,7 @@ func twoBytesToInt16Unsafe(p []byte) (out int16) {
 func (p *audioPlayer) AddClient(client *Client) (err error) {
 	p.hasClients = true
 	p.apClients = append(p.apClients, client)
-	if err := p.byteWriter.AddWriter(p.apClients[p.numClients], client.Identifier()); err != nil {
+	if err := p.byteWriter.AddWriter(p.apClients[p.numClients], client.WriterID()); err != nil {
 		return fmt.Errorf("error adding writer: %w", err)
 	}
 	p.numClients++

@@ -46,7 +46,7 @@ func NewHandler(verbose bool) (h *Handler, err error) {
 	}
 
 	if verbose {
-		log.Logger.WithField("category", "Local Playback Init").Infof("Identifier: %s\n", h.identifier)
+		log.Logger.WithField("category", "Local Playback Init").Infof("WriterID: %s\n", h.identifier)
 	}
 
 	return h, nil

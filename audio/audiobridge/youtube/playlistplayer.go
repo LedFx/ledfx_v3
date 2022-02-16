@@ -20,21 +20,27 @@ func (pp *PlaylistPlayer) Unpause() {
 	pp.h.p.Unpause()
 }
 
-func (pp *PlaylistPlayer) Next() error {
+func (pp *PlaylistPlayer) Next(waitDone bool) error {
 	pp.inc()
 	p, err := pp.h.Play(pp.tracks[pp.trackNum])
 	if err != nil {
 		if errors.Is(err, yt.ErrNotPlayableInEmbed) {
 			log.Logger.WithField("category", "YT Playlist Player").Warnf("Could not play track %d: %v", pp.trackNum, err)
-			return pp.Next()
+			return pp.Next(waitDone)
 		}
 		return fmt.Errorf("error playing track %d: %w", pp.trackNum, err)
 	}
-	go func() {
-		if err := p.Start(); err != nil {
-			log.Logger.WithField("category", "YT Playlist Player").Errorf("Error starting playback: %v", err)
-		}
-	}()
+
+	if waitDone {
+		return p.Start()
+	} else {
+		go func() {
+			if err := p.Start(); err != nil {
+				log.Logger.WithField("category", "YT Playlist Player").Errorf("Error starting playback: %v", err)
+			}
+		}()
+	}
+
 	return nil
 }
 
@@ -75,7 +81,7 @@ func (pp *PlaylistPlayer) dec() {
 func (pp *PlaylistPlayer) NumTracks() int {
 	return len(pp.tracks) - 1
 }
-func (pp *PlaylistPlayer) PlayTrackNum(num int) error {
+func (pp *PlaylistPlayer) PlayTrackNum(num int, waitDone bool) error {
 	if num >= len(pp.tracks)-1 || num < 0 {
 		return fmt.Errorf("track number must be between 0 and %d", len(pp.tracks)-1)
 	}
@@ -85,7 +91,7 @@ func (pp *PlaylistPlayer) PlayTrackNum(num int) error {
 	if err != nil {
 		if errors.Is(err, yt.ErrNotPlayableInEmbed) {
 			log.Logger.WithField("category", "YT Playlist Player").Warnf("Could not play track %d: %v", pp.trackNum, err)
-			return pp.Next()
+			return pp.Next(waitDone)
 		}
 		return fmt.Errorf("error playing track %d: %w", pp.trackNum, err)
 	}

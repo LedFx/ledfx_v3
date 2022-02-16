@@ -21,6 +21,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.10.1
 	github.com/u2takey/ffmpeg-go v0.4.0
+	go.uber.org/atomic v1.9.0
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
 	golang.org/x/text v0.3.7
 	tailscale.com v1.20.2

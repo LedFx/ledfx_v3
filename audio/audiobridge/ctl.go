@@ -118,11 +118,11 @@ func (apc *AirPlayController) StopServer() error {
 	}
 	return fmt.Errorf("server is not active")
 }
-func (apc *AirPlayController) Clients() ([]*airplay2.Client, error) {
+func (apc *AirPlayController) Clients() []*airplay2.Client {
 	if apc.handler != nil {
-		return apc.handler.clients, nil
+		return apc.handler.clients
 	}
-	return nil, fmt.Errorf("no active clients")
+	return nil
 }
 
 // --- END AIRPLAY CTL ---

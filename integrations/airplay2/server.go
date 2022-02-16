@@ -15,10 +15,11 @@ func init() {
 }
 
 type Server struct {
-	mu     sync.Mutex
-	player *audioPlayer
-	conf   *Config
-	svc    *raop.AirplayServer
+	mu      sync.Mutex
+	player  *audioPlayer
+	conf    *Config
+	svc     *raop.AirplayServer
+	stopped bool
 
 	done chan struct{}
 }
@@ -71,10 +72,15 @@ func (s *Server) Wait() {
 }
 
 func (s *Server) Stop() {
+	s.stopped = true
 	if s.svc != nil {
 		s.svc.Stop()
 	}
 	if s.player != nil {
 		s.player.Close()
 	}
+}
+
+func (s *Server) Stopped() bool {
+	return s.stopped
 }

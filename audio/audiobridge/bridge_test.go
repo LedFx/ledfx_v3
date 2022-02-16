@@ -208,7 +208,7 @@ func TestBridgeYoutube2Local(t *testing.T) {
 
 	go func() {
 		for {
-			if err := pp.Next(); err != nil {
+			if err := pp.Next(false); err != nil {
 				log.Logger.Warnf("Error playing: %v", err)
 			}
 			time.Sleep(5 * time.Second)

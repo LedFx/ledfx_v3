@@ -35,7 +35,9 @@ func NewServer(callback func(buf audio.Buffer)) (s *Server, err error) {
 
 	// Ctl handlers
 	http.HandleFunc("/ctl/youtube", s.handleCtlYouTube)
-	http.HandleFunc("/ctl/airplay", s.handleCtlAirPlay)
+	http.HandleFunc("/ctl/airplay/set", s.handleCtlAirPlaySet)
+	http.HandleFunc("/ctl/airplay/clients", s.handleCtlAirPlayGetClients)
+	http.HandleFunc("/ctl/airplay/info", s.handleCtlAirPlayGetInfo)
 	return s, nil
 }
 
@@ -80,7 +82,15 @@ func (s *Server) handleAddOutputAirPlay(w http.ResponseWriter, r *http.Request) 
 	}
 	w.WriteHeader(http.StatusOK)
 }
-func (s *Server) handleCtlAirPlay(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleCtlAirPlaySet(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte(fmt.Sprintf("method '%s' is not allowed", r.Method)))
+		return
+	}
+
+	log.Logger.Infoln("Got AirPlay SET CTL request...")
+
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -88,26 +98,37 @@ func (s *Server) handleCtlAirPlay(w http.ResponseWriter, r *http.Request) {
 		w.Write(errToBytes(err))
 		return
 	}
-	log.Logger.Infof("Got AirPlay CTL request...")
-	clients, err := s.br.JSONWrapper().CTL().AirPlay(bodyBytes)
-	if err != nil {
+
+	if err := s.br.JSONWrapper().CTL().AirPlaySet(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Logger.Errorf("Error starting AirPlay input: %v", err)
+		log.Logger.Errorf("Error getting return JSON from AirPlay CTL: %v", err)
 		w.Write(errToBytes(err))
 		return
 	}
+	w.WriteHeader(http.StatusOK)
+}
+func (s *Server) handleCtlAirPlayGetClients(w http.ResponseWriter, r *http.Request) {
+	log.Logger.Infoln("Got AirPlay GET CTL request...")
 
-	if clients != nil {
-		responseBytes, err := clients.AsJSON()
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			log.Logger.Errorf("Error starting AirPlay input: %v", err)
-			w.Write(errToBytes(err))
-			return
-		}
-		w.Write(responseBytes)
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte(fmt.Sprintf("method '%s' is not allowed", r.Method)))
+		return
 	}
 
+	clientBytes, err := s.br.JSONWrapper().CTL().AirPlayGetClients()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("error getting clients: %v", err)))
+		return
+	}
+
+	w.Write(clientBytes)
+
+}
+func (s *Server) handleCtlAirPlayGetInfo(w http.ResponseWriter, r *http.Request) {
+	// TODO
+	w.WriteHeader(http.StatusServiceUnavailable)
 }
 
 // ############### END AIRPLAY ###############

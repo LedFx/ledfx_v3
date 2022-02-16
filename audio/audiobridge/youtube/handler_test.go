@@ -61,7 +61,7 @@ func TestHandlerFunctionalityPlaylist(t *testing.T) {
 
 	for {
 		time.Sleep(5 * time.Second)
-		if err := pp.PlayTrackNum(rand.Intn(pp.NumTracks())); err != nil {
+		if err := pp.PlayTrackNum(rand.Intn(pp.NumTracks()), false); err != nil {
 			log.Logger.Errorf("Error playing next song: %v", err)
 		}
 	}

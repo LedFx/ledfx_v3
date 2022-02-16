@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	log "ledfx/logger"
 	"strings"
 )
 
@@ -14,15 +15,20 @@ const (
 	youTubePlayerTypePlaylist
 )
 
-type YouTubeAction int
+type YouTubeAction string
 
 const (
-	YouTubeActionDownload YouTubeAction = iota
-	YouTubeActionPlay
-	YouTubeActionPause
-	YouTubeActionResume
-	YouTubeActionNext
-	YouTubeActionPrevious
+	YouTubeActionDownload YouTubeAction = "download"
+	YouTubeActionPlay                   = "play"
+	YouTubeActionPause                  = "pause"
+	YouTubeActionResume                 = "resume"
+
+	// YouTubeActionNext only applies to playlists
+	YouTubeActionNext = "next"
+	// YouTubeActionPrevious only applies to playlists
+	YouTubeActionPrevious = "previous"
+	// YouTubeActionPlayAll only applies to playlists
+	YouTubeActionPlayAll = "playall"
 )
 
 type YouTubeCTLJSON struct {
@@ -41,17 +47,17 @@ func (j *JsonCTL) YouTube(jsonData []byte) (err error) {
 		return fmt.Errorf("error unmarshalling JSON: %w", err)
 	}
 
-	if conf.Action != YouTubeActionDownload && j.curYouTubePlayerType == -1 {
-		return fmt.Errorf("download must be called before any other YouTube control statements")
-	}
-
-	if conf.Action > 5 || conf.Action < 0 {
-		return fmt.Errorf("'action' must be between 0 and 5")
+	switch {
+	case conf.Action == YouTubeActionDownload && conf.URL == "":
+		return errors.New("action 'Download' requires the 'url' field to be populated")
+	case conf.Action != YouTubeActionDownload && j.curYouTubePlayerType == -1:
+		return errors.New("download must be called before any other YouTube control statements")
 	}
 
 	switch conf.Action {
 	case YouTubeActionDownload:
-		if strings.Contains(strings.ToLower(conf.URL), "&list=") {
+		j.keepPlaying.Store(false)
+		if strings.Contains(strings.ToLower(conf.URL), "list=") {
 			j.curYouTubePlayerType = youTubePlayerTypePlaylist
 			if j.curYouTubePlaylistPlayer, err = j.w.br.Controller().YouTube().PlayPlaylist(conf.URL); err != nil {
 				return fmt.Errorf("error playing playlist: %w", err)
@@ -67,7 +73,8 @@ func (j *JsonCTL) YouTube(jsonData []byte) (err error) {
 		case youTubePlayerTypeSingle:
 			return j.curYouTubePlayer.Start()
 		case youTubePlayerTypePlaylist:
-			return j.curYouTubePlaylistPlayer.Next()
+			j.keepPlaying.Store(false)
+			return j.curYouTubePlaylistPlayer.Next(false)
 		}
 	case YouTubeActionPause:
 		switch j.curYouTubePlayerType {
@@ -86,17 +93,36 @@ func (j *JsonCTL) YouTube(jsonData []byte) (err error) {
 	case YouTubeActionNext:
 		switch j.curYouTubePlayerType {
 		case youTubePlayerTypeSingle:
-			return errors.New("playlist required for 'Next' and 'Previous' action types")
+			return errors.New("playlist required for 'Next', 'Previous' and 'PlayAll' action types")
 		case youTubePlayerTypePlaylist:
-			return j.curYouTubePlaylistPlayer.Next()
+			j.keepPlaying.Store(false)
+			return j.curYouTubePlaylistPlayer.Next(false)
 		}
 	case YouTubeActionPrevious:
 		switch j.curYouTubePlayerType {
 		case youTubePlayerTypeSingle:
-			return errors.New("playlist required for 'Next' and 'Previous' action types")
+			return errors.New("playlist required for 'Next', 'Previous' and 'PlayAll' action types")
 		case youTubePlayerTypePlaylist:
+			j.keepPlaying.Store(false)
 			return j.curYouTubePlaylistPlayer.Previous()
 		}
+	case YouTubeActionPlayAll:
+		switch j.curYouTubePlayerType {
+		case youTubePlayerTypeSingle:
+			return errors.New("playlist required for 'Next', 'Previous' and 'PlayAll' action types")
+		case youTubePlayerTypePlaylist:
+			j.keepPlaying.Store(true)
+			go func() {
+				for j.keepPlaying.Load() {
+					if err := j.curYouTubePlaylistPlayer.Next(true); err != nil {
+						log.Logger.WithField("category", "YouTube JSON Handler").Errorf("Error playing next playlist track: %v", err)
+					}
+				}
+			}()
+			return nil
+		}
+	default:
+		return fmt.Errorf("unknown action '%s'", conf.Action)
 	}
 	return nil
 }

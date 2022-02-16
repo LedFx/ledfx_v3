@@ -28,15 +28,20 @@ type Handler struct {
 	verbose    bool
 	p          *Player
 	pp         *PlaylistPlayer
+	stopped    bool
 }
 
 func (h *Handler) Quit() {
+	h.stopped = true
 	if h.p != nil {
 		h.p.Close()
 	}
 	if h.pp != nil {
 		h.pp.Stop()
 	}
+}
+func (h *Handler) Stopped() bool {
+	return h.stopped
 }
 
 func NewHandler(intWriter audio.IntWriter, byteWriter *audio.AsyncMultiWriter, verbose bool) *Handler {
@@ -66,6 +71,24 @@ func NewHandler(intWriter audio.IntWriter, byteWriter *audio.AsyncMultiWriter, v
 	return h
 }
 
+func (h *Handler) playFrom(videoInfo *VideoInfo, tmp *os.File) (p *Player, err error) {
+	if h.verbose {
+		log.Logger.WithField("category", "YT Player").Infof(
+			"[CREATOR=\"%s\", SAMPLERATE=\"%d\", SIZE=\"%s\", CHANNELS=\"%d\", DURATION=\"%v\"]",
+			videoInfo.Creator,
+			videoInfo.SampleRate,
+			humanize.Bytes(uint64(videoInfo.WavSize)),
+			videoInfo.Channels,
+			videoInfo.duration,
+		)
+	}
+
+	logTrack(videoInfo.Title, videoInfo.Creator)
+
+	h.p.Reset(tmp)
+	return h.p, nil
+}
+
 func (h *Handler) Play(url string) (p *Player, err error) {
 	videoInfo, tmp, err := h.downloadToMP3(url)
 	if err != nil {
@@ -83,15 +106,7 @@ func (h *Handler) Play(url string) (p *Player, err error) {
 		)
 	}
 
-	_, _ = pretty.Set(pretty.BgHiCyan, pretty.FgBlack, pretty.Bold).Print("🎵 Now playing")
-	pretty.Unset()
-
-	_, _ = pretty.Set(pretty.FgHiWhite, pretty.Bold).Print(" ➜ ")
-	pretty.Unset()
-
-	_, _ = pretty.Set(pretty.BgMagenta, pretty.FgWhite, pretty.Bold).Printf("%s by %s", videoInfo.Title, videoInfo.Creator)
-	pretty.Unset()
-	fmt.Println()
+	logTrack(videoInfo.Title, videoInfo.Creator)
 
 	h.p.Reset(tmp)
 
@@ -211,4 +226,16 @@ func cleanTitle(title string) string {
 	// Make a Regex to say we only want letters and numbers
 	reg, _ := regexp.Compile("[^a-zA-Z0-9 ]+")
 	return strings.ReplaceAll(reg.ReplaceAllString(title, ""), " ", "_")
+}
+
+func logTrack(track, author string) {
+	_, _ = pretty.Set(pretty.BgHiCyan, pretty.FgBlack, pretty.Bold).Print("🎵 Now playing")
+	pretty.Unset()
+
+	_, _ = pretty.Set(pretty.FgHiWhite, pretty.Bold).Print(" ➜ ")
+	pretty.Unset()
+
+	_, _ = pretty.Set(pretty.BgMagenta, pretty.FgWhite, pretty.Bold).Printf("%s by %s", track, author)
+	pretty.Unset()
+	fmt.Println()
 }

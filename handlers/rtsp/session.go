@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	readBuffer = 1024 * 16
+	readBuffer = 2048
 )
 
 // Decrypter decrypts a received packet

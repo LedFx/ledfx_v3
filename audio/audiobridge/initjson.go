@@ -92,7 +92,7 @@ func (w *BridgeJSONWrapper) AddAirPlayOutput(jsonData []byte) (err error) {
 		return fmt.Errorf("error unmarshalling JSON: %w", err)
 	}
 	if err := w.br.AddAirPlayOutput(conf.SearchKey, conf.SearchType, conf.Verbose); err != nil {
-		return fmt.Errorf("error adding AirPlay Client %w", err)
+		return fmt.Errorf("error adding AirPlay Client: %w", err)
 	}
 	return nil
 }

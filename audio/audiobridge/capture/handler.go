@@ -13,6 +13,7 @@ type Handler struct {
 	intWriter  audio.IntWriter
 	byteWriter *audio.AsyncMultiWriter
 	verbose    bool
+	stopped    bool
 }
 
 func NewHandler(audioDevice config.AudioDevice, intWriter audio.IntWriter, byteWriter *audio.AsyncMultiWriter, verbose bool) (h *Handler, err error) {
@@ -78,8 +79,13 @@ func (h *Handler) mono2StereoCallback(in audio.Buffer) {
 }
 
 func (h *Handler) Quit() {
+	h.stopped = true
 	log.Logger.WithField("category", "Capture Handler").Warnf("Aborting stream...")
 	h.Stream.Abort()
 	log.Logger.WithField("category", "Capture Handler").Warnf("Closing stream...")
 	h.Stream.Close()
+}
+
+func (h *Handler) Stopped() bool {
+	return h.stopped
 }

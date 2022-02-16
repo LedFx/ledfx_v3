@@ -1,6 +1,7 @@
 package airplay2
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/grantmd/go-airplay"
 	"ledfx/handlers/raop"
@@ -61,15 +62,62 @@ func (cl *Client) ConfirmConnect() (err error) {
 	return nil
 }
 
+func (cl *Client) Name() string {
+	return cl.dev.Name
+}
+func (cl *Client) Hostname() string {
+	return cl.dev.Hostname
+}
 func (cl *Client) RemoteIP() net.IP {
 	return cl.dev.IP
 }
+func (cl *Client) RemotePort() int {
+	return int(cl.dev.Port)
+}
+func (cl *Client) Type() string {
+	return cl.dev.Type
+}
+func (cl *Client) DeviceModel() string {
+	return cl.dev.DeviceModel()
+}
+func (cl *Client) SampleRate() int {
+	return cl.dev.AudioSampleRate()
+}
 
-func (cl *Client) Identifier() string {
+func (cl *Client) WriterID() string {
 	return cl.session.RemotePorts.Address
 }
 
+func (cl *Client) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&struct {
+		Name        string `json:"name"`
+		Hostname    string `json:"hostname"`
+		RemoteIP    string `json:"remote_ip"`
+		RemotePort  int    `json:"remote_port"`
+		Type        string `json:"type"`
+		DeviceModel string `json:"device_model"`
+		SampleRate  int    `json:"sample_rate"`
+		WriterID    string `json:"writer_id"`
+	}{
+		Name:        cl.Name(),
+		Hostname:    cl.Hostname(),
+		RemoteIP:    cl.RemoteIP().To4().String(),
+		RemotePort:  cl.RemotePort(),
+		Type:        cl.Type(),
+		DeviceModel: cl.DeviceModel(),
+		SampleRate:  cl.SampleRate(),
+		WriterID:    cl.WriterID(),
+	})
+}
+
 func (cl *Client) SetParam(par interface{}) {
+	switch {
+	case cl == nil:
+		return
+	case cl.paramConn == nil:
+		return
+	}
+
 	var err error
 	req := rtsp.NewRequest()
 	req.Method = rtsp.Set_Parameter

@@ -6,11 +6,11 @@ import (
 	"ledfx/integrations/airplay2"
 )
 
-type AirPlayAction int
+type AirPlayAction string
 
 const (
-	AirPlayActionStopServer AirPlayAction = iota
-	AirPlayActionGetClients
+	AirPlayActionStopServer AirPlayAction = "stop"
+	AirPlayActionGetClients               = "clients"
 )
 
 type AirPlayCTLJSON struct {
@@ -21,12 +21,20 @@ func (apctl AirPlayCTLJSON) AsJSON() ([]byte, error) {
 	return json.Marshal(&apctl)
 }
 
+type ClientList struct {
+	Clients []*airplay2.Client `json:"clients"`
+}
+
+func (cl *ClientList) AsJSON() ([]byte, error) {
+	return json.Marshal(cl)
+}
+
 // AirPlay takes a marshalled AirPlayCTLJSON
 //
 // If AirPlayCTLJSON.Action == AirPlayActionStopServer, the server will stop.
 //
 // If AirPlayCTLJSON.Action == AirPlayActionGetClients, the first return value will be non-nil.
-func (j *JsonCTL) AirPlay(jsonData []byte) (clients []*airplay2.Client, err error) {
+func (j *JsonCTL) AirPlay(jsonData []byte) (clients *ClientList, err error) {
 	conf := AirPlayCTLJSON{}
 	if err := json.Unmarshal(jsonData, &conf); err != nil {
 		return nil, fmt.Errorf("error unmarshalling JSON: %w", err)
@@ -36,7 +44,10 @@ func (j *JsonCTL) AirPlay(jsonData []byte) (clients []*airplay2.Client, err erro
 	case AirPlayActionStopServer:
 		return nil, j.w.br.Controller().AirPlay().StopServer()
 	case AirPlayActionGetClients:
-		return j.w.br.Controller().AirPlay().Clients()
+		return &ClientList{
+			Clients: j.w.br.Controller().AirPlay().Clients(),
+		}, nil
 	}
+
 	return nil, fmt.Errorf("unknown action '%d'", conf.Action)
 }

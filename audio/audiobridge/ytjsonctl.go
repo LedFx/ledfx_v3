@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go.uber.org/atomic"
+	"ledfx/audio/audiobridge/youtube"
 	log "ledfx/logger"
 	"strings"
 )
@@ -95,32 +97,48 @@ func (j *JsonCTL) YouTube(jsonData []byte) (err error) {
 		case youTubePlayerTypeSingle:
 			return errors.New("playlist required for 'Next', 'Previous' and 'PlayAll' action types")
 		case youTubePlayerTypePlaylist:
-			return j.curYouTubePlaylistPlayer.Next(false)
+			j.keepPlayingFn = func(pp *youtube.PlaylistPlayer) error {
+				return pp.Next(true)
+			}
+			j.curYouTubePlaylistPlayer.StopCurrentTrack()
+			return nil
 		}
 	case YouTubeActionPrevious:
 		switch j.curYouTubePlayerType {
 		case youTubePlayerTypeSingle:
 			return errors.New("playlist required for 'Next', 'Previous' and 'PlayAll' action types")
 		case youTubePlayerTypePlaylist:
-			return j.curYouTubePlaylistPlayer.Previous(false)
+			j.keepPlayingFn = func(pp *youtube.PlaylistPlayer) error {
+				return pp.Previous(true)
+			}
+			j.curYouTubePlaylistPlayer.StopCurrentTrack()
+			return nil
 		}
 	case YouTubeActionPlayAll:
 		switch j.curYouTubePlayerType {
 		case youTubePlayerTypeSingle:
 			return errors.New("playlist required for 'Next', 'Previous' and 'PlayAll' action types")
 		case youTubePlayerTypePlaylist:
+			j.keepPlayingFn = func(pp *youtube.PlaylistPlayer) error {
+				return pp.Next(true)
+			}
+
+			j.keepPlaying.Store(false)
+			j.curYouTubePlaylistPlayer.StopCurrentTrack()
 			j.keepPlaying.Store(true)
-			go func() {
-				for j.keepPlaying.Load() {
-					if err := j.curYouTubePlaylistPlayer.Next(true); err != nil {
-						log.Logger.WithField("category", "YouTube JSON Handler").Errorf("Error playing next playlist track: %v", err)
-					}
-				}
-			}()
+			go j.autoPlayback(j.curYouTubePlaylistPlayer, j.keepPlaying)
 			return nil
 		}
 	default:
 		return fmt.Errorf("unknown action '%s'", conf.Action)
 	}
 	return nil
+}
+
+func (j *JsonCTL) autoPlayback(pp *youtube.PlaylistPlayer, keepPlaying *atomic.Bool) {
+	for keepPlaying.Load() {
+		if err := j.keepPlayingFn(pp); err != nil {
+			log.Logger.WithField("category", "YouTube JSON Handler").Errorf("Error playing playlist track: %v", err)
+		}
+	}
 }

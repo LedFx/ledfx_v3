@@ -42,7 +42,7 @@ func NewServer(callback func(buf audio.Buffer)) (s *Server, err error) {
 
 func (s *Server) Serve(ip string, port int) error {
 	handler := cors.AllowAll().Handler(s.mux)
-	
+
 	ipPort := fmt.Sprintf("%s:%d", ip, port)
 
 	log.Logger.Warnf("Serving on %s", ipPort)

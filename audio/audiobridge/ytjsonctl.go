@@ -24,13 +24,12 @@ const (
 	YouTubeActionPlay                   = "play"
 	YouTubeActionPause                  = "pause"
 	YouTubeActionResume                 = "resume"
+	YouTubeActionStop                   = "stop"
 
 	// YouTubeActionNext only applies to playlists
 	YouTubeActionNext = "next"
 	// YouTubeActionPrevious only applies to playlists
 	YouTubeActionPrevious = "previous"
-	// YouTubeActionPlayAll only applies to playlists
-	YouTubeActionPlayAll = "playall"
 )
 
 type YouTubeCTLJSON struct {
@@ -75,8 +74,25 @@ func (j *JsonCTL) YouTube(jsonData []byte) (err error) {
 		case youTubePlayerTypeSingle:
 			return j.curYouTubePlayer.Start()
 		case youTubePlayerTypePlaylist:
+			if j.keepPlaying.Load() {
+				return errors.New("already playing")
+			}
+			j.keepPlayingFn = func(pp *youtube.PlaylistPlayer) error {
+				return pp.Next(true)
+			}
 			j.keepPlaying.Store(false)
-			return j.curYouTubePlaylistPlayer.Next(false)
+			j.curYouTubePlaylistPlayer.StopCurrentTrack()
+			j.keepPlaying.Store(true)
+			go j.autoPlayback(j.curYouTubePlaylistPlayer, j.keepPlaying)
+			return nil
+		}
+	case YouTubeActionStop:
+		switch j.curYouTubePlayerType {
+		case youTubePlayerTypeSingle:
+			j.curYouTubePlayer.Stop()
+			return nil
+		case youTubePlayerTypePlaylist:
+			j.curYouTubePlaylistPlayer.Stop()
 		}
 	case YouTubeActionPause:
 		switch j.curYouTubePlayerType {
@@ -95,7 +111,7 @@ func (j *JsonCTL) YouTube(jsonData []byte) (err error) {
 	case YouTubeActionNext:
 		switch j.curYouTubePlayerType {
 		case youTubePlayerTypeSingle:
-			return errors.New("playlist required for 'Next', 'Previous' and 'PlayAll' action types")
+			return errors.New("playlist required for 'next' and 'previous' action types")
 		case youTubePlayerTypePlaylist:
 			j.keepPlayingFn = func(pp *youtube.PlaylistPlayer) error {
 				return pp.Next(true)
@@ -106,27 +122,12 @@ func (j *JsonCTL) YouTube(jsonData []byte) (err error) {
 	case YouTubeActionPrevious:
 		switch j.curYouTubePlayerType {
 		case youTubePlayerTypeSingle:
-			return errors.New("playlist required for 'Next', 'Previous' and 'PlayAll' action types")
+			return errors.New("playlist required for 'next' and 'previous' action types")
 		case youTubePlayerTypePlaylist:
 			j.keepPlayingFn = func(pp *youtube.PlaylistPlayer) error {
 				return pp.Previous(true)
 			}
 			j.curYouTubePlaylistPlayer.StopCurrentTrack()
-			return nil
-		}
-	case YouTubeActionPlayAll:
-		switch j.curYouTubePlayerType {
-		case youTubePlayerTypeSingle:
-			return errors.New("playlist required for 'Next', 'Previous' and 'PlayAll' action types")
-		case youTubePlayerTypePlaylist:
-			j.keepPlayingFn = func(pp *youtube.PlaylistPlayer) error {
-				return pp.Next(true)
-			}
-
-			j.keepPlaying.Store(false)
-			j.curYouTubePlaylistPlayer.StopCurrentTrack()
-			j.keepPlaying.Store(true)
-			go j.autoPlayback(j.curYouTubePlaylistPlayer, j.keepPlaying)
 			return nil
 		}
 	default:

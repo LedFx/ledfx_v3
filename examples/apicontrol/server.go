@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/rs/cors"
 	"io/ioutil"
 	"ledfx/audio"
 	"ledfx/audio/audiobridge"
@@ -10,41 +11,42 @@ import (
 )
 
 type Server struct {
-	br *audiobridge.Bridge
-	sv *http.Server
+	mux *http.ServeMux
+	br  *audiobridge.Bridge
 }
 
 func NewServer(callback func(buf audio.Buffer)) (s *Server, err error) {
 	s = &Server{
-		sv: &http.Server{
-			Addr: "0.0.0.0:8080",
-		},
+		mux: http.NewServeMux(),
 	}
 	if s.br, err = audiobridge.NewBridge(callback); err != nil {
 		return nil, fmt.Errorf("error initializing new bridge: %w", err)
 	}
 
 	// Input setter handlers
-	http.HandleFunc("/set/input/airplay", s.handleSetInputAirPlay)
-	http.HandleFunc("/set/input/youtube", s.handleSetInputYouTube)
-	http.HandleFunc("/set/input/capture", s.handleSetInputCapture)
+	s.mux.HandleFunc("/set/input/airplay", s.handleSetInputAirPlay)
+	s.mux.HandleFunc("/set/input/youtube", s.handleSetInputYouTube)
+	s.mux.HandleFunc("/set/input/capture", s.handleSetInputCapture)
 
 	// Output adder handlers
-	http.HandleFunc("/add/output/airplay", s.handleAddOutputAirPlay)
-	http.HandleFunc("/add/output/local", s.handleAddOutputLocal)
+	s.mux.HandleFunc("/add/output/airplay", s.handleAddOutputAirPlay)
+	s.mux.HandleFunc("/add/output/local", s.handleAddOutputLocal)
 
 	// Ctl handlers
-	http.HandleFunc("/ctl/youtube", s.handleCtlYouTube)
-	http.HandleFunc("/ctl/airplay/set", s.handleCtlAirPlaySet)
-	http.HandleFunc("/ctl/airplay/clients", s.handleCtlAirPlayGetClients)
-	http.HandleFunc("/ctl/airplay/info", s.handleCtlAirPlayGetInfo)
+	s.mux.HandleFunc("/ctl/youtube", s.handleCtlYouTube)
+	s.mux.HandleFunc("/ctl/airplay/set", s.handleCtlAirPlaySet)
+	s.mux.HandleFunc("/ctl/airplay/clients", s.handleCtlAirPlayGetClients)
+	s.mux.HandleFunc("/ctl/airplay/info", s.handleCtlAirPlayGetInfo)
 	return s, nil
 }
 
 func (s *Server) Serve(ip string, port int) error {
-	s.sv.Addr = fmt.Sprintf("%s:%d", ip, port)
-	log.Logger.Warnf("Serving on %s", s.sv.Addr)
-	return s.sv.ListenAndServe()
+	handler := cors.AllowAll().Handler(s.mux)
+	
+	ipPort := fmt.Sprintf("%s:%d", ip, port)
+
+	log.Logger.Warnf("Serving on %s", ipPort)
+	return http.ListenAndServe(ipPort, handler)
 }
 
 // ############## BEGIN AIRPLAY ##############

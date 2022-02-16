@@ -28,10 +28,7 @@ func (p *Player) Reset(input *os.File) {
 	}()
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	if p.in != nil {
-		p.in.Close()
-		p.in = nil
-	}
+	p.Stop()
 	p.in = input
 }
 
@@ -80,6 +77,12 @@ func (p *Player) Pause() {
 func (p *Player) Unpause() {
 	p.paused = false
 	p.unpause <- true
+}
+
+func (p *Player) Stop() {
+	if p.in != nil {
+		p.in.Close()
+	}
 }
 
 func (p *Player) Close() error {

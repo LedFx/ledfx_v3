@@ -17,6 +17,7 @@ require (
 	github.com/nathan-fiscaletti/consolesize-go v0.0.0-20210105204122-a87d9f614b9d
 	github.com/ojrac/opensimplex-go v1.0.2
 	github.com/ritchie46/GOPHY v0.0.0-20170315173114-9b8a7f05cfa1
+	github.com/rs/cors v1.8.2
 	github.com/simonassank/aubio-go v0.0.0-20210318191226-729d3d668592
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.10.1

@@ -111,10 +111,9 @@ func (pp *PlaylistPlayer) PlayTrackNum(num int, waitDone bool) error {
 func (pp *PlaylistPlayer) Stop() {
 	pp.trackNum = -1
 	pp.tracks = pp.tracks[:0]
+	pp.StopCurrentTrack()
 }
 
 func (pp *PlaylistPlayer) StopCurrentTrack() {
-	if pp.h.p.in != nil {
-		pp.h.p.in.Close()
-	}
+	pp.h.p.Stop()
 }

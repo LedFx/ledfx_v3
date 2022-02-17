@@ -143,7 +143,7 @@ func TestBridgeYouTube2LocalJSON(t *testing.T) {
 	}
 
 	if err := wrapper.StartYouTubeInput(inConfBytes); err != nil {
-		t.Fatalf("Error starting YouTube input: %v\n", err)
+		t.Fatalf("Error starting YouTubeSet input: %v\n", err)
 	}
 	// END INPUT CONFIG
 
@@ -174,7 +174,7 @@ func TestBridgeYouTube2LocalJSON(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error marshalling download control config as JSON: %v\n", err)
 	}
-	if err = wrapper.CTL().YouTube(ctlConfBytes); err != nil {
+	if err = wrapper.CTL().YouTubeSet(ctlConfBytes); err != nil {
 		t.Fatalf("Error downloading video: %v\n", err)
 	}
 	// END DOWNLOAD CONFIG
@@ -187,7 +187,7 @@ func TestBridgeYouTube2LocalJSON(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error marshalling play control config as JSON: %v\n", err)
 	}
-	if err = wrapper.CTL().YouTube(ctlConfBytes); err != nil {
+	if err = wrapper.CTL().YouTubeSet(ctlConfBytes); err != nil {
 		t.Fatalf("Error playing audio from video: %v\n", err)
 	}
 	// END PLAY CONFIG

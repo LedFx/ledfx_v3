@@ -128,7 +128,7 @@ func (w *BridgeJSONWrapper) StartYouTubeInput(jsonData []byte) (err error) {
 		return fmt.Errorf("error unmarshalling JSON: %w", err)
 	}
 	if err := w.br.StartYoutubeInput(conf.Verbose); err != nil {
-		return fmt.Errorf("error starting YouTube input: %w", err)
+		return fmt.Errorf("error starting YouTubeSet input: %w", err)
 	}
 	return nil
 }

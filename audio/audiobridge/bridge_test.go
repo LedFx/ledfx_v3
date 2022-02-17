@@ -193,7 +193,7 @@ func TestBridgeYoutube2Local(t *testing.T) {
 	defer br.Stop()
 
 	if err := br.StartYoutubeInput(true); err != nil {
-		t.Fatalf("Error starting YouTube input: %v\n", err)
+		t.Fatalf("Error starting YouTubeSet input: %v\n", err)
 	}
 
 	if err := br.AddLocalOutput(true); err != nil {
@@ -202,7 +202,7 @@ func TestBridgeYoutube2Local(t *testing.T) {
 
 	pp, err := br.Controller().YouTube().PlayPlaylist("https://youtube.com/playlist?list=PLcncP1HGs_p0VaCVjUPyrPiRSbQS8H8W-")
 	if err != nil {
-		t.Fatalf("Error playing YouTube playlist: %v\n", err)
+		t.Fatalf("Error playing YouTubeSet playlist: %v\n", err)
 	}
 	defer pp.Stop()
 

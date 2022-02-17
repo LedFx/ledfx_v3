@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"ledfx/audio"
@@ -15,14 +14,6 @@ import (
 type Server struct {
 	mux *http.ServeMux
 	br  *audiobridge.Bridge
-}
-type Message struct {
-	Artist     string
-	Title      string
-	Creator    string
-	Duration   int64
-	SampleRate int64
-	Size       int64
 }
 
 func NewServer(callback func(buf audio.Buffer)) (s *Server, err error) {
@@ -43,7 +34,9 @@ func NewServer(callback func(buf audio.Buffer)) (s *Server, err error) {
 	s.mux.HandleFunc("/add/output/local", s.handleAddOutputLocal)
 
 	// Ctl handlers
-	s.mux.HandleFunc("/ctl/youtube", s.handleCtlYouTube)
+	s.mux.HandleFunc("/ctl/youtube/set", s.handleCtlYouTube)
+	s.mux.HandleFunc("/ctl/youtube/info", s.handleCtlYouTubeGetInfo)
+
 	s.mux.HandleFunc("/ctl/airplay/set", s.handleCtlAirPlaySet)
 	s.mux.HandleFunc("/ctl/airplay/clients", s.handleCtlAirPlayGetClients)
 	s.mux.HandleFunc("/ctl/airplay/info", s.handleCtlAirPlayGetInfo)
@@ -102,7 +95,6 @@ func (s *Server) handleCtlAirPlaySet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Logger.Infoln("Got AirPlay SET CTL request...")
-
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -121,7 +113,6 @@ func (s *Server) handleCtlAirPlaySet(w http.ResponseWriter, r *http.Request) {
 }
 func (s *Server) handleCtlAirPlayGetClients(w http.ResponseWriter, r *http.Request) {
 	log.Logger.Infoln("Got AirPlay GET CTL request...")
-
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		w.Write([]byte(fmt.Sprintf("method '%s' is not allowed", r.Method)))
@@ -154,10 +145,10 @@ func (s *Server) handleSetInputYouTube(w http.ResponseWriter, r *http.Request) {
 		w.Write(errToBytes(err))
 		return
 	}
-	log.Logger.Infoln("Setting input source to YouTube....")
+	log.Logger.Infoln("Setting input source to YouTubeSet....")
 	if err := s.br.JSONWrapper().StartYouTubeInput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Logger.Errorf("Error starting YouTube input: %v", err)
+		log.Logger.Errorf("Error starting YouTubeSet input: %v", err)
 		w.Write(errToBytes(err))
 		return
 	}
@@ -171,24 +162,25 @@ func (s *Server) handleCtlYouTube(w http.ResponseWriter, r *http.Request) {
 		w.Write(errToBytes(err))
 		return
 	}
-	log.Logger.Infof("Got YouTube CTL request...")
-	if err := s.br.JSONWrapper().CTL().YouTube(bodyBytes); err != nil {
+	if err := s.br.JSONWrapper().CTL().YouTubeSet(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Logger.Errorf("Error running YouTube CTL action: %v", err)
+		log.Logger.Errorf("Error running YouTubeSet CTL action: %v", err)
 		w.Write(errToBytes(err))
 		return
 	}
-	// ToDo: Fill Response with correct data
-	w.Header().Set("Content-Type", "application/json")
-	m := Message{
-		Artist:     "Kenny Dope",
-		Title:      "Get On Down (Pushin' Dope E.P.)",
-		Creator:    "Badboy Soul",
-		Duration:   385,
-		SampleRate: 44100,
-		Size:       68,
+}
+
+func (s *Server) handleCtlYouTubeGetInfo(w http.ResponseWriter, r *http.Request) {
+	log.Logger.Infoln("Got YouTubeSet GET CTL request...")
+	ret, err := s.br.JSONWrapper().CTL().YouTubeGetInfo()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Logger.Errorf("Error running YouTubeGet CTL action: %v", err)
+		w.Write(errToBytes(err))
+		return
 	}
-	json.NewEncoder(w).Encode(m)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(ret)
 }
 
 // ############### END YOUTUBE ###############

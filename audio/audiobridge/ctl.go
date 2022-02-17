@@ -34,16 +34,65 @@ func (ytc *YoutubeController) PlayPlaylist(playlistURL string) (*youtube.Playlis
 			return ytc.handler.handler.PlayPlaylist(playlistURL)
 		}
 	}
-	return nil, fmt.Errorf("YouTube playback is not active")
+	return nil, fmt.Errorf("YouTube handler is not active")
 }
-
 func (ytc *YoutubeController) Play(videoURL string) (*youtube.Player, error) {
 	if ytc.handler != nil {
 		if ytc.handler.handler != nil {
 			return ytc.handler.handler.Play(videoURL)
 		}
 	}
-	return nil, fmt.Errorf("YouTube playback is not active")
+	return nil, fmt.Errorf("YouTube handler is not active")
+}
+
+func (ytc *YoutubeController) NowPlaying() (info youtube.TrackInfo, err error) {
+	if ytc.handler != nil {
+		if ytc.handler.handler != nil {
+			return ytc.handler.handler.NowPlaying(), nil
+		}
+	}
+	return info, fmt.Errorf("YouTube handler is not active")
+}
+func (ytc *YoutubeController) QueuedTracks() ([]youtube.TrackInfo, error) {
+	if ytc.handler != nil {
+		if ytc.handler.handler != nil {
+			return ytc.handler.handler.QueuedTracks(), nil
+		}
+	}
+	return nil, fmt.Errorf("YouTube handler is not active")
+}
+
+func (ytc *YoutubeController) IsPaused() (bool, error) {
+	if ytc.handler != nil {
+		if ytc.handler.handler != nil {
+			return ytc.handler.handler.IsPaused(), nil
+		}
+	}
+	return false, fmt.Errorf("YouTube handler is not active")
+}
+func (ytc *YoutubeController) TrackIndex() (int, error) {
+	if ytc.handler != nil {
+		if ytc.handler.handler != nil {
+			return ytc.handler.handler.TrackIndex(), nil
+		}
+	}
+	return -1, fmt.Errorf("YouTube handler is not active")
+}
+func (ytc *YoutubeController) IsPlaying() (bool, error) {
+	if ytc.handler != nil {
+		if ytc.handler.handler != nil {
+			return ytc.handler.handler.IsPlaying(), nil
+		}
+	}
+	return false, fmt.Errorf("YouTube handler is not active")
+}
+func (ytc *YoutubeController) SongCompletionPercent() (youtube.CompletionPercent, error) {
+	if ytc.handler != nil {
+		if ytc.handler.handler != nil {
+			return ytc.handler.handler.PercentComplete()
+		}
+	}
+	return -1, fmt.Errorf("YouTube handler is not active")
 }
 
 // --- END YOUTUBE CTL ---

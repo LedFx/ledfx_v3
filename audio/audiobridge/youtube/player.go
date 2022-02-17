@@ -3,6 +3,7 @@ package youtube
 import (
 	"errors"
 	"fmt"
+	"go.uber.org/atomic"
 	"io"
 	"ledfx/audio"
 	"os"
@@ -12,9 +13,10 @@ import (
 type Player struct {
 	mu *sync.Mutex
 
-	done    bool
-	paused  bool
+	done    *atomic.Bool
+	paused  *atomic.Bool
 	unpause chan bool
+	playing *atomic.Bool
 
 	in     *os.File
 	out    *audio.AsyncMultiWriter
@@ -22,25 +24,32 @@ type Player struct {
 }
 
 func (p *Player) Reset(input *os.File) {
-	p.done = true
-	defer func() {
-		p.done = false
-	}()
 	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.done.Store(true)
+
+	defer func() {
+		p.done.Store(false)
+		p.mu.Unlock()
+	}()
+
 	p.Stop()
 	p.in = input
 }
 
 func (p *Player) Start() error {
 	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.playing.Store(true)
+	defer func() {
+		p.playing.Store(false)
+		p.mu.Unlock()
+	}()
+
 	buf := make([]byte, 1408)
 	for {
 		switch {
-		case p.paused:
+		case p.paused.Load():
 			<-p.unpause
-		case p.done:
+		case p.done.Load():
 			return nil
 		default:
 			n, err := io.ReadAtLeast(p.in, buf, 1408)
@@ -71,11 +80,11 @@ func (p *Player) Start() error {
 }
 
 func (p *Player) Pause() {
-	p.paused = true
+	p.paused.Store(true)
 }
 
 func (p *Player) Unpause() {
-	p.paused = false
+	p.paused.Store(false)
 	p.unpause <- true
 }
 
@@ -85,11 +94,15 @@ func (p *Player) Stop() {
 	}
 }
 
+func (p *Player) IsPlaying() bool {
+	return p.playing.Load()
+}
+
 func (p *Player) Close() error {
-	if p.paused {
+	if p.paused.Load() {
 		p.unpause <- true
 	}
-	p.done = true
+	p.done.Store(true)
 	if p.in == nil {
 		return nil
 	} else {

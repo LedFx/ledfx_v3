@@ -8,7 +8,7 @@ import (
 type JsonCTL struct {
 	w *BridgeJSONWrapper
 
-	// YouTube stuff
+	// YouTubeSet stuff
 	curYouTubePlaylistPlayer *youtube.PlaylistPlayer
 	curYouTubePlayer         *youtube.Player
 	curYouTubePlayerType     youTubePlayerType

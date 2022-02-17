@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"ledfx/audio"
 	"ledfx/color"
@@ -18,6 +19,9 @@ import (
 )
 
 func init() {
+	flag.StringVar(&ip, "ip", "0.0.0.0", "The IP address the frontend will run on")
+	flag.IntVar(&port, "port", 8080, "The port the frontend will run on")
+
 	// Capture ctrl-c or sigterm to gracefully shutdown
 	c := make(chan os.Signal, 2)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
@@ -32,7 +36,13 @@ func init() {
 	if err != nil {
 		log.Println(err)
 	}
+
 }
+
+var (
+	ip   string
+	port int
+)
 
 func main() {
 	// Just print version and return if flag is set
@@ -106,14 +116,14 @@ func main() {
 	// REMOVEME: END
 
 	audio.LogAudioDevices()
-	go audio.CaptureDemo()
+	//go audio.CaptureDemo()
 
 	go func() {
 		utils.SetupRoutes()
 	}()
 
 	go func() {
-		utils.InitFrontend()
+		utils.InitFrontend(ip, port)
 	}()
 
 	go func() {

@@ -1,16 +1,34 @@
 package youtube
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	yt "github.com/kkdai/youtube/v2"
 	log "ledfx/logger"
+	"time"
 )
+
+type SongDuration time.Duration
+
+func (d SongDuration) MarshalJSON() ([]byte, error) {
+	return json.Marshal(time.Duration(d).String())
+}
+
+type TrackInfo struct {
+	Artist        string       `json:"artist,omitempty"`
+	Title         string       `json:"title,omitempty"`
+	Duration      SongDuration `json:"duration,omitempty"`
+	SampleRate    int64        `json:"samplerate,omitempty"`
+	FileSize      int64        `json:"filesize,omitempty"`
+	URL           string       `json:"url"`
+	AudioChannels int          `json:"audio_channels,omitempty"`
+}
 
 type PlaylistPlayer struct {
 	h        *Handler
 	trackNum int
-	tracks   []string
+	tracks   []TrackInfo
 }
 
 func (pp *PlaylistPlayer) Pause() {
@@ -22,7 +40,7 @@ func (pp *PlaylistPlayer) Unpause() {
 
 func (pp *PlaylistPlayer) Next(waitDone bool) error {
 	pp.inc()
-	p, err := pp.h.Play(pp.tracks[pp.trackNum])
+	p, err := pp.h.Play(pp.tracks[pp.trackNum].URL)
 	if err != nil {
 		if errors.Is(err, yt.ErrNotPlayableInEmbed) {
 			log.Logger.WithField("category", "YT Playlist Player").Warnf("Could not play track %d: %v", pp.trackNum, err)
@@ -46,7 +64,7 @@ func (pp *PlaylistPlayer) Next(waitDone bool) error {
 
 func (pp *PlaylistPlayer) Previous(waitDone bool) error {
 	pp.dec()
-	p, err := pp.h.Play(pp.tracks[pp.trackNum])
+	p, err := pp.h.Play(pp.tracks[pp.trackNum].URL)
 	if err != nil {
 		if errors.Is(err, yt.ErrNotPlayableInEmbed) {
 			log.Logger.WithField("category", "YT Playlist Player").Warnf("Could not play track %d: %v", pp.trackNum, err)
@@ -92,7 +110,7 @@ func (pp *PlaylistPlayer) PlayTrackNum(num int, waitDone bool) error {
 	}
 
 	pp.trackNum = num
-	p, err := pp.h.Play(pp.tracks[pp.trackNum])
+	p, err := pp.h.Play(pp.tracks[pp.trackNum].URL)
 	if err != nil {
 		if errors.Is(err, yt.ErrNotPlayableInEmbed) {
 			log.Logger.WithField("category", "YT Playlist Player").Warnf("Could not play track %d: %v", pp.trackNum, err)

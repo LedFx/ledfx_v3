@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	pretty "github.com/fatih/color"
 	"github.com/rs/cors"
 	"ledfx/api"
 	"ledfx/audio"
@@ -9,6 +10,7 @@ import (
 	log "ledfx/logger"
 	"net/http"
 	"regexp"
+	"runtime"
 )
 
 func ServeHttp() {
@@ -26,10 +28,42 @@ func ServeHttp() {
 }
 
 func InitFrontend(ip string, port int) {
-	fmt.Println("========================================================")
-	fmt.Println("                LedFx-Frontend by Blade")
-	fmt.Println("    [CTRL]+Click: http://localhost:8080/#/?newCore=1")
-	fmt.Println("========================================================")
+	pretty.Set(pretty.BgHiCyan, pretty.FgBlack).Print("================")
+	pretty.Unset()
+	pretty.Set(pretty.BgHiMagenta, pretty.FgBlack, pretty.Italic).Print(" LedFx-Frontend by Blade ")
+	pretty.Unset()
+	pretty.Set(pretty.BgHiCyan, pretty.FgBlack).Print("================")
+	pretty.Unset()
+	fmt.Print("\n")
+	pretty.Set(pretty.BgBlack).Print("                                                         ")
+	pretty.Unset()
+	fmt.Print("\n")
+	pretty.Set(pretty.BgBlack).Print("    ")
+	pretty.Unset()
+	switch runtime.GOOS {
+	case "darwin":
+		pretty.Set(pretty.BgBlack, pretty.FgWhite).Print("[CMD]+LMB: ")
+	default:
+		pretty.Set(pretty.BgBlack, pretty.FgWhite).Print("[CTRL]+Click: ")
+	}
+	pretty.Unset()
+	pretty.Set(pretty.BgBlack, pretty.FgHiBlue, pretty.Bold, pretty.Underline).Print("http://localhost:8080/#/?newCore=1")
+	pretty.Unset()
+	switch runtime.GOOS {
+	case "darwin":
+		pretty.Set(pretty.BgBlack).Print("        ")
+	default:
+		pretty.Set(pretty.BgBlack).Print("     ")
+	}
+	pretty.Unset()
+	fmt.Print("\n")
+	pretty.Set(pretty.BgBlack).Print("                                                         ")
+	pretty.Unset()
+	fmt.Print("\n")
+	pretty.Set(pretty.BgHiCyan, pretty.FgBlack).Print("=========================================================")
+	pretty.Unset()
+	fmt.Print("\n")
+
 	go func() {
 		mux := http.DefaultServeMux
 		err := bridgeapi.NewServer(func(buf audio.Buffer) {

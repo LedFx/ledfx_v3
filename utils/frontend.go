@@ -22,13 +22,13 @@ func ServeHttp() {
 	})
 }
 
-func InitFrontend() {
+func InitFrontend(ip string, port int) {
 	fmt.Println("========================================================")
 	fmt.Println("                LedFx-Frontend by Blade")
 	fmt.Println("    [CTRL]+Click: http://localhost:8080/#/?newCore=1")
 	fmt.Println("========================================================")
 	go func() {
-		err := http.ListenAndServe(":8080", nil)
+		err := http.ListenAndServe(fmt.Sprintf("%s:%d", ip, port), nil)
 		if err != nil {
 			logger.Logger.Fatal(err)
 		}

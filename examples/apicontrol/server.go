@@ -1,18 +1,28 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/rs/cors"
 	"io/ioutil"
 	"ledfx/audio"
 	"ledfx/audio/audiobridge"
 	log "ledfx/logger"
 	"net/http"
+
+	"github.com/rs/cors"
 )
 
 type Server struct {
 	mux *http.ServeMux
 	br  *audiobridge.Bridge
+}
+type Message struct {
+	Artist     string
+	Title      string
+	Creator    string
+	Duration   int64
+	SampleRate int64
+	Size       int64
 }
 
 func NewServer(callback func(buf audio.Buffer)) (s *Server, err error) {
@@ -168,6 +178,17 @@ func (s *Server) handleCtlYouTube(w http.ResponseWriter, r *http.Request) {
 		w.Write(errToBytes(err))
 		return
 	}
+	// ToDo: Fill Response with correct data
+	w.Header().Set("Content-Type", "application/json")
+	m := Message{
+		Artist:     "Kenny Dope",
+		Title:      "Get On Down (Pushin' Dope E.P.)",
+		Creator:    "Badboy Soul",
+		Duration:   385,
+		SampleRate: 44100,
+		Size:       68,
+	}
+	json.NewEncoder(w).Encode(m)
 }
 
 // ############### END YOUTUBE ###############

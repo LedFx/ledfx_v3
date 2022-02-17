@@ -2,11 +2,6 @@ package youtube
 
 import (
 	"fmt"
-	"github.com/dustin/go-humanize"
-	pretty "github.com/fatih/color"
-	yt "github.com/kkdai/youtube/v2"
-	"github.com/schollz/progressbar/v3"
-	ffmpeg "github.com/u2takey/ffmpeg-go"
 	"io"
 	"ledfx/audio"
 	log "ledfx/logger"
@@ -19,6 +14,12 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/dustin/go-humanize"
+	pretty "github.com/fatih/color"
+	yt "github.com/kkdai/youtube/v2"
+	"github.com/schollz/progressbar/v3"
+	ffmpeg "github.com/u2takey/ffmpeg-go"
 )
 
 type Handler struct {
@@ -152,8 +153,12 @@ func (h *Handler) downloadToMP3(url string) (videoInfo VideoInfo, tmp *os.File, 
 	}
 
 	audioFile := fmt.Sprintf("/tmp/%s.wav", cleanTitle(video.Title))
+	// // Fix for Windows
+	// audioFile := fmt.Sprintf("tmp\\%s.wav", cleanTitle(video.Title))
 	tmpVideoName := fmt.Sprintf("%s.ytdl", util.RandString(8))
 	tmpVideoNameAndPath := filepath.Join("/tmp/", tmpVideoName)
+	// // Fix for Windows
+	// tmpVideoNameAndPath := filepath.Join("tmp", tmpVideoName)
 
 	if util.FileExists(audioFile) {
 		if tmp, err = os.Open(audioFile); err != nil {

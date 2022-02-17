@@ -33,11 +33,11 @@ import (
 	_ "image/jpeg"
 )
 
-func init() {
+/*func init() {
 	go func() {
 		log.Logger.Fatalf("Error listening and serving gradient handler: %v", http.ListenAndServe(":8740", nil))
 	}()
-}
+}*/
 
 var errInvalidGradient = errors.New("invalid gradient")
 

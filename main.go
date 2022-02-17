@@ -20,7 +20,7 @@ import (
 
 func init() {
 	flag.StringVar(&ip, "ip", "0.0.0.0", "The IP address the frontend will run on")
-	flag.IntVar(&port, "port", 8081, "The port the frontend will run on")
+	flag.IntVar(&port, "port", 8080, "The port the frontend will run on")
 
 	// Capture ctrl-c or sigterm to gracefully shutdown
 	c := make(chan os.Signal, 2)
@@ -116,7 +116,7 @@ func main() {
 	// REMOVEME: END
 
 	audio.LogAudioDevices()
-	go audio.CaptureDemo()
+	//go audio.CaptureDemo()
 
 	go func() {
 		utils.SetupRoutes()

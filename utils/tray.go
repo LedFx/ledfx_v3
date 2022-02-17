@@ -3,6 +3,7 @@ package utils
 
 import (
 	_ "embed"
+	log "ledfx/logger"
 
 	"github.com/getlantern/systray"
 )
@@ -17,18 +18,21 @@ func OnReady() {
 	mGithub := systray.AddMenuItem("Github", "Open LedFx Github in Browser")
 	systray.AddSeparator()
 	mQuit := systray.AddMenuItem("Quit", "Shutdown LedFx")
-	for {
-		select {
-		case <-mOpen.ClickedCh:
-			Openbrowser("http://localhost:8080/#/?newCore=1")
-		case <-mGithub.ClickedCh:
-			Openbrowser("https://github.com/LedFx/ledfx_rewrite")
-		case <-mQuit.ClickedCh:
-			systray.Quit()
+	go func() {
+		for {
+			select {
+			case <-mOpen.ClickedCh:
+				Openbrowser("http://localhost:8080/#/?newCore=1")
+			case <-mGithub.ClickedCh:
+				Openbrowser("https://github.com/LedFx/ledfx_rewrite")
+			case <-mQuit.ClickedCh:
+				systray.Quit()
+				return
+			}
 		}
-	}
+	}()
 }
 
 func OnExit() {
-	systray.Quit()
+	log.Logger.WithField("category", "Systray Handler").Warnln("Closing systray...")
 }

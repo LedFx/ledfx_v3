@@ -140,5 +140,5 @@ func main() {
 func shutdown() {
 	logger.Logger.Info("Shutting down LedFx")
 	// kill systray
-	utils.OnExit()
+	systray.Quit()
 }

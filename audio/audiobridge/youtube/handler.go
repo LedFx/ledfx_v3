@@ -178,15 +178,9 @@ func (h *Handler) downloadToMP3(url string) (videoInfo TrackInfo, tmp *os.File, 
 		URL:      url,
 	}
 
-	// // UNIX
-	// audioFile := fmt.Sprintf("/tmp/%s.wav", cleanTitle(video.Title))
-	// tmpVideoName := fmt.Sprintf("%s.ytdl", util.RandString(8))
-	// tmpVideoNameAndPath := filepath.Join("/tmp/", tmpVideoName)
-
-	// Windows
-	audioFile := fmt.Sprintf("tmp\\%s.wav", cleanTitle(video.Title))
+	audioFile := filepath.Join(os.TempDir(), cleanTitle(video.Title)+".wav")
 	tmpVideoName := fmt.Sprintf("%s.ytdl", util.RandString(8))
-	tmpVideoNameAndPath := filepath.Join("tmp", tmpVideoName)
+	tmpVideoNameAndPath := filepath.Join(os.TempDir(), tmpVideoName)
 
 	if util.FileExists(audioFile) {
 		if tmp, err = os.Open(audioFile); err != nil {

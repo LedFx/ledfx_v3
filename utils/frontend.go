@@ -2,8 +2,6 @@ package utils
 
 import (
 	"fmt"
-	pretty "github.com/fatih/color"
-	"github.com/rs/cors"
 	"ledfx/api"
 	"ledfx/audio"
 	"ledfx/bridgeapi"
@@ -11,6 +9,9 @@ import (
 	"net/http"
 	"regexp"
 	"runtime"
+
+	pretty "github.com/fatih/color"
+	"github.com/rs/cors"
 )
 
 func ServeHttp() {
@@ -28,41 +29,27 @@ func ServeHttp() {
 }
 
 func InitFrontend(ip string, port int) {
-	pretty.Set(pretty.BgHiCyan, pretty.FgBlack).Print("================")
-	pretty.Unset()
-	pretty.Set(pretty.BgHiMagenta, pretty.FgBlack, pretty.Italic).Print(" LedFx-Frontend by Blade ")
-	pretty.Unset()
-	pretty.Set(pretty.BgHiCyan, pretty.FgBlack).Print("================")
-	pretty.Unset()
-	fmt.Print("\n")
-	pretty.Set(pretty.BgBlack).Print("                                                         ")
-	pretty.Unset()
-	fmt.Print("\n")
-	pretty.Set(pretty.BgBlack).Print("    ")
-	pretty.Unset()
+	pretty.Set(pretty.BgBlack, pretty.FgRed).Print("╭───────────────────────────────────────────────────────╮\n│               ")
+	pretty.Set(pretty.BgBlack, pretty.FgRed, pretty.Bold).Print(" LedFx-Frontend")
+	pretty.Set(pretty.BgBlack, pretty.FgWhite, pretty.Faint).Print(" by Blade ")
+	pretty.Set(pretty.BgBlack, pretty.FgRed).Print("               │\n├───────────────────────────────────────────────────────┤\n│                                                       │\n│   ")
 	switch runtime.GOOS {
 	case "darwin":
-		pretty.Set(pretty.BgBlack, pretty.FgWhite).Print("[CMD]+LMB: ")
+		pretty.Set(pretty.BgBlack, pretty.FgHiYellow).Print("[CMD]+LMB: ")
 	default:
-		pretty.Set(pretty.BgBlack, pretty.FgWhite).Print("[CTRL]+Click: ")
+		pretty.Set(pretty.BgBlack, pretty.FgHiYellow).Print("[CTRL]+Click: ")
 	}
-	pretty.Unset()
 	pretty.Set(pretty.BgBlack, pretty.FgHiBlue, pretty.Bold, pretty.Underline).Print("http://localhost:8080/#/?newCore=1")
-	pretty.Unset()
 	switch runtime.GOOS {
 	case "darwin":
-		pretty.Set(pretty.BgBlack).Print("        ")
+		pretty.Set(pretty.BgBlack, pretty.FgRed).Print("       │\n")
+
 	default:
-		pretty.Set(pretty.BgBlack).Print("     ")
+		pretty.Set(pretty.BgBlack, pretty.FgRed).Print("    │\n")
+
 	}
+	pretty.Set(pretty.BgBlack, pretty.FgRed).Print("│                                                       │\n╰───────────────────────────────────────────────────────╯\n")
 	pretty.Unset()
-	fmt.Print("\n")
-	pretty.Set(pretty.BgBlack).Print("                                                         ")
-	pretty.Unset()
-	fmt.Print("\n")
-	pretty.Set(pretty.BgHiCyan, pretty.FgBlack).Print("=========================================================")
-	pretty.Unset()
-	fmt.Print("\n")
 
 	go func() {
 		mux := http.DefaultServeMux

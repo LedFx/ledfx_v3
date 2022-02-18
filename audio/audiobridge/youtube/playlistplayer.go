@@ -40,6 +40,9 @@ func (pp *PlaylistPlayer) Unpause() {
 
 func (pp *PlaylistPlayer) Next(waitDone bool) error {
 	pp.inc()
+	if len(pp.tracks) <= pp.trackNum {
+		return fmt.Errorf("no tracks found with index %d", pp.trackNum)
+	}
 	p, err := pp.h.Play(pp.tracks[pp.trackNum].URL)
 	if err != nil {
 		if errors.Is(err, yt.ErrNotPlayableInEmbed) {

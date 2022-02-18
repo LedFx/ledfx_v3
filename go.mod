@@ -12,6 +12,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/grandcat/zeroconf v1.0.0
 	github.com/grantmd/go-airplay v0.0.0-20150101054745-99b46766924c
+	github.com/hajimehoshi/oto/v2 v2.0.3
 	github.com/mazznoer/colorgrad v0.8.1
 	github.com/muesli/gamut v0.3.0
 	github.com/nathan-fiscaletti/consolesize-go v0.0.0-20210105204122-a87d9f614b9d
@@ -87,7 +88,6 @@ require (
 )
 
 require (
-	github.com/hajimehoshi/oto v1.0.1
 	github.com/maghul/alac v0.0.0-20161106215514-129591bceef4
 	github.com/maghul/go.alac v0.0.0-20161106215514-129591bceef4 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect

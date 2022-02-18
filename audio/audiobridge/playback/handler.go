@@ -2,7 +2,8 @@ package playback
 
 import (
 	"fmt"
-	"github.com/hajimehoshi/oto"
+	"github.com/hajimehoshi/oto/v2"
+	"io"
 	log "ledfx/logger"
 	"ledfx/util"
 )
@@ -15,10 +16,12 @@ func initCtx() error {
 	}()
 	if ctx == nil {
 		var err error
-		ctx, err = oto.NewContext(44100, 2, 2, 1408)
+		var ready chan struct{}
+		ctx, ready, err = oto.NewContext(44100, 2, 2)
 		if err != nil {
 			return fmt.Errorf("error initializing new OTO context: %w", err)
 		}
+		<-ready
 	}
 	return nil
 }
@@ -29,8 +32,12 @@ var (
 
 type Handler struct {
 	identifier string
+
 	// pl is the player
-	pl      *oto.Player
+	pl oto.Player
+	pr *io.PipeReader
+	pw *io.PipeWriter
+
 	verbose bool
 }
 
@@ -39,17 +46,31 @@ func NewHandler(verbose bool) (h *Handler, err error) {
 		return nil, err
 	}
 
+	pr, pw := io.Pipe()
+
 	h = &Handler{
-		pl:         ctx.NewPlayer(),
 		identifier: util.RandString(8),
+		pl:         ctx.NewPlayer(pr),
+		pr:         pr,
+		pw:         pw,
 		verbose:    verbose,
 	}
 
+	h.pl.SetVolume(1)
+	h.pl.Play()
+
 	if verbose {
-		log.Logger.WithField("category", "Local Playback Init").Infof("WriterID: %s\n", h.identifier)
+		log.Logger.WithField("category", "Local Playback Init").Infof("WriterID: %s", h.identifier)
 	}
 
 	return h, nil
+}
+
+func (h *Handler) Pause() {
+	h.pl.Pause()
+}
+func (h *Handler) Resume() {
+	h.pl.Play()
 }
 
 func (h *Handler) Identifier() string {
@@ -57,9 +78,11 @@ func (h *Handler) Identifier() string {
 }
 
 func (h *Handler) Quit() {
-	h.pl.Close()
+	if h.pl.IsPlaying() {
+		h.pl.Close()
+	}
 }
 
 func (h *Handler) Write(p []byte) (int, error) {
-	return h.pl.Write(p)
+	return h.pw.Write(p)
 }

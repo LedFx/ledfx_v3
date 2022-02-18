@@ -9,25 +9,40 @@ import (
 	"ledfx/bridgeapi"
 	log "ledfx/logger"
 	"net/http"
-	"regexp"
+	"path/filepath"
 	"runtime"
 )
 
 func ServeHttp() {
 	DownloadFrontend()
 	serveFrontend := http.FileServer(http.Dir("frontend"))
-	fileMatcher := regexp.MustCompile(`\.[a-zA-Z]*$`)
 	api.HandleApi()
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if !fileMatcher.MatchString(r.URL.Path) {
+		log.Logger.WithField("category", "HTTP Regexp").Debugf("Request asked for %s", r.URL.Path)
+		if filepath.Ext(r.URL.Path) == "" {
+			log.Logger.WithField("category", "HTTP Regexp").Debugln("Serving index.html")
 			http.ServeFile(w, r, "frontend/index.html")
 		} else {
+			log.Logger.WithField("category", "HTTP Regexp").Debugf("Serving HTTP for path: %s", r.URL.Path)
 			serveFrontend.ServeHTTP(w, r)
 		}
 	})
 }
 
 func InitFrontend(ip string, port int) {
+	go func() {
+		err := bridgeapi.NewServer(func(buf audio.Buffer) {
+			// No callback for now
+		}, http.DefaultServeMux)
+		if err != nil {
+			log.Logger.Fatal(err)
+		}
+
+		if err = http.ListenAndServe(fmt.Sprintf("%s:%d", ip, port), cors.AllowAll().Handler(http.DefaultServeMux)); err != nil {
+			log.Logger.Fatal(err)
+		}
+	}()
+
 	pretty.Set(pretty.BgHiCyan, pretty.FgBlack).Print("================")
 	pretty.Unset()
 	pretty.Set(pretty.BgHiMagenta, pretty.FgBlack, pretty.Italic).Print(" LedFx-Frontend by Blade ")
@@ -64,17 +79,4 @@ func InitFrontend(ip string, port int) {
 	pretty.Unset()
 	fmt.Print("\n")
 
-	go func() {
-		mux := http.DefaultServeMux
-		err := bridgeapi.NewServer(func(buf audio.Buffer) {
-			// No callback for now
-		}, mux)
-		if err != nil {
-			log.Logger.Fatal(err)
-		}
-
-		if err = http.ListenAndServe(fmt.Sprintf("%s:%d", ip, port), cors.AllowAll().Handler(http.DefaultServeMux)); err != nil {
-			log.Logger.Fatal(err)
-		}
-	}()
 }

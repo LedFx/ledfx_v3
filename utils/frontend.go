@@ -43,26 +43,43 @@ func InitFrontend(ip string, port int) {
 			log.Logger.Fatal(err)
 		}
 	}()
-	pretty.Set(pretty.BgBlack, pretty.FgRed).Print("╭───────────────────────────────────────────────────────╮\n│               ")
-	pretty.Set(pretty.BgBlack, pretty.FgRed, pretty.Bold).Print(" LedFx-Frontend")
-	pretty.Set(pretty.BgBlack, pretty.FgWhite, pretty.Faint).Print(" by Blade ")
-	pretty.Set(pretty.BgBlack, pretty.FgRed).Print("               │\n├───────────────────────────────────────────────────────┤\n│                                                       │\n│   ")
+	borderPrinter := pretty.New(pretty.BgBlack, pretty.FgRed)
+	boldPrinter := pretty.New(pretty.BgBlack, pretty.FgRed, pretty.Bold)
+	namePrinter := pretty.New(pretty.BgBlack, pretty.FgWhite, pretty.Faint)
+	keyCombPrinter := pretty.New(pretty.BgBlack, pretty.FgHiYellow)
+	linkPrinter := pretty.New(pretty.BgBlack, pretty.FgHiBlue, pretty.Bold, pretty.Underline)
+
+	borderPrinter.Print("╭───────────────────────────────────────────────────────╮")
+	fmt.Println()
+	borderPrinter.Print("│                ")
+
+	boldPrinter.Print("LedFX-Frontend ")
+	namePrinter.Print("by Blade ")
+
+	borderPrinter.Print("               │")
+	fmt.Println()
+	borderPrinter.Print("├───────────────────────────────────────────────────────┤")
+	fmt.Println()
+	borderPrinter.Print("│                                                       │")
+	fmt.Println()
+	borderPrinter.Print("│   ")
+
 	switch runtime.GOOS {
 	case "darwin":
-		pretty.Set(pretty.BgBlack, pretty.FgHiYellow).Print("[CMD]+LMB: ")
+		keyCombPrinter.Print("[CMD]+Click: ")
 	default:
-		pretty.Set(pretty.BgBlack, pretty.FgHiYellow).Print("[CTRL]+Click: ")
+		keyCombPrinter.Print("[CTRL]+Click: ")
 	}
-	pretty.Set(pretty.BgBlack, pretty.FgHiBlue, pretty.Bold, pretty.Underline).Print("http://localhost:8080/#/?newCore=1")
+	linkPrinter.Print("http://localhost:8080/#/?newCore=1")
 	switch runtime.GOOS {
 	case "darwin":
-		pretty.Set(pretty.BgBlack, pretty.FgRed).Print("       │\n")
-
+		borderPrinter.Print("     │")
 	default:
-		pretty.Set(pretty.BgBlack, pretty.FgRed).Print("    │\n")
-
+		borderPrinter.Print("    │")
 	}
-	pretty.Set(pretty.BgBlack, pretty.FgRed).Print("│                                                       │\n╰───────────────────────────────────────────────────────╯\n")
-	pretty.Unset()
-
+	fmt.Println()
+	borderPrinter.Print("│                                                       │")
+	fmt.Println()
+	borderPrinter.Print("╰───────────────────────────────────────────────────────╯")
+	fmt.Println()
 }

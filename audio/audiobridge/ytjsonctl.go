@@ -20,11 +20,17 @@ const (
 type YouTubeAction string
 
 const (
+	// YouTubeActionDownload stores the requested URL and prepares the handler to play it
 	YouTubeActionDownload YouTubeAction = "download"
-	YouTubeActionPlay                   = "play"
-	YouTubeActionPause                  = "pause"
-	YouTubeActionResume                 = "resume"
-	YouTubeActionStop                   = "stop"
+	// YouTubeActionPlay plays the requested URL or playlist
+	YouTubeActionPlay = "play"
+	// YouTubeActionPause pauses playback
+	YouTubeActionPause = "pause"
+	// YouTubeActionResume resumes/unpauses playback
+	YouTubeActionResume = "resume"
+	// YouTubeActionStop stops the handler, closes all playback, and clears the queue.
+	// This should NOT be used for pausing.
+	YouTubeActionStop = "stop"
 
 	// YouTubeActionNext only applies to playlists
 	YouTubeActionNext = "next"
@@ -57,7 +63,6 @@ func (j *JsonCTL) YouTubeSet(jsonData []byte) (err error) {
 
 	switch conf.Action {
 	case YouTubeActionDownload:
-		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Downloading '%s'", conf.URL)
 		j.keepPlaying.Store(false)
 		if strings.Contains(strings.ToLower(conf.URL), "list=") {
 			j.curYouTubePlayerType = youTubePlayerTypePlaylist

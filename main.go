@@ -134,6 +134,7 @@ func main() {
 	}()
 
 	systray.Run(utils.OnReady, utils.OnExit)
+	os.TempDir()
 
 }
 

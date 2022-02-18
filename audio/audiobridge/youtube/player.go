@@ -66,7 +66,7 @@ func (p *Player) Start() error {
 				}
 			}
 
-			if _, err := p.out.Write(buf[:n][:]); err != nil {
+			if _, err := p.out.Write(buf[:n]); err != nil {
 				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) {
 					return fmt.Errorf("unexpected error copying to output writer: %w", err)
 				}

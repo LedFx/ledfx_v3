@@ -18,12 +18,12 @@ type Player struct {
 	unpause chan bool
 	playing *atomic.Bool
 
-	in     *os.File
+	in     *FileBuffer
 	out    *audio.AsyncMultiWriter
 	intOut audio.IntWriter
 }
 
-func (p *Player) Reset(input *os.File) {
+func (p *Player) Reset(input *FileBuffer) {
 	p.mu.Lock()
 	p.done.Store(true)
 

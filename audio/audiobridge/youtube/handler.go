@@ -99,7 +99,12 @@ func (h *Handler) Play(url string) (p *Player, err error) {
 
 	logTrack(trackInfo.Title, trackInfo.Artist)
 
-	h.p.Reset(tmp)
+	fileBuffer, err := NewFileBuffer(tmp)
+	if err != nil {
+		return nil, fmt.Errorf("error creating new file buffer: %v", err)
+	}
+
+	h.p.Reset(fileBuffer)
 
 	return h.p, nil
 }
@@ -137,11 +142,7 @@ func (h *Handler) PercentComplete() (CompletionPercent, error) {
 	if !h.IsPlaying() {
 		return 0, nil
 	}
-	pos, err := h.p.in.Seek(0, io.SeekCurrent)
-	if err != nil {
-		return 0, fmt.Errorf("error getting current playback offset: %w", err)
-	}
-	return CompletionPercent((float32(pos) / float32(h.NowPlaying().FileSize)) * float32(100)), nil
+	return CompletionPercent((float32(h.p.in.CurrentOffset()) / float32(h.NowPlaying().FileSize)) * float32(100)), nil
 }
 
 func (h *Handler) PlayPlaylist(playlistURL string) (pp *PlaylistPlayer, err error) {

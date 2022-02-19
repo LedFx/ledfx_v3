@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -18,7 +17,7 @@ import (
 	"github.com/dustin/go-humanize"
 	pretty "github.com/fatih/color"
 	yt "github.com/kkdai/youtube/v2"
-	"github.com/schollz/progressbar/v3"
+	progressbar "github.com/schollz/progressbar/v3"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 	"go.uber.org/atomic"
 )
@@ -199,10 +198,8 @@ func (h *Handler) downloadToMP3(url string) (videoInfo TrackInfo, tmp *os.File, 
 
 Download:
 	format := video.Formats.WithAudioChannels().FindByQuality("tiny")
-	if videoInfo.SampleRate, err = strconv.ParseInt(format.AudioSampleRate, 10, 64); err != nil {
-		log.Logger.WithField("category", "YT Downloader").Warnf("Error converting sample rate to integer: %v", err)
-	}
-	videoInfo.AudioChannels = format.AudioChannels
+	videoInfo.SampleRate = 44100
+	videoInfo.AudioChannels = 2
 
 	reader, size, err := h.cl.GetStream(video, format)
 	if err != nil {
@@ -227,11 +224,11 @@ Download:
 	}
 
 	if h.verbose {
-		if err := ffmpeg.Input(tmpVideoNameAndPath).Audio().Output(audioFile, ffmpeg.KwArgs{"sample_fmt": "s16", "ar": "44100"}).OverWriteOutput().WithErrorOutput(os.Stderr).Run(); err != nil {
+		if err := ffmpeg.Input(tmpVideoNameAndPath).Audio().Output(audioFile, ffmpeg.KwArgs{"sample_fmt": "s16", "ar": "44100", "ac": 2}).OverWriteOutput().WithErrorOutput(os.Stderr).Run(); err != nil {
 			return videoInfo, nil, fmt.Errorf("error converting YouTubeSet download to wav: %w", err)
 		}
 	} else {
-		if err := ffmpeg.Input(tmpVideoNameAndPath).Audio().Output(audioFile, ffmpeg.KwArgs{"sample_fmt": "s16", "ar": "44100"}).OverWriteOutput().Run(); err != nil {
+		if err := ffmpeg.Input(tmpVideoNameAndPath).Audio().Output(audioFile, ffmpeg.KwArgs{"sample_fmt": "s16", "ar": "44100", "ac": 2}).OverWriteOutput().Run(); err != nil {
 			return videoInfo, nil, fmt.Errorf("error converting YouTubeSet download to wav: %w", err)
 		}
 	}

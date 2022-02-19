@@ -32,6 +32,7 @@ func (fb *FileBuffer) Read(p []byte) (n int, err error) {
 	return n, err
 }
 func (fb *FileBuffer) Close() error {
-	fb.buf.Truncate(0)
+	fb.buf.Reset()
+	fb.buf = &bytes.Buffer{}
 	return nil
 }

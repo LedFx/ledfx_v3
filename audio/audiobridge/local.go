@@ -9,7 +9,7 @@ import (
 )
 
 type LocalHandler struct {
-	playback *playback.Handler
+	playback playback.Handler
 	capture  *capture.Handler
 	verbose  bool
 }
@@ -74,11 +74,11 @@ func (br *Bridge) AddLocalOutput(verbose bool) (err error) {
 
 func (lh *LocalHandler) Stop() {
 	if lh.capture != nil {
-		log.Logger.WithField("category", "Local Audio Handler").Warnf("Stopping capture handler...")
+		log.Logger.WithField("category", "Local Audio UnixHandler").Warnf("Stopping capture handler...")
 		lh.capture.Quit()
 	}
 	if lh.playback != nil {
-		log.Logger.WithField("category", "Local Audio Handler").Warnf("Stopping playback handler...")
+		log.Logger.WithField("category", "Local Audio UnixHandler").Warnf("Stopping playback handler...")
 		lh.playback.Quit()
 	}
 }

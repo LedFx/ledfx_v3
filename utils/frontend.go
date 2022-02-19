@@ -31,10 +31,12 @@ func ServeHttp() {
 }
 
 func InitFrontend(ip string, port int) {
-	go func() {
-		err := bridgeapi.NewServer(func(buf audio.Buffer) {
-			// No callback for now
-		}, http.DefaultServeMux)
+	fxHandler, err := audio.NewFxHandler()
+	if err != nil {
+		log.Logger.Fatalf("Error initializing new FX handler: %v", err)
+	}
+	go func(fxh *audio.FxHandler) {
+		err := bridgeapi.NewServer(fxh.Callback, http.DefaultServeMux)
 		if err != nil {
 			log.Logger.Fatal(err)
 		}
@@ -42,7 +44,7 @@ func InitFrontend(ip string, port int) {
 		if err = http.ListenAndServe(fmt.Sprintf("%s:%d", ip, port), cors.AllowAll().Handler(http.DefaultServeMux)); err != nil {
 			log.Logger.Fatal(err)
 		}
-	}()
+	}(fxHandler)
 	borderPrinter := pretty.New(pretty.BgBlack, pretty.FgRed)
 	boldPrinter := pretty.New(pretty.BgBlack, pretty.FgRed, pretty.Bold)
 	namePrinter := pretty.New(pretty.BgBlack, pretty.FgWhite, pretty.Faint)

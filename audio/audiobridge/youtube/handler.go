@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dustin/go-humanize"
+	humanize "github.com/dustin/go-humanize"
 	pretty "github.com/fatih/color"
 	yt "github.com/kkdai/youtube/v2"
 	progressbar "github.com/schollz/progressbar/v3"
@@ -247,10 +247,13 @@ Download:
 	return videoInfo, tmp, nil
 }
 
+var (
+	titleCleaner, _ = regexp.Compile("[^a-zA-Z0-9 ]+")
+)
+
 func cleanTitle(title string) string {
 	// Make a Regex to say we only want letters and numbers
-	reg, _ := regexp.Compile("[^a-zA-Z0-9 ]+")
-	return strings.ReplaceAll(reg.ReplaceAllString(title, ""), " ", "_")
+	return strings.ReplaceAll(titleCleaner.ReplaceAllString(title, ""), " ", "_")
 }
 
 func logTrack(track, author string) {

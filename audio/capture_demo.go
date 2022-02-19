@@ -1,5 +1,6 @@
 package audio
 
+/*
 import (
 	"fmt"
 	"ledfx/config"
@@ -14,8 +15,6 @@ var frameCount int = 0
 var pvoc *aubio.PhaseVoc
 var melbank *aubio.FilterBank
 var onset *aubio.Onset
-
-const fft_size uint = 1024
 
 func CaptureDemo() {
 	// REMOVE THIS ONCE WE HAVE CONFIG VALIDATION
@@ -36,7 +35,7 @@ func CaptureDemo() {
 	fpb := int(di.DefaultSampleRate) / config.GlobalConfig.Audio.FrameRate
 
 	// phase vocoder
-	pvoc, err = aubio.NewPhaseVoc(fft_size, uint(fpb))
+	pvoc, err = aubio.NewPhaseVoc(fftSize, uint(fpb))
 	defer pvoc.Free()
 	if err != nil {
 		logger.Logger.Error(err)
@@ -44,11 +43,11 @@ func CaptureDemo() {
 	}
 
 	// filterbank
-	melbank = aubio.NewFilterBank(40, fft_size)
+	melbank = aubio.NewFilterBank(40, fftSize)
 	melbank.SetMelCoeffsSlaney(uint(di.DefaultSampleRate))
 
 	// onset
-	onset, err = aubio.NewOnset(aubio.HFC, uint(fft_size), uint(fpb), uint(di.DefaultSampleRate))
+	onset, err = aubio.NewOnset(aubio.HFC, uint(fftSize), uint(fpb), uint(di.DefaultSampleRate))
 	if err != nil {
 		logger.Logger.Error(err)
 		return
@@ -97,3 +96,4 @@ func audioSampleCallback(in Buffer) {
 		fmt.Println("nice clap!")
 	}
 }
+*/

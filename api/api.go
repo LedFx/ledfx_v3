@@ -13,7 +13,7 @@ import (
 
 func SetHeader(w http.ResponseWriter) {
 	headers := w.Header()
-	headers.Add("Access-Control-Allow-Origin", "*")
+	// headers.Add("Access-Control-Allow-Origin", "*")
 	headers.Add("Vary", "Origin")
 	headers.Add("Vary", "Access-Control-Request-Method")
 	headers.Add("Vary", "Access-Control-Request-Headers")

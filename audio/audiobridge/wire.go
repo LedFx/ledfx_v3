@@ -23,7 +23,7 @@ func (br *Bridge) wireAirPlayOutput(client *airplay2.Client) (err error) {
 	return err
 }
 
-func (br *Bridge) wireLocalOutput(handler *playback.Handler) error {
+func (br *Bridge) wireLocalOutput(handler playback.Handler) error {
 	return br.AddOutputWriter(handler, handler.Identifier())
 }
 

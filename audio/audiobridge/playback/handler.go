@@ -2,87 +2,71 @@ package playback
 
 import (
 	"fmt"
-	"github.com/hajimehoshi/oto/v2"
+	"github.com/gordonklaus/portaudio"
 	"io"
+	"ledfx/audio"
 	log "ledfx/logger"
 	"ledfx/util"
 )
 
-func initCtx() error {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Logger.WithField("category", "Local Playback Init").Errorf("Recovered during OTO ctx init: %v\n", r)
-		}
-	}()
-	if ctx == nil {
-		var err error
-		var ready chan struct{}
-		ctx, ready, err = oto.NewContext(44100, 2, 2)
-		if err != nil {
-			return fmt.Errorf("error initializing new OTO context: %w", err)
-		}
-		<-ready
-	}
-	return nil
-}
-
-var (
-	ctx *oto.Context
-)
-
-type Handler struct {
+type Player struct {
 	identifier string
-
-	// pl is the player
-	pl oto.Player
-	pr *io.PipeReader
-	pw *io.PipeWriter
-
-	verbose bool
+	stream     *portaudio.Stream
+	outDev     *portaudio.DeviceInfo
+	buf        audio.Buffer
+	verbose    bool
+	done       bool
 }
 
-func NewHandler(verbose bool) (h *Handler, err error) {
-	if err = initCtx(); err != nil {
-		return nil, err
-	}
-
-	pr, pw := io.Pipe()
-
-	h = &Handler{
+func NewHandler(verbose bool) (h *Player, err error) {
+	h = &Player{
 		identifier: util.RandString(8),
-		pl:         ctx.NewPlayer(pr),
-		pr:         pr,
-		pw:         pw,
 		verbose:    verbose,
+		buf:        make([]int16, 1408/2),
 	}
 
-	h.pl.SetVolume(1)
-	h.pl.Play()
+	if h.outDev, err = portaudio.DefaultOutputDevice(); err != nil {
+		return nil, fmt.Errorf("error getting default output device: %w", err)
+	}
 
 	if verbose {
-		log.Logger.WithField("category", "Local Playback Init").Infof("WriterID: %s", h.identifier)
+		log.Logger.WithField("category", "Local Playback Init").Infof("Default output device: %s", h.outDev.Name)
+		log.Logger.WithField("category", "Local Capture Init").Infof("Opening stream... (%dCH/16-bit @%vhz)", h.outDev.MaxOutputChannels, h.outDev.DefaultSampleRate)
 	}
 
+	// Ensure format compatibility with the data sent over Player.Write()
+	h.outDev.MaxOutputChannels = 2
+	h.outDev.DefaultSampleRate = 44100
+
+	if h.stream, err = portaudio.OpenStream(portaudio.LowLatencyParameters(nil, h.outDev), &h.buf); err != nil {
+		return nil, fmt.Errorf("error opening PortAudio stream: %w", err)
+	}
+	if verbose {
+		log.Logger.WithField("category", "Local Capture Init").Infof("Starting stream...")
+	}
+	if err = h.stream.Start(); err != nil {
+		return nil, fmt.Errorf("error starting stream: %w", err)
+	}
 	return h, nil
 }
 
-func (h *Handler) Pause() {
-	h.pl.Pause()
-}
-func (h *Handler) Resume() {
-	h.pl.Play()
-}
-
-func (h *Handler) Identifier() string {
-	return h.identifier
+func (wh *Player) Write(p []byte) (n int, err error) {
+	if wh.done {
+		return 0, io.EOF
+	}
+	copy(wh.buf, audio.BytesToAudioBuffer(p))
+	_ = wh.stream.Write()
+	return len(p), nil
 }
 
-func (h *Handler) Quit() {
-	if h.pl.IsPlaying() {
-		h.pl.Close()
+func (wh *Player) Quit() {
+	if wh.stream != nil {
+		wh.stream.Abort()
+		wh.stream = nil
+		wh.done = true
 	}
 }
 
-func (h *Handler) Write(p []byte) (int, error) {
-	return h.pw.Write(p)
+func (wh *Player) Identifier() string {
+	return wh.identifier
 }

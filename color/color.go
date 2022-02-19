@@ -93,3 +93,16 @@ func NormalizeColorList(cols []Color) []color.Color {
 	}
 	return nc
 }
+
+func RandomColor() string {
+	for _, v := range LedFxColors {
+		return v
+	}
+	// Return red by default if for some reason the map is empty. It won't be.
+	return "#ff0000"
+}
+
+func FromBufSliceSum(sum float64) string {
+	// sum divided by 37
+	return ""
+}

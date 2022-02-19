@@ -9,7 +9,7 @@ import (
 	"ledfx/util"
 )
 
-type Player struct {
+type WindowsHandler struct {
 	identifier string
 	stream     *portaudio.Stream
 	outDev     *portaudio.DeviceInfo
@@ -18,8 +18,8 @@ type Player struct {
 	done       bool
 }
 
-func NewHandler(verbose bool) (h *Player, err error) {
-	h = &Player{
+func NewHandler(verbose bool) (h *WindowsHandler, err error) {
+	h = &WindowsHandler{
 		identifier: util.RandString(8),
 		verbose:    verbose,
 		buf:        make([]int16, 1408/2),
@@ -35,10 +35,10 @@ func NewHandler(verbose bool) (h *Player, err error) {
 	}
 
 	// Ensure format compatibility with the data sent over Player.Write()
-	h.outDev.MaxOutputChannels = 2
 	h.outDev.DefaultSampleRate = 44100
+	h.outDev.MaxOutputChannels = 2
 
-	if h.stream, err = portaudio.OpenStream(portaudio.LowLatencyParameters(nil, h.outDev), &h.buf); err != nil {
+	if h.stream, err = portaudio.OpenDefaultStream(0, 2, h.outDev.DefaultSampleRate, int(h.outDev.DefaultSampleRate/60), h.buf); err != nil {
 		return nil, fmt.Errorf("error opening PortAudio stream: %w", err)
 	}
 	if verbose {
@@ -50,7 +50,7 @@ func NewHandler(verbose bool) (h *Player, err error) {
 	return h, nil
 }
 
-func (wh *Player) Write(p []byte) (n int, err error) {
+func (wh *WindowsHandler) Write(p []byte) (n int, err error) {
 	if wh.done {
 		return 0, io.EOF
 	}
@@ -59,7 +59,7 @@ func (wh *Player) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func (wh *Player) Quit() {
+func (wh *WindowsHandler) Quit() {
 	if wh.stream != nil {
 		wh.stream.Abort()
 		wh.stream = nil
@@ -67,6 +67,6 @@ func (wh *Player) Quit() {
 	}
 }
 
-func (wh *Player) Identifier() string {
+func (wh *WindowsHandler) Identifier() string {
 	return wh.identifier
 }

@@ -34,6 +34,7 @@ func NewHandler(verbose bool) (h *WindowsHandler, err error) {
 		log.Logger.WithField("category", "Local Capture Init").Infof("Opening stream... (%dCH/16-bit @%vhz)", h.outDev.MaxOutputChannels, h.outDev.DefaultSampleRate)
 	}
 
+	// Ensure format compatibility with the data sent over Player.Write()
 	h.outDev.DefaultSampleRate = 44100
 	h.outDev.MaxOutputChannels = 2
 

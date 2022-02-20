@@ -2,10 +2,11 @@ package audio
 
 import (
 	"fmt"
-	aubio "github.com/simonassank/aubio-go"
 	"ledfx/color"
 	"ledfx/config"
 	"ledfx/virtual"
+
+	aubio "github.com/simonassank/aubio-go"
 )
 
 const (
@@ -45,9 +46,15 @@ func (fx *FxHandler) Callback(buf Buffer) {
 	fx.onset.Do(simpleBuffer)
 	bufSlice := fx.onset.Buffer().Slice()
 	sum := sumBufSlice(bufSlice)
-	if sum > 0 {
-		fmt.Printf("%0.6f\n", sum)
-		_ = virtual.PlayVirtual(config.GlobalConfig.Virtuals[0].Id, true, color.RandomColor())
+	if sum > 1.2 {
+		// fmt.Printf("%0.6f\n", bufSlice[0])
+		for i, d := range config.GlobalConfig.Virtuals {
+			// ToDo: change singleColor to audioRandom after Effect-Type-Change is possible
+			if (config.GlobalConfig.Virtuals[i].Active || d.Active) && (config.GlobalConfig.Virtuals[i].Effect.Type == "singleColor") {
+				fmt.Printf("%s\n", config.GlobalConfig.Virtuals[i].Effect.Type)
+				_ = virtual.PlayVirtual(config.GlobalConfig.Virtuals[i].Id, true, color.RandomColor())
+			}
+		}
 	}
 	/*sum := sumBufSlice(bufSlice)*/
 	/*if err := virtual.PlayVirtual(config.GlobalConfig.Virtuals[0].Id, true, color.FromBufSliceSum(sum)); err != nil {

@@ -13,7 +13,6 @@ import (
 
 func SetHeader(w http.ResponseWriter) {
 	headers := w.Header()
-	// headers.Add("Access-Control-Allow-Origin", "*")
 	headers.Add("Vary", "Origin")
 	headers.Add("Vary", "Access-Control-Request-Method")
 	headers.Add("Vary", "Access-Control-Request-Headers")
@@ -83,18 +82,13 @@ func HandleApi() {
 			err := json.NewDecoder(r.Body).Decode(&p)
 			if err != nil {
 				logger.Logger.Warn(err)
-				// http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			// logger.Logger.Debug(p)
 			if category == "effects" {
-				// logger.Logger.Debug(p.Config.Color)
 				LastColor = p.Config.Color
 				virtual.PlayVirtual(virtualid, true, LastColor)
 			} else if category == "presets" {
 				logger.Logger.Debug("No Presets yet ;)")
-				// virtual.PlayVirtual(virtualid, p.Active, "#fff000")
-				// utils.SendWs(utils.Ws, "warning", "No Presets yet ;)")
 			} else {
 				if LastColor == "" {
 					LastColor = "#000fff"
@@ -108,11 +102,4 @@ func HandleApi() {
 	})
 	HandleSchema()
 	HandleColors()
-
-	// http.HandleFunc("/api/schema", func(w http.ResponseWriter, r *http.Request) {
-	// 	SetHeader(w)
-	// 	json.NewEncoder(w).Encode(config.GlobalConfig)
-	// 	// json.NewEncoder(w).Encode(config.Schema)
-	// })
-
 }

@@ -28,6 +28,22 @@ func HandleSchema() {
 				"id": "singleColor",
 				"name": "Single Color",
 				"category": "Non-Reactive"
+			},
+			"audioRandom": {
+				"schema": {
+					"properties": {
+						"color": {
+							"type": "color",
+							"gradient": false,
+							"title": "Color",
+							"description": "Color of strip",
+							"default": "#FF0000"
+						}
+					}
+				},
+				"id": "audioRandom",
+				"name": "Audio Random",
+				"category": "Reactive"
 			}
 		}
 	}`)

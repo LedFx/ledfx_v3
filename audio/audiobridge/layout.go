@@ -11,7 +11,6 @@ type Bridge struct {
 
 	bufferCallback func(buf audio.Buffer)
 	byteWriter     *audio.AsyncMultiWriter
-	intWriter      audio.IntWriter
 
 	airplay *AirPlayHandler
 	local   *LocalHandler

@@ -94,7 +94,7 @@ func main() {
 			Config:   deviceConfig,
 		}
 
-		data := []color.Color{}
+		var data []color.Color
 		for i := 0; i < device.Config.PixelCount; i++ {
 			newColor, err := color.NewColor(color.LedFxColors["orange"])
 			data = append(data, newColor)

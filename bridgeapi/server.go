@@ -160,7 +160,6 @@ func (s *Server) handleCtlYouTube(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleCtlYouTubeGetInfo(w http.ResponseWriter, r *http.Request) {
-	log.Logger.Infoln("Got YouTubeSet GET CTL request...")
 	ret, err := s.br.JSONWrapper().CTL().YouTubeGetInfo()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

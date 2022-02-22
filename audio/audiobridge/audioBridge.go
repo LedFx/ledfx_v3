@@ -12,25 +12,28 @@ func NewBridge(bufferCallback func(buf audio.Buffer)) (br *Bridge, err error) {
 	if err := portaudio.Initialize(); err != nil {
 		return nil, fmt.Errorf("error initializing PortAudio: %w", err)
 	}
-
-	cbHandler := &CallbackWrapper{
-		Callback: bufferCallback,
-	}
-
 	br = &Bridge{
 		bufferCallback: bufferCallback,
 		byteWriter:     audio.NewAsyncMultiWriter(),
-		intWriter:      cbHandler,
 		inputType:      inputType(-1), // -1 signifies undefined
 		done:           make(chan bool),
 	}
+
+	cbw := &CallbackWrapper{
+		Callback: bufferCallback,
+	}
+
+	if err := br.byteWriter.AddWriter(cbw, "CallbackWrapper"); err != nil {
+		return nil, fmt.Errorf("error adding callback wrapper to writer: %w", err)
+	}
+
 	br.ctl = br.newController()
 	return br, nil
 }
 
-func (cbw *CallbackWrapper) Write(b audio.Buffer) (int, error) {
-	cbw.Callback(b)
-	return len(b), nil
+func (cbw *CallbackWrapper) Write(p []byte) (int, error) {
+	cbw.Callback(audio.BytesToAudioBuffer(p))
+	return len(p), nil
 }
 
 // Stop stops the bridge. Any further references to 'br *Bridge'

@@ -17,7 +17,6 @@ type audioPlayer struct {
 	/* Variables that are looped through often belong at the top of the struct */
 	wg sync.WaitGroup
 
-	intWriter  audio.IntWriter
 	byteWriter *audio.AsyncMultiWriter
 
 	hasClients, hasDecodedOutputs, sessionActive, muted, doBroadcast bool
@@ -35,13 +34,12 @@ type audioPlayer struct {
 	volume float64
 }
 
-func newPlayer(intWriter audio.IntWriter, byteWriter *audio.AsyncMultiWriter) *audioPlayer {
+func newPlayer(byteWriter *audio.AsyncMultiWriter) *audioPlayer {
 	p := &audioPlayer{
 		apClients:  make([]*Client, 0),
 		volume:     1,
 		quit:       make(chan bool),
 		wg:         sync.WaitGroup{},
-		intWriter:  intWriter,
 		byteWriter: byteWriter,
 	}
 
@@ -77,10 +75,6 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 
 						if _, err := p.byteWriter.Write(recvBuf); err != nil {
 							log.Logger.WithField("category", "AirPlay Player").Errorf("Error writing to byteWriter: %v", err)
-						}
-
-						if _, err := p.intWriter.Write(bytesToAudioBufferUnsafe(recvBuf)); err != nil {
-							log.Logger.WithField("category", "AirPlay Player").Errorf("Error writing to intWriter: %v", err)
 						}
 					}()
 				}

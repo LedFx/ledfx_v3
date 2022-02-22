@@ -29,6 +29,7 @@ type UdpDevice struct {
 	Connection net.Conn
 	Protocol   byte
 	Config     config.DeviceConfig
+	pb         *PacketBuilder
 }
 
 // Flatten array and convert to bytes
@@ -78,7 +79,7 @@ func (d *UdpDevice) Close() error {
 
 func (d *UdpDevice) SendData(colors []color.Color, timeout byte) error {
 	if d.Connection == nil {
-		return errors.New("Device must first be initialized")
+		return errors.New("device must first be initialized")
 	}
 
 	packet := d.BuildPacket(colors, timeout)
@@ -114,4 +115,8 @@ func (d *UdpDevice) BuildPacket(colors []color.Color, timeout byte) []byte {
 	data := ColorsToBytes(colors)
 	packet = append(packet, data...)
 	return packet
+}
+
+func (d *UdpDevice) PacketBuilder() *PacketBuilder {
+	return d.pb
 }

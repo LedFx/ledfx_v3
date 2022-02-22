@@ -20,7 +20,7 @@ func (br *Bridge) StartAirPlayInput(name string, port int, verbose bool) error {
 		AdvertisementName: name,
 		Port:              port,
 		VerboseLogging:    verbose,
-	}, br.intWriter, br.byteWriter)
+	}, br.byteWriter)
 
 	if err := br.airplay.server.Start(); err != nil {
 		return fmt.Errorf("error starting AirPlay server: %w", err)

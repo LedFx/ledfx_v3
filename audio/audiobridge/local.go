@@ -34,7 +34,7 @@ func (br *Bridge) StartLocalInput(audioDevice config.AudioDevice, verbose bool) 
 	}
 
 	log.Logger.WithField("category", "Local Capture Init").Infof("Initializing new capture handler...")
-	if br.local.capture, err = capture.NewHandler(audioDevice, br.intWriter, br.byteWriter, verbose); err != nil {
+	if br.local.capture, err = capture.NewHandler(audioDevice, br.byteWriter, verbose); err != nil {
 		return fmt.Errorf("error initializing new capture handler: %w", err)
 	}
 

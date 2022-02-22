@@ -10,13 +10,12 @@ import (
 
 type Handler struct {
 	*portaudio.Stream
-	intWriter  audio.IntWriter
 	byteWriter *audio.AsyncMultiWriter
 	verbose    bool
 	stopped    bool
 }
 
-func NewHandler(audioDevice config.AudioDevice, intWriter audio.IntWriter, byteWriter *audio.AsyncMultiWriter, verbose bool) (h *Handler, err error) {
+func NewHandler(audioDevice config.AudioDevice, byteWriter *audio.AsyncMultiWriter, verbose bool) (h *Handler, err error) {
 	if verbose {
 		log.Logger.WithField("category", "Local Capture Init").Infof("Getting info for device '%s'...", audioDevice.Name)
 	}
@@ -35,7 +34,6 @@ func NewHandler(audioDevice config.AudioDevice, intWriter audio.IntWriter, byteW
 	}
 
 	h = &Handler{
-		intWriter:  intWriter,
 		byteWriter: byteWriter,
 		verbose:    verbose,
 	}
@@ -71,7 +69,6 @@ func NewHandler(audioDevice config.AudioDevice, intWriter audio.IntWriter, byteW
 
 func (h *Handler) stereoCallback(in audio.Buffer) {
 	h.byteWriter.Write(in.AsBytes())
-	h.intWriter.Write(in)
 }
 
 func (h *Handler) mono2StereoCallback(in audio.Buffer) {

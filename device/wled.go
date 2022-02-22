@@ -81,6 +81,7 @@ func DetectWled(ip net.IP, id string) bool {
 		log.Fatal(readErr)
 	}
 	wledInfo1 := WledInfo{}
+	fmt.Println(string(body) + "\n")
 	jsonErr := json.Unmarshal(body, &wledInfo1)
 	if jsonErr != nil {
 		log.Fatal(jsonErr)
@@ -128,9 +129,9 @@ func DetectWled(ip net.IP, id string) bool {
 			Name: "Single Color",
 			Type: "singleColor",
 		},
-		Segments: [][]interface{}{{id, 0, wledInfo1.Leds.Count - 1, false}},
-		IsDevice: id,
 		Id:       id,
+		IsDevice: id,
+		Segments: [][]interface{}{{id, 0, wledInfo1.Leds.Count - 1, false}},
 	})
 	if err != nil {
 		logger.Logger.Warn(err)

@@ -10,12 +10,6 @@ import (
 	"unsafe"
 )
 
-type IntWriter interface {
-	Write(b Buffer) (n int, err error)
-}
-type IntReader interface {
-	Read(p Buffer) (n int, err error)
-}
 type AsyncMultiWriter struct {
 	mu             *sync.Mutex
 	writers        []io.Writer

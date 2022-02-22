@@ -24,8 +24,8 @@ type Server struct {
 	done chan struct{}
 }
 
-func NewServer(conf Config, intWriter audio.IntWriter, byteWriter *audio.AsyncMultiWriter) (s *Server) {
-	pl := newPlayer(intWriter, byteWriter)
+func NewServer(conf Config, byteWriter *audio.AsyncMultiWriter) (s *Server) {
+	pl := newPlayer(byteWriter)
 
 	if conf.Port == 0 {
 		conf.Port = 7000

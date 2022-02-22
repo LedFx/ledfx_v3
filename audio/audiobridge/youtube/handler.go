@@ -24,7 +24,6 @@ import (
 
 type Handler struct {
 	cl         *yt.Client
-	intWriter  audio.IntWriter
 	byteWriter *audio.AsyncMultiWriter
 	verbose    bool
 	p          *Player
@@ -48,13 +47,12 @@ func (h *Handler) Stopped() bool {
 	return h.stopped
 }
 
-func NewHandler(intWriter audio.IntWriter, byteWriter *audio.AsyncMultiWriter, verbose bool) *Handler {
+func NewHandler(byteWriter *audio.AsyncMultiWriter, verbose bool) *Handler {
 	h := &Handler{
 		cl: &yt.Client{
 			Debug:      false,
 			HTTPClient: http.DefaultClient,
 		},
-		intWriter:  intWriter,
 		byteWriter: byteWriter,
 		verbose:    verbose,
 		history:    make([]TrackInfo, 0),
@@ -66,7 +64,6 @@ func NewHandler(intWriter audio.IntWriter, byteWriter *audio.AsyncMultiWriter, v
 			playing: atomic.NewBool(false),
 			in:      nil,
 			out:     byteWriter,
-			intOut:  intWriter,
 		},
 	}
 	h.pp = &PlaylistPlayer{

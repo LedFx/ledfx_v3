@@ -18,9 +18,8 @@ type Player struct {
 	unpause chan bool
 	playing *atomic.Bool
 
-	in     *FileBuffer
-	out    *audio.AsyncMultiWriter
-	intOut audio.IntWriter
+	in  *FileBuffer
+	out *audio.AsyncMultiWriter
 }
 
 func (p *Player) Reset(input *FileBuffer) {
@@ -58,12 +57,6 @@ func (p *Player) Start() error {
 					return fmt.Errorf("unexpected error copying to output writer: %w", err)
 				}
 				return nil
-			}
-
-			if p.intOut != nil {
-				if _, err := p.intOut.Write(audio.BytesToAudioBuffer(buf[:n][:])); err != nil {
-					return fmt.Errorf("error writing to int writer: %w", err)
-				}
 			}
 
 			if _, err := p.out.Write(buf[:n]); err != nil {

@@ -1,9 +1,11 @@
 package audiobridge
 
 import (
+	"errors"
 	"fmt"
 	"ledfx/audio/audiobridge/youtube"
 	"ledfx/integrations/airplay2"
+	"time"
 )
 
 func (br *Bridge) Controller() *Controller {
@@ -60,6 +62,15 @@ func (ytc *YoutubeController) QueuedTracks() ([]youtube.TrackInfo, error) {
 		}
 	}
 	return nil, fmt.Errorf("YouTube handler is not active")
+}
+
+func (ytc *YoutubeController) TimeElapsed() (time.Duration, error) {
+	if ytc.handler != nil {
+		if ytc.handler.handler != nil {
+			return ytc.handler.handler.TimeElapsed(), nil
+		}
+	}
+	return -1, errors.New("YouTube handler is not active")
 }
 
 func (ytc *YoutubeController) IsPaused() (bool, error) {

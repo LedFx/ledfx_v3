@@ -18,6 +18,22 @@ type WindowsHandler struct {
 	done       bool
 }
 
+func (wh *WindowsHandler) Device() string {
+	return wh.outDev.Name
+}
+
+func (wh *WindowsHandler) SampleRate() int {
+	return int(wh.outDev.DefaultSampleRate)
+}
+
+func (wh *WindowsHandler) NumChannels() int8 {
+	return int8(wh.outDev.MaxOutputChannels)
+}
+
+func (wh *WindowsHandler) CurrentBufferSize() int {
+	return len(wh.buf)
+}
+
 func NewHandler(verbose bool) (h *WindowsHandler, err error) {
 	h = &WindowsHandler{
 		identifier: util.RandString(8),
@@ -38,7 +54,13 @@ func NewHandler(verbose bool) (h *WindowsHandler, err error) {
 	h.outDev.DefaultSampleRate = 44100
 	h.outDev.MaxOutputChannels = 2
 
-	if h.stream, err = portaudio.OpenDefaultStream(0, 2, h.outDev.DefaultSampleRate, int(h.outDev.DefaultSampleRate/60), h.buf); err != nil {
+	if h.stream, err = portaudio.OpenDefaultStream(
+		0,
+		h.outDev.MaxOutputChannels,
+		h.outDev.DefaultSampleRate,
+		int(h.outDev.DefaultSampleRate/60),
+		h.buf,
+	); err != nil {
 		return nil, fmt.Errorf("error opening PortAudio stream: %w", err)
 	}
 	if verbose {

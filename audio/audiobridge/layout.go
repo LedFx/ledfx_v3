@@ -21,6 +21,10 @@ type Bridge struct {
 	done chan bool
 
 	jsonWrapper *BridgeJSONWrapper
+
+	info *Info
+
+	outputs []*OutputInfo
 }
 
 // inputType indicates the audio source a bridge will use
@@ -49,4 +53,39 @@ type CallbackWrapper struct {
 type BridgeJSONWrapper struct {
 	br      *Bridge
 	jsonCTL *JsonCTL
+}
+
+type OutputType string
+
+const (
+	outputTypeAirPlay   OutputType = "airplay"
+	outputTypeLocal     OutputType = "local"
+	outputTypeGeneric   OutputType = "generic"
+	outputTypeBluetooth OutputType = "bluetooth"
+)
+
+type OutputInfo struct {
+	Type  OutputType `json:"type"`
+	Value interface{}
+}
+type AirPlayOutputInfo struct {
+	IP          string `json:"ip"`
+	Hostname    string `json:"hostname"`
+	AdvertName  string `json:"advertisement_name"`
+	Type        string `json:"airplay_type"`
+	DeviceModel string `json:"device_model,omitempty"`
+	Port        int    `json:"port"`
+	SampleRate  int    `json:"sample_rate"`
+}
+type LocalOutputInfo struct {
+	Device     string `json:"device"`
+	Identifier string `json:"identifier"`
+	SampleRate int    `json:"sample_rate"`
+	Channels   int8   `json:"channels"`
+}
+type GenericOutputInfo struct {
+	Identifier string `json:"identifier"`
+}
+type BluetoothOutputInfo struct {
+	// TODO
 }

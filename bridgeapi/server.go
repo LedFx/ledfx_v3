@@ -2,25 +2,38 @@ package bridgeapi
 
 import (
 	"fmt"
+	"github.com/gorilla/websocket"
 	"io/ioutil"
 	"ledfx/audio"
 	"ledfx/audio/audiobridge"
+	"ledfx/bridgeapi/statpoll"
 	log "ledfx/logger"
 	"net/http"
+	"sync"
 )
 
 type Server struct {
-	mux *http.ServeMux
-	br  *audiobridge.Bridge
+	mux        *http.ServeMux
+	br         *audiobridge.Bridge
+	statPoller *statpoll.StatPoller
+	upgrader   *websocket.Upgrader
 }
 
 func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (err error) {
 	s := &Server{
 		mux: mux,
+		upgrader: &websocket.Upgrader{
+			ReadBufferSize:  1024,
+			WriteBufferSize: 1024,
+			WriteBufferPool: &sync.Pool{},
+		},
 	}
+
 	if s.br, err = audiobridge.NewBridge(callback); err != nil {
 		return fmt.Errorf("error initializing new bridge: %w", err)
 	}
+
+	s.statPoller = statpoll.New(s.br)
 
 	// Input setter handlers
 	s.mux.HandleFunc("/api/bridge/set/input/airplay", s.handleSetInputAirPlay)
@@ -38,7 +51,24 @@ func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (err error) 
 	s.mux.HandleFunc("/api/bridge/ctl/airplay/set", s.handleCtlAirPlaySet)
 	s.mux.HandleFunc("/api/bridge/ctl/airplay/clients", s.handleCtlAirPlayGetClients)
 	s.mux.HandleFunc("/api/bridge/ctl/airplay/info", s.handleCtlAirPlayGetInfo)
+
+	// StatPoller handler
+	s.mux.HandleFunc("/api/bridge/statpoll/ws", s.handleStatPollInitWs)
 	return nil
+}
+
+func (s *Server) handleStatPollInitWs(w http.ResponseWriter, r *http.Request) {
+	ws, err := s.upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Logger.Errorf("Error upgrading connection to websocket: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(errToBytes(err))
+		return
+	}
+	if err := s.statPoller.AddWebsocket(ws); err != nil {
+		log.Logger.Errorf("Error adding websocket to statpoller: %v", err)
+		_ = ws.Close()
+	}
 }
 
 // ############## BEGIN AIRPLAY ##############

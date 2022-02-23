@@ -8,6 +8,7 @@ import (
 	"ledfx/audio"
 	"os"
 	"sync"
+	"time"
 )
 
 type Player struct {
@@ -20,6 +21,8 @@ type Player struct {
 
 	in  *FileBuffer
 	out *audio.AsyncMultiWriter
+
+	elapsed time.Duration
 }
 
 func (p *Player) Reset(input *FileBuffer) {
@@ -44,6 +47,8 @@ func (p *Player) Start() error {
 	}()
 
 	buf := make([]byte, 1408)
+	p.elapsed = 0
+	now := time.Now()
 	for {
 		switch {
 		case p.paused.Load():
@@ -51,21 +56,29 @@ func (p *Player) Start() error {
 		case p.done.Load():
 			return nil
 		default:
+			p.elapsed += time.Since(now)
+			now = time.Now()
+
 			n, err := io.ReadAtLeast(p.in, buf, 1408)
 			if err != nil {
 				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.ErrShortBuffer) && !errors.Is(err, os.ErrClosed) {
+					p.elapsed += time.Since(now)
 					return fmt.Errorf("unexpected error copying to output writer: %w", err)
 				}
+				p.elapsed += time.Since(now)
 				return nil
 			}
 
 			if _, err := p.out.Write(buf[:n]); err != nil {
 				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) {
+					p.elapsed += time.Since(now)
 					return fmt.Errorf("unexpected error copying to output writer: %w", err)
 				}
+				p.elapsed += time.Since(now)
 				return nil
 			}
 			if n < 1408 {
+				p.elapsed += time.Since(now)
 				return nil
 			}
 		}

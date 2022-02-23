@@ -17,13 +17,16 @@ func NewBridge(bufferCallback func(buf audio.Buffer)) (br *Bridge, err error) {
 		byteWriter:     audio.NewAsyncMultiWriter(),
 		inputType:      inputType(-1), // -1 signifies undefined
 		done:           make(chan bool),
+		outputs:        make([]*OutputInfo, 0),
 	}
 
-	cbw := &CallbackWrapper{
+	br.info = &Info{
+		br: br,
+	}
+
+	if err := br.byteWriter.AddWriter(&CallbackWrapper{
 		Callback: bufferCallback,
-	}
-
-	if err := br.byteWriter.AddWriter(cbw, "CallbackWrapper"); err != nil {
+	}, "CallbackWrapper"); err != nil {
 		return nil, fmt.Errorf("error adding callback wrapper to writer: %w", err)
 	}
 

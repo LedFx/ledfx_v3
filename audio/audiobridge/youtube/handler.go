@@ -111,6 +111,10 @@ func (h *Handler) NowPlaying() TrackInfo {
 func (h *Handler) QueuedTracks() []TrackInfo {
 	return h.pp.tracks
 }
+func (h *Handler) TimeElapsed() time.Duration {
+	return h.p.elapsed
+}
+
 func (h *Handler) IsPaused() bool {
 	return h.p.paused.Load()
 }

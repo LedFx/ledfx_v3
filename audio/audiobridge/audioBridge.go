@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gordonklaus/portaudio"
 	"ledfx/audio"
+	"ledfx/audio/audiobridge/assets"
 	log "ledfx/logger"
 )
 
@@ -37,6 +38,13 @@ func NewBridge(bufferCallback func(buf audio.Buffer)) (br *Bridge, err error) {
 func (cbw *CallbackWrapper) Write(p []byte) (int, error) {
 	cbw.Callback(audio.BytesToAudioBuffer(p))
 	return len(p), nil
+}
+
+func (br *Bridge) Artwork() []byte {
+	if br.Controller().AirPlay().Server() != nil {
+		return br.Controller().AirPlay().Server().Artwork()
+	}
+	return assets.BlankAlbumArt()
 }
 
 // Stop stops the bridge. Any further references to 'br *Bridge'

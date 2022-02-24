@@ -1,9 +1,9 @@
 package airplay2
 
 import (
+	"encoding/json"
 	"fmt"
 	"ledfx/audio"
-	"ledfx/color"
 	"ledfx/handlers/player"
 	"ledfx/handlers/raop"
 	"ledfx/handlers/rtsp"
@@ -19,7 +19,7 @@ type audioPlayer struct {
 
 	byteWriter *audio.AsyncMultiWriter
 
-	hasClients, hasDecodedOutputs, sessionActive, muted, doBroadcast bool
+	hasClients, sessionActive, muted bool
 
 	numClients int
 	apClients  []*Client
@@ -27,13 +27,37 @@ type audioPlayer struct {
 	quit chan bool
 
 	artwork []byte
-	album   string
-	artist  string
-	title   string
+
+	title  string
+	artist string
+	album  string
 
 	volume float64
 }
 
+func (p *audioPlayer) MarshalJSON() (b []byte, err error) {
+	return json.Marshal(&struct {
+		Title  string `json:"title"`
+		Artist string `json:"artist"`
+		Album  string `json:"album"`
+
+		Volume float64 `json:"volume"`
+
+		HasClients    bool `json:"has_clients"`
+		NumClients    int  `json:"num_clients"`
+		SessionActive bool `json:"session_active"`
+		Muted         bool `json:"muted"`
+	}{
+		Title:         p.title,
+		Artist:        p.artist,
+		Album:         p.album,
+		Volume:        p.volume,
+		HasClients:    p.hasClients,
+		NumClients:    p.numClients,
+		SessionActive: p.sessionActive,
+		Muted:         p.muted,
+	})
+}
 func newPlayer(byteWriter *audio.AsyncMultiWriter) *audioPlayer {
 	p := &audioPlayer{
 		apClients:  make([]*Client, 0),
@@ -150,10 +174,6 @@ func (p *audioPlayer) SetAlbumArt(artwork []byte) {
 	}
 }
 
-func (p *audioPlayer) GetGradientFromArtwork(resolution int) (*color.Gradient, error) {
-	return color.GradientFromPNG(p.artwork, resolution, 75)
-}
-
 func (p *audioPlayer) GetTrack() player.Track {
 	return player.Track{
 		Artist:  p.artist,
@@ -161,6 +181,10 @@ func (p *audioPlayer) GetTrack() player.Track {
 		Title:   p.title,
 		Artwork: p.artwork,
 	}
+}
+
+func (p *audioPlayer) GetAlbumArt() []byte {
+	return p.artwork
 }
 
 // airplay server will apply a normalization,

@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/websocket"
 	"ledfx/audio/audiobridge"
 	"ledfx/audio/audiobridge/youtube"
+	"ledfx/integrations/airplay2"
 	log "ledfx/logger"
 	"time"
 )
@@ -21,6 +22,11 @@ type valueBridgeInfo struct {
 }
 
 func (s *StatPoller) sendBridgeInfo(n int, interval time.Duration, ws *websocket.Conn) {
+	if s.sendingBridgeInfo.Load() {
+		s.stopBridgeInfo()
+		time.Sleep(interval)
+	}
+
 	s.sendingBridgeInfo.Store(true)
 	defer s.sendingBridgeInfo.Store(false)
 
@@ -69,6 +75,11 @@ type valueYoutubeInfo struct {
 }
 
 func (s *StatPoller) sendYoutubeInfo(n int, interval time.Duration, ws *websocket.Conn) {
+	if s.sendingYoutubeInfo.Load() {
+		s.stopYoutubeInfo()
+		time.Sleep(interval)
+	}
+
 	s.sendingYoutubeInfo.Store(true)
 	defer s.sendingYoutubeInfo.Store(false)
 
@@ -129,11 +140,57 @@ func (s *StatPoller) sendYoutubeInfo(n int, interval time.Duration, ws *websocke
 		}
 		time.Sleep(interval - time.Since(now))
 	}
-
 }
 
 func (s *StatPoller) stopYoutubeInfo() {
 	if s.sendingYoutubeInfo.Load() {
 		s.stopSendYoutubeInfo.Store(true)
+	}
+}
+
+type valueAirPlayInfo struct {
+	Server         *airplay2.Server   `json:"server"`
+	Clients        []*airplay2.Client `json:"clients"`
+	ArtworkURLPath string             `json:"artwork_url_path"`
+}
+
+func (s *StatPoller) sendAirPlayInfo(n int, interval time.Duration, ws *websocket.Conn) {
+	if s.sendingAirPlayInfo.Load() {
+		s.stopAirPlayInfo()
+		time.Sleep(interval)
+	}
+
+	s.sendingAirPlayInfo.Store(true)
+	defer s.sendingAirPlayInfo.Store(false)
+
+	ap := s.br.Controller().AirPlay()
+	for i := 0; i != n; i++ {
+		now := time.Now()
+
+		resp := &Response{
+			Type:      RqtAirPlayInfo,
+			Iteration: i,
+			Value: &valueAirPlayInfo{
+				Server:         ap.Server(),
+				Clients:        ap.Clients(),
+				ArtworkURLPath: "/api/bridge/artwork",
+			},
+		}
+
+		if s.stopSendAirPlayInfo.Load() {
+			s.stopSendAirPlayInfo.Store(false)
+			return
+		}
+		if err := ws.WriteJSON(resp); err != nil {
+			log.Logger.WithField("category", "StatPoll AirPlayInfo").Errorf("Error writing JSON over websocket: %v", err)
+			return
+		}
+		time.Sleep(interval - time.Since(now))
+	}
+}
+
+func (s *StatPoller) stopAirPlayInfo() {
+	if s.sendingAirPlayInfo.Load() {
+		s.stopSendAirPlayInfo.Store(true)
 	}
 }

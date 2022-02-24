@@ -1,8 +1,6 @@
 package player
 
 import (
-	"sync"
-
 	"ledfx/handlers/rtsp"
 )
 
@@ -15,12 +13,7 @@ type Player interface {
 	SetTrack(album string, artist string, title string)
 	SetAlbumArt(artwork []byte)
 	GetTrack() Track
-}
-
-// LocalPlayer is a player that will just play the audio locally
-type LocalPlayer struct {
-	volLock sync.RWMutex
-	volume  float64
+	GetAlbumArt() []byte
 }
 
 // Track represents a track playing by the player

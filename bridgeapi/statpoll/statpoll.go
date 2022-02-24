@@ -20,6 +20,9 @@ type StatPoller struct {
 
 	sendingYoutubeInfo  *atomic.Bool
 	stopSendYoutubeInfo *atomic.Bool
+
+	sendingAirPlayInfo  *atomic.Bool
+	stopSendAirPlayInfo *atomic.Bool
 }
 
 func New(br *audiobridge.Bridge) (s *StatPoller) {
@@ -29,6 +32,8 @@ func New(br *audiobridge.Bridge) (s *StatPoller) {
 		stopSendBridgeInfo:  atomic.NewBool(false),
 		sendingYoutubeInfo:  atomic.NewBool(false),
 		stopSendYoutubeInfo: atomic.NewBool(false),
+		sendingAirPlayInfo:  atomic.NewBool(false),
+		stopSendAirPlayInfo: atomic.NewBool(false),
 	}
 }
 
@@ -94,6 +99,10 @@ Check:
 		go s.sendYoutubeInfo(r.Iterations, time.Duration(r.IntervalMs)*time.Millisecond, ws)
 	case RqtStopYoutubeInfo:
 		go s.stopYoutubeInfo()
+	case RqtAirPlayInfo:
+		go s.sendAirPlayInfo(r.Iterations, time.Duration(r.IntervalMs)*time.Millisecond, ws)
+	case RqtStopAirPlayInfo:
+		go s.stopAirPlayInfo()
 	default:
 		return fmt.Errorf("unknown request type '%s'", r.Type)
 	}

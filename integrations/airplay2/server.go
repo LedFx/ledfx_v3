@@ -1,6 +1,7 @@
 package airplay2
 
 import (
+	"encoding/json"
 	"ledfx/audio"
 	"ledfx/handlers/raop"
 	log "ledfx/logger"
@@ -22,6 +23,24 @@ type Server struct {
 	stopped bool
 
 	done chan struct{}
+}
+
+func (s *Server) MarshalJSON() (b []byte, err error) {
+	return json.Marshal(&struct {
+		AdvertName string       `json:"advertisement_name"`
+		Port       int          `json:"port"`
+		Verbose    bool         `json:"verbose"`
+		Player     *audioPlayer `json:"player"`
+	}{
+		AdvertName: s.conf.AdvertisementName,
+		Port:       s.conf.Port,
+		Verbose:    s.conf.VerboseLogging,
+		Player:     s.player,
+	})
+}
+
+func (s *Server) Artwork() (b []byte) {
+	return s.player.GetAlbumArt()
 }
 
 func NewServer(conf Config, byteWriter *audio.AsyncMultiWriter) (s *Server) {

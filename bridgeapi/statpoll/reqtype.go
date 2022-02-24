@@ -8,4 +8,7 @@ const (
 
 	RqtYoutubeInfo     ReqType = "youtube_info"
 	RqtStopYoutubeInfo ReqType = "stop_youtube_info"
+
+	RqtAirPlayInfo     ReqType = "airplay_info"
+	RqtStopAirPlayInfo ReqType = "stop_airplay_info"
 )

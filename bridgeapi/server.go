@@ -1,8 +1,10 @@
 package bridgeapi
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"io"
 	"io/ioutil"
 	"ledfx/audio"
 	"ledfx/audio/audiobridge"
@@ -10,6 +12,10 @@ import (
 	log "ledfx/logger"
 	"net/http"
 	"sync"
+)
+
+const (
+	ArtworkURLPath string = "/api/bridge/artwork"
 )
 
 type Server struct {
@@ -54,6 +60,9 @@ func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (err error) 
 
 	// StatPoller handler
 	s.mux.HandleFunc("/api/bridge/statpoll/ws", s.handleStatPollInitWs)
+
+	// Artwork handler
+	s.mux.HandleFunc(ArtworkURLPath, s.handleArtwork)
 	return nil
 }
 
@@ -239,6 +248,14 @@ func (s *Server) handleAddOutputLocal(w http.ResponseWriter, r *http.Request) {
 }
 
 // ############### END LOCAL ###############
+
+// ############## BEGIN MISC ##############
+func (s *Server) handleArtwork(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "image/png")
+	io.Copy(w, bytes.NewReader(s.br.Artwork()))
+}
+
+// ############### END MISC ###############
 
 func errToBytes(err error) []byte {
 	return []byte(err.Error() + "\n")

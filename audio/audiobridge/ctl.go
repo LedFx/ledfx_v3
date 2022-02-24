@@ -184,6 +184,12 @@ func (apc *AirPlayController) Clients() []*airplay2.Client {
 	}
 	return nil
 }
+func (apc *AirPlayController) Server() *airplay2.Server {
+	if apc.handler != nil {
+		return apc.handler.server
+	}
+	return nil
+}
 
 // --- END AIRPLAY CTL ---
 

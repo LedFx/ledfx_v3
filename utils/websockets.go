@@ -58,6 +58,10 @@ var Ws *websocket.Conn
 
 // TODO: Handle more than one connection
 
+func ServeWebsocket() {
+	http.HandleFunc("/ws", ServeWs)
+}
+
 // ServeWs defines our WebSocket endpoint
 func ServeWs(w http.ResponseWriter, r *http.Request) {
 	// upgrade this connection to a WebSocket

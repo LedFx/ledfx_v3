@@ -24,3 +24,5 @@ ledfx
 
 # frontend
 frontend/
+examples/apicontrol/tmp/*
+tmp/*.*

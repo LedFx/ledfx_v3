@@ -1,158 +1,87 @@
 package utils
 
 import (
-	"archive/zip"
 	"fmt"
-	"io"
 	"ledfx/api"
-	"ledfx/logger"
+	"ledfx/audio"
+	"ledfx/bridgeapi"
+	log "ledfx/logger"
 	"net/http"
-	"os"
-	"os/exec"
 	"path/filepath"
-	"regexp"
 	"runtime"
-	"strings"
+
+	pretty "github.com/fatih/color"
+	"github.com/rs/cors"
 )
 
-func unzip() {
-	dst := "dest"
-	archive, err := zip.OpenReader("new_frontend.zip")
-	if err != nil {
-		panic(err)
-	}
-	defer archive.Close()
-
-	for _, f := range archive.File {
-		filePath := filepath.Join(dst, f.Name)
-		// fmt.Println("unzipping file ", filePath)
-
-		if !strings.HasPrefix(filePath, filepath.Clean(dst)+string(os.PathSeparator)) {
-			fmt.Println("invalid file path")
-			return
-		}
-		if f.FileInfo().IsDir() {
-			// fmt.Println("creating directory...")
-			err = os.MkdirAll(filePath, os.ModePerm)
-			if err != nil {
-				panic(err)
-			}
-			continue
-		}
-
-		if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
-			panic(err)
-		}
-
-		dstFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-		if err != nil {
-			panic(err)
-		}
-
-		fileInArchive, err := f.Open()
-		if err != nil {
-			panic(err)
-		}
-
-		if _, err := io.Copy(dstFile, fileInArchive); err != nil {
-			panic(err)
-		}
-
-		dstFile.Close()
-		fileInArchive.Close()
-	}
-	err = os.Rename("./dest/ledfx_frontend_v2", "./frontend")
-	if err != nil {
-		panic(err)
-	}
-
-	// cleanup
-	if _, err := os.Stat("dest"); err == nil {
-		os.RemoveAll("dest")
-	}
-
-	defer os.RemoveAll("new_frontend.zip")
-
-}
-
-func DownloadFrontend() {
-	logger.Logger.Debug("Getting latest Frontend")
-	resp, err := http.Get("https://github.com/YeonV/LedFx-Frontend-v2/releases/latest/download/ledfx_frontend_v2.zip")
-	if err != nil {
-		logger.Logger.Warn(err)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return
-	}
-	// Delete old files
-	if _, err := os.Stat("frontend"); err == nil {
-		os.RemoveAll("frontend")
-	}
-	defer os.RemoveAll("new_frontend.zip")
-
-	// Create the file
-	out, err := os.Create("new_frontend.zip")
-	if err != nil {
-		fmt.Printf("err: %s", err)
-	}
-	defer out.Close()
-
-	// Write the body to file
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		fmt.Printf("err: %s", err)
-	}
-	// Extract frontend
-	unzip()
-	logger.Logger.Info("Got latest Frontend")
-	logger.Logger.Info("========================================================")
-}
-
-func ServeFrontend() {
+func ServeHttp() {
+	DownloadFrontend()
 	serveFrontend := http.FileServer(http.Dir("frontend"))
-	fileMatcher := regexp.MustCompile(`\.[a-zA-Z]*$`)
 	api.HandleApi()
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if !fileMatcher.MatchString(r.URL.Path) {
+		log.Logger.WithField("category", "HTTP Regexp").Debugf("Request asked for %s", r.URL.Path)
+		if filepath.Ext(r.URL.Path) == "" {
+			log.Logger.WithField("category", "HTTP Regexp").Debugln("Serving index.html")
 			http.ServeFile(w, r, "frontend/index.html")
 		} else {
+			log.Logger.WithField("category", "HTTP Regexp").Debugf("Serving HTTP for path: %s", r.URL.Path)
 			serveFrontend.ServeHTTP(w, r)
 		}
 	})
 }
 
-func Openbrowser(url string) {
-	var err error
+func InitFrontend(ip string, port int) {
+	fxHandler, err := audio.NewFxHandler()
+	if err != nil {
+		log.Logger.Fatalf("Error initializing new FX handler: %v", err)
+	}
+	go func(fxh *audio.FxHandler) {
+		err := bridgeapi.NewServer(fxh.Callback, http.DefaultServeMux)
+		if err != nil {
+			log.Logger.Fatal(err)
+		}
+
+		if err = http.ListenAndServe(fmt.Sprintf("%s:%d", ip, port), cors.AllowAll().Handler(http.DefaultServeMux)); err != nil {
+			log.Logger.Fatal(err)
+		}
+	}(fxHandler)
+	borderPrinter := pretty.New(pretty.BgBlack, pretty.FgRed)
+	boldPrinter := pretty.New(pretty.BgBlack, pretty.FgRed, pretty.Bold)
+	namePrinter := pretty.New(pretty.BgBlack, pretty.FgWhite, pretty.Faint)
+	keyCombPrinter := pretty.New(pretty.BgBlack, pretty.FgHiYellow)
+	linkPrinter := pretty.New(pretty.BgBlack, pretty.FgHiBlue, pretty.Bold, pretty.Underline)
+
+	borderPrinter.Print("╭───────────────────────────────────────────────────────╮")
+	fmt.Println()
+	borderPrinter.Print("│                ")
+
+	boldPrinter.Print("LedFX-Frontend ")
+	namePrinter.Print("by Blade ")
+
+	borderPrinter.Print("               │")
+	fmt.Println()
+	borderPrinter.Print("├───────────────────────────────────────────────────────┤")
+	fmt.Println()
+	borderPrinter.Print("│                                                       │")
+	fmt.Println()
+	borderPrinter.Print("│   ")
 
 	switch runtime.GOOS {
-	case "linux":
-		err = exec.Command("xdg-open", url).Start()
-	case "windows":
-		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
 	case "darwin":
-		err = exec.Command("open", url).Start()
+		keyCombPrinter.Print("[CMD]+Click: ")
 	default:
-		err = fmt.Errorf("unsupported platform")
+		keyCombPrinter.Print("[CTRL]+Click: ")
 	}
-	if err != nil {
-		logger.Logger.Warn(err)
+	linkPrinter.Print("http://localhost:8080/#/?newCore=1")
+	switch runtime.GOOS {
+	case "darwin":
+		borderPrinter.Print("     │")
+	default:
+		borderPrinter.Print("    │")
 	}
-
-}
-
-func InitFrontend() {
-	fmt.Println("========================================================")
-	fmt.Println("                LedFx-Frontend by Blade")
-	fmt.Println("    [CTRL]+Click: http://localhost:8080/#/?newCore=1")
-	fmt.Println("========================================================")
-	SetupRoutes()
-	go func() {
-		err := http.ListenAndServe(":8080", nil)
-		if err != nil {
-			logger.Logger.Fatal(err)
-		}
-	}()
+	fmt.Println()
+	borderPrinter.Print("│                                                       │")
+	fmt.Println()
+	borderPrinter.Print("╰───────────────────────────────────────────────────────╯")
+	fmt.Println()
 }

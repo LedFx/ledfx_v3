@@ -1,7 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"ledfx/audio"
 	"ledfx/color"
 	"ledfx/config"
 	"ledfx/constants"
@@ -9,25 +11,38 @@ import (
 	"ledfx/logger"
 	"ledfx/utils"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/getlantern/systray"
 )
 
 func init() {
+	flag.StringVar(&ip, "ip", "0.0.0.0", "The IP address the frontend will run on")
+	flag.IntVar(&port, "port", 8080, "The port the frontend will run on")
+
+	// Capture ctrl-c or sigterm to gracefully shutdown
+	c := make(chan os.Signal, 2)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		shutdown()
+		os.Exit(1)
+	}()
 
 	// Initialize Config
 	err := config.InitConfig()
-	if err != nil {
-		logger.Logger.Fatal(err)
-	}
-
-	// Initialize Logger
-	_, err = logger.Init(config.GlobalConfig)
 	if err != nil {
 		log.Println(err)
 	}
 
 }
+
+var (
+	ip   string
+	port int
+)
 
 func main() {
 	// Just print version and return if flag is set
@@ -68,7 +83,7 @@ func main() {
 	}
 
 	if !foundDevice {
-		logger.Logger.Warn("No UDP device found in config")
+		logger.Logger.Info("No UDP device found in config")
 	} else {
 
 		// NOTE: This type of code should be run in a goroutine
@@ -76,7 +91,7 @@ func main() {
 			Config: deviceConfig,
 		}
 
-		data := []color.Color{}
+		var data []color.Color
 		for i := 0; i < device.Config.PixelCount; i++ {
 			newColor, err := color.NewColor(color.LedFxColors["orange"])
 			data = append(data, newColor)
@@ -88,7 +103,7 @@ func main() {
 		if err != nil {
 			logger.Logger.Fatal(err)
 		}
-		err = device.SendData(data, 0)
+		err = device.SendData(data, 0x01)
 		if err != nil {
 			logger.Logger.Fatal(err)
 		}
@@ -97,8 +112,15 @@ func main() {
 	}
 	// REMOVEME: END
 
+	audio.LogAudioDevices()
+	//go audio.CaptureDemo()
+
 	go func() {
-		utils.InitFrontend()
+		utils.SetupRoutes()
+	}()
+
+	go func() {
+		utils.InitFrontend(ip, port)
 	}()
 
 	go func() {
@@ -108,10 +130,13 @@ func main() {
 		}
 	}()
 
-	systray.Run(utils.OnReady, nil)
+	systray.Run(utils.OnReady, utils.OnExit)
+	os.TempDir()
 
 }
 
-// func ScanZeroconf() {
-// 	panic("unimplemented")
-// }
+func shutdown() {
+	logger.Logger.Info("Shutting down LedFx")
+	// kill systray
+	systray.Quit()
+}

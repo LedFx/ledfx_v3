@@ -3,11 +3,13 @@ package virtual
 import (
 	"errors"
 	"fmt"
+	"ledfx/color"
 	"ledfx/config"
 	"ledfx/device"
+	"ledfx/effect"
+	"ledfx/logger"
 	log "ledfx/logger"
 	"time"
-  "ledfx/color"
 )
 
 var (
@@ -160,6 +162,9 @@ func RepeatNSmooth(virtualID string, playState bool, clr string, n int) error {
 	return nil
 }
 
+// TODO: this should belong to the virtual instance
+var done chan bool
+
 func PlayVirtual(virtualID string, playState bool, clr string) (err error) {
 	//fmt.Println("Set PlayState of ", virtualID, " to ", playState)
 	if clr != "" {
@@ -206,10 +211,10 @@ func PlayVirtual(virtualID string, playState bool, clr string) (err error) {
 						} else {
 							timeout = 0x00
 						}
-          
-            if err := dev.SendData(data, timeout); err != nil {
-              return fmt.Errorf("error sending data to WLED: %w", err)
-            }
+
+						if err := dev.SendData(data, timeout); err != nil {
+							return fmt.Errorf("error sending data to WLED: %w", err)
+						}
 					}
 				}
 			}
@@ -223,6 +228,36 @@ func PlayVirtual(virtualID string, playState bool, clr string) (err error) {
 	return
 }
 
+func StopVirtual(virtualid string) (err error) {
+	fmt.Println("Clear Effect of ", virtualid)
+
+	if virtualid == "" {
+		err = errors.New("Virtual id is empty. Please provide Id to add virtual to config")
+		return
+	}
+
+	for i, d := range config.GlobalConfig.Virtuals {
+		if d.Id == virtualid {
+			if config.GlobalConfig.Virtuals[i].IsDevice != "" {
+				fmt.Println("WTF Clear Effect of ", config.GlobalConfig.Virtuals[i].Effect.Name)
+				for in, de := range config.GlobalConfig.Devices {
+					if de.Id == config.GlobalConfig.Virtuals[i].IsDevice {
+						var currentEffect effect.Effect = &effect.PulsingEffect{}
+						go func() {
+							err := effect.StopEffect(config.GlobalConfig.Devices[in].Config, currentEffect, "#000000", 60, done)
+							if err != nil {
+								logger.Logger.Warn(err)
+							}
+						}()
+					}
+
+				}
+			}
+		}
+	}
+	return
+}
+
 // LoadVirtuals loads the virtuals from the config file and plays any effects that are active on them
 func LoadVirtuals() (err error) {
 	// TODO: load all virtuals from config
@@ -230,9 +265,9 @@ func LoadVirtuals() (err error) {
 	// c := &config.GlobalConfig
 	// v := config.GlobalViper
 
-	// for i, virtualConfig := range c.Virtuals {
-	// 	if c.Virtuals[i].Active == true {
-	// 		if c.Virtuals[i].IsDevice != "" {
+	// for i, virtualConfig := range config.GlobalConfig.Virtuals {
+	// 	if config.GlobalConfig.Virtuals[i].Active == true {
+	// 		if config.GlobalConfig.Virtuals[i].IsDevice != "" {
 	//       // TODO: instantiate a virtual
 	// 			// PlayVirtual(virtual)
 	// 		}

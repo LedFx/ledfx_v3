@@ -3,7 +3,6 @@ package api
 import (
 	_ "embed"
 	"encoding/json"
-	"fmt"
 	"ledfx/audio"
 	"ledfx/config"
 	"ledfx/logger"
@@ -95,15 +94,32 @@ func HandleApi() {
 				category = string(pathNodes[1])
 				virtualid = string(pathNodes[0])
 			}
-      
+
 			err := json.NewDecoder(r.Body).Decode(&p)
 			if err != nil {
 				logger.Logger.Warn(err)
 				return
 			}
+
+			if r.Method == "DELETE" {
+				err := virtual.StopVirtual(virtualid)
+				if err != nil {
+					logger.Logger.Warn(err)
+				}
+				return
+			}
+			if r.Method == "POST" || r.Method == "PUT" {
+				err := json.NewDecoder(r.Body).Decode(&p)
+				if err != nil {
+					logger.Logger.Warn(err)
+					// http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+			}
+
 			if category == "effects" {
 				LastColor = p.Config.Color
-				err := virtual.FindAndPlayVirtual(virtualid, true, LastColor)
+				err := virtual.PlayVirtual(virtualid, true, LastColor)
 				if err != nil {
 					logger.Logger.Warn(err)
 				}
@@ -113,13 +129,13 @@ func HandleApi() {
 				if LastColor == "" {
 					LastColor = "#000fff"
 				}
-				err := virtual.FindAndPlayVirtual(virtualid, p.Active, LastColor)
+				err := virtual.PlayVirtual(virtualid, p.Active, LastColor)
 				if err != nil {
 					logger.Logger.Warn(err)
 				}
 			}
 
-			err := json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
+			err = json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
 			if err != nil {
 				logger.Logger.Warn(err)
 			}

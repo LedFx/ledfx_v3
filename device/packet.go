@@ -1,7 +1,7 @@
 package device
 
 type PacketBuilder struct {
-	*UdpDevice
+	*UDPDevice
 }
 
 func (p *PacketBuilder) RepeatN() {

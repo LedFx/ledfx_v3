@@ -27,7 +27,10 @@ var UDPProtocols = map[string]byte{
 
 // UDPDevice is a device that uses UDP to send data to a WLED device
 type UDPDevice struct {
+	Name       string
+	Port       int
 	Connection net.Conn
+	Protocol   byte
 	Config     config.DeviceConfig
 	pb         *PacketBuilder
 }
@@ -94,15 +97,15 @@ func (d *UDPDevice) Close() error {
 	return nil
 }
 
-func (d *UdpDevice) SendData(colors []color.Color, timeout byte) error {
+func (d *UDPDevice) SendData(colors []color.Color, timeout byte) error {
 	if d.Connection == nil {
 		return errors.New("device must first be initialized")
 	}
 
-	packet := d.BuildPacket(colors, timeout)
+	packet, err := d.BuildPacket(colors, timeout)
 
 	// logger.Logger.Debug("Sending Data: ", packet)
-	_, err := d.Connection.Write(packet)
+	_, err = d.Connection.Write(packet)
 	if err != nil {
 		return err
 	}
@@ -110,54 +113,24 @@ func (d *UdpDevice) SendData(colors []color.Color, timeout byte) error {
 }
 
 // BuildPacket builds the UDP packet to send to the device
-func (d *UdpDevice) BuildPacket(colors []color.Color, timeout byte) []byte {
-	if d.Config.UdpPacketType == "WARLS" {
-		if len(colors) > 255 {
-			return nil, &]{Count: len(colors), Min: 0, Max: 255}
-		}
-		if ledOffset < 0 || ledOffset > 255 {
-			return nil, &InvalidLedOffsetError{Offset: ledOffset, Min: 0, Max: 255}
-		}
-	} else if d.Config.UdpPacketType == "DRGB" {
-		if len(colors) > 490 {
-			return nil, &InvalidLedCountError{Count: len(colors), Min: 0, Max: 490}
-		}
-		if ledOffset != 0 {
-			return nil, &InvalidLedOffsetError{Offset: ledOffset, Min: 0, Max: 0}
-		}
-	} else if d.Config.UdpPacketType == "DRGBW" {
-		if len(colors) > 367 {
-			return nil, &InvalidLedCountError{Count: len(colors), Min: 0, Max: 367}
-		}
-		if ledOffset != 0 {
-			return nil, &InvalidLedOffsetError{Offset: ledOffset, Min: 0, Max: 0}
-		}
-	} else if d.Config.UdpPacketType == "DNRGB" {
-		if len(colors) > 489 {
-			return nil, &InvalidLedCountError{Count: len(colors), Min: 0, Max: 489}
-		}
-		if ledOffset < 0 || ledOffset > 65535 {
-			return nil, &InvalidLedOffsetError{Offset: ledOffset, Min: 0, Max: 65535}
-		}
-	}
-
+func (d *UDPDevice) BuildPacket(colors []color.Color, timeout byte) ([]byte, error) {
 	protocol := UDPProtocols[d.Config.UdpPacketType]
-	if d.Protocol == 0x00 {
+	if protocol == 0x00 {
 		// use default protocol
-		d.Protocol = DNRGB // DNRGB https://github.com/Aircoookie/WLED/wiki/UDP-Realtime-Control
+		protocol = DNRGB // DNRGB https://github.com/Aircoookie/WLED/wiki/UDP-Realtime-Control
 	}
-	protocol = byte(d.Protocol)
-	// TODO: read from config
-	// TODO: get from params
-	ledOffset := []byte{}
-	if d.Protocol == WARLS {
-		ledOffset = []byte{0x00}
-	} else if d.Protocol == DNRGB {
-		ledOffset = []byte{0x00, 0x00}
-	}
+	protocol = byte(protocol)
 	packet := []byte{protocol, timeout}
 
-	packet = append(packet, offset...)
+	if protocol == WARLS {
+		// LED Index
+		packet = append(packet, 0x00)
+	}
+
+	if protocol == DNRGB {
+		// LED Index
+		packet = append(packet, 0x00, 0x00)
+	}
 
 	var data []byte
 	if protocol == DRGBW {
@@ -169,6 +142,6 @@ func (d *UdpDevice) BuildPacket(colors []color.Color, timeout byte) []byte {
 	return packet, nil
 }
 
-func (d *UdpDevice) PacketBuilder() *PacketBuilder {
+func (d *UDPDevice) PacketBuilder() *PacketBuilder {
 	return d.pb
 }

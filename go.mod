@@ -21,6 +21,7 @@ require (
 	github.com/simonassank/aubio-go v0.0.0-20210318191226-729d3d668592
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.10.1
+	github.com/tevino/abool v1.2.0
 	github.com/u2takey/ffmpeg-go v0.4.0
 	go.uber.org/atomic v1.9.0
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
@@ -32,6 +33,7 @@ require (
 	github.com/alexbrainman/sspi v0.0.0-20210105120005-909beea2cc74 // indirect
 	github.com/aws/aws-sdk-go v1.38.20 // indirect
 	github.com/bitly/go-simplejson v0.5.0 // indirect
+	github.com/carterpeel/abool v1.2.1-0.20220225054344-4f95bb28612b // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect

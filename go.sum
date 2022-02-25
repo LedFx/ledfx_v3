@@ -160,6 +160,8 @@ github.com/bombsimon/wsl/v3 v3.3.0/go.mod h1:st10JtZYLE4D5sC7b8xV4zTKZwAQjCH/Hy2
 github.com/breml/bidichk v0.1.1/go.mod h1:zbfeitpevDUGI7V91Uzzuwrn4Vls8MoBMrwtt78jmso=
 github.com/breml/bidichk v0.2.1/go.mod h1:zbfeitpevDUGI7V91Uzzuwrn4Vls8MoBMrwtt78jmso=
 github.com/butuzov/ireturn v0.1.1/go.mod h1:Wh6Zl3IMtTpaIKbmwzqi6olnM9ptYQxxVacMsOEFPoc=
+github.com/carterpeel/abool v1.2.1-0.20220225054344-4f95bb28612b h1:X2a7iwjR9ryhOWPJwfwtQW0Oi6+3GxE77eqTcSU2S3w=
+github.com/carterpeel/abool v1.2.1-0.20220225054344-4f95bb28612b/go.mod h1:D6JlrRY8kAp6tFqnEDskwExm74mkQ0pCGDbu5P9yv6A=
 github.com/carterpeel/go.alac v0.0.0-20220120210858-abcf099555b4 h1:1TmVkmqllc3IVtr9BVzm9zoaew6pP/sJeJPT8ycFV7c=
 github.com/carterpeel/go.alac v0.0.0-20220120210858-abcf099555b4/go.mod h1:5q4STjBbb21l65y2ecaB+ZP3uFY95o+D1BScp50zyRA=
 github.com/cavaliercoder/go-cpio v0.0.0-20180626203310-925f9528c45e/go.mod h1:oDpT4efm8tSYHXV5tHSdRvBet/b/QzxZ+XyyPehvm3A=
@@ -1022,6 +1024,8 @@ github.com/tenntenn/text/transform v0.0.0-20200319021203-7eef512accb3/go.mod h1:
 github.com/tetafro/godot v1.3.0/go.mod h1:/7NLHhv08H1+8DNj0MElpAACw1ajsCuf3TKNQxA5S+0=
 github.com/tetafro/godot v1.3.2/go.mod h1:ah7jjYmOMnIjS9ku2krapvGQrFNtTLo9Z/qB3dGU1eU=
 github.com/tetafro/godot v1.4.11/go.mod h1:LR3CJpxDVGlYOWn3ZZg1PgNZdTUvzsZWu8xaEohUpn8=
+github.com/tevino/abool v1.2.0 h1:heAkClL8H6w+mK5md9dzsuohKeXHUpY7Vw0ZCKW+huA=
+github.com/tevino/abool v1.2.0/go.mod h1:qc66Pna1RiIsPa7O4Egxxs9OqkuxDX55zznh9K07Tzg=
 github.com/timakin/bodyclose v0.0.0-20190930140734-f7f2e9bca95e/go.mod h1:Qimiffbc6q9tBWlVV6x0P9sat/ao1xEkREYPPj9hphk=
 github.com/timakin/bodyclose v0.0.0-20200424151742-cb6215831a94/go.mod h1:Qimiffbc6q9tBWlVV6x0P9sat/ao1xEkREYPPj9hphk=
 github.com/timakin/bodyclose v0.0.0-20210704033933-f49887972144/go.mod h1:Qimiffbc6q9tBWlVV6x0P9sat/ao1xEkREYPPj9hphk=

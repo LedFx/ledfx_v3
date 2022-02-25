@@ -22,44 +22,45 @@ type valueBridgeInfo struct {
 }
 
 func (s *StatPoller) sendBridgeInfo(n int, interval time.Duration, ws *websocket.Conn) {
-	if s.sendingBridgeInfo.Load() {
+	if s.sendingBridgeInfo.IsSet() {
 		s.stopBridgeInfo()
-		time.Sleep(interval)
 	}
 
-	s.sendingBridgeInfo.Store(true)
-	defer s.sendingBridgeInfo.Store(false)
+	s.bridgeDispatchMu.Lock()
+	defer s.bridgeDispatchMu.Unlock()
 
-	info := s.br.Info()
+	s.sendingBridgeInfo.Set()
+
+	tick := time.NewTicker(interval)
+	defer tick.Stop()
+
+Top:
 	for i := 0; i != n; i++ {
-
-		now := time.Now()
-
-		resp := &Response{
-			Type:      RqtBridgeInfo,
-			Iteration: i,
-			Value: &valueBridgeInfo{
-				InputType: info.InputType(),
-				Outputs:   info.AllOutputs(),
-			},
+		select {
+		case <-tick.C:
+			if err := ws.WriteJSON(&Response{
+				Type:      RqtBridgeInfo,
+				Iteration: i,
+				Value: &valueBridgeInfo{
+					InputType: s.br.Info().InputType(),
+					Outputs:   s.br.Info().AllOutputs(),
+				},
+			}); err != nil {
+				log.Logger.WithField("category", "StatPoll BridgeInfo").Errorf("Error writing JSON over websocket: %v", err)
+				break Top
+			}
+		case <-s.cancelBridge:
+			break Top
 		}
-
-		if s.stopSendBridgeInfo.Load() {
-			s.stopSendBridgeInfo.Store(false)
-			return
-		}
-
-		if err := ws.WriteJSON(resp); err != nil {
-			log.Logger.WithField("category", "StatPoll BridgeInfo").Errorf("Error writing JSON over websocket: %v", err)
-			return
-		}
-		time.Sleep(interval - time.Since(now))
 	}
+	s.sendingBridgeInfo.UnSet()
 }
 
 func (s *StatPoller) stopBridgeInfo() {
-	if s.sendingBridgeInfo.Load() {
-		s.stopSendBridgeInfo.Store(true)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.sendingBridgeInfo.IsSet() {
+		s.cancelBridge <- struct{}{}
 	}
 }
 
@@ -75,76 +76,79 @@ type valueYoutubeInfo struct {
 }
 
 func (s *StatPoller) sendYoutubeInfo(n int, interval time.Duration, ws *websocket.Conn) {
-	if s.sendingYoutubeInfo.Load() {
+	if s.sendingYoutubeInfo.IsSet() {
 		s.stopYoutubeInfo()
-		time.Sleep(interval)
 	}
 
-	s.sendingYoutubeInfo.Store(true)
-	defer s.sendingYoutubeInfo.Store(false)
+	s.youtubeDispatchMu.Lock()
+	defer s.youtubeDispatchMu.Unlock()
 
-	yt := s.br.Controller().YouTube()
+	s.sendingYoutubeInfo.Set()
+
+	tick := time.NewTicker(interval)
+	defer tick.Stop()
+
+Top:
 	for i := 0; i != n; i++ {
-		now := time.Now()
+		select {
+		case <-tick.C:
+			nowPlaying, err := s.br.Controller().YouTube().NowPlaying()
+			if err != nil {
+				ws.WriteJSON(errorToJson(err))
+				break Top
+			}
 
-		nowPlaying, err := yt.NowPlaying()
-		if err != nil {
-			ws.WriteJSON(errorToJson(err))
-			return
-		}
+			isPlaying, err := s.br.Controller().YouTube().IsPlaying()
+			if err != nil {
+				ws.WriteJSON(errorToJson(err))
+				break Top
+			}
 
-		isPlaying, err := yt.IsPlaying()
-		if err != nil {
-			ws.WriteJSON(errorToJson(err))
-			return
-		}
+			trackIndex, err := s.br.Controller().YouTube().TrackIndex()
+			if err != nil {
+				ws.WriteJSON(errorToJson(err))
+				break Top
+			}
 
-		trackIndex, err := yt.TrackIndex()
-		if err != nil {
-			ws.WriteJSON(errorToJson(err))
-			return
-		}
+			allTracks, err := s.br.Controller().YouTube().QueuedTracks()
+			if err != nil {
+				ws.WriteJSON(errorToJson(err))
+				break Top
+			}
 
-		allTracks, err := yt.QueuedTracks()
-		if err != nil {
-			ws.WriteJSON(errorToJson(err))
-			return
+			elapsed, err := s.br.Controller().YouTube().TimeElapsed()
+			if err != nil {
+				ws.WriteJSON(errorToJson(err))
+				break Top
+			}
+			if err := ws.WriteJSON(&Response{
+				Type:      RqtYoutubeInfo,
+				Iteration: i,
+				Value: &valueYoutubeInfo{
+					NowPlaying:        nowPlaying,
+					TrackDurationNs:   time.Duration(nowPlaying.Duration).Nanoseconds(),
+					ElapsedDurationNs: elapsed.Nanoseconds(),
+					TrackIndex:        trackIndex,
+					Paused:            !isPlaying,
+					QueuedTracks:      allTracks,
+				},
+			}); err != nil {
+				log.Logger.WithField("category", "StatPoll BridgeInfo").Errorf("Error writing JSON over websocket: %v", err)
+				break Top
+			}
+		case <-s.cancelYoutube:
+			break Top
 		}
-
-		elapsed, err := yt.TimeElapsed()
-		if err != nil {
-			ws.WriteJSON(errorToJson(err))
-			return
-		}
-
-		resp := &Response{
-			Type:      RqtYoutubeInfo,
-			Iteration: i,
-			Value: &valueYoutubeInfo{
-				NowPlaying:        nowPlaying,
-				TrackDurationNs:   time.Duration(nowPlaying.Duration).Nanoseconds(),
-				ElapsedDurationNs: elapsed.Nanoseconds(),
-				TrackIndex:        trackIndex,
-				Paused:            !isPlaying,
-				QueuedTracks:      allTracks,
-			},
-		}
-
-		if s.stopSendYoutubeInfo.Load() {
-			s.stopSendYoutubeInfo.Store(false)
-			return
-		}
-		if err := ws.WriteJSON(resp); err != nil {
-			log.Logger.WithField("category", "StatPoll BridgeInfo").Errorf("Error writing JSON over websocket: %v", err)
-			return
-		}
-		time.Sleep(interval - time.Since(now))
 	}
+
+	s.sendingYoutubeInfo.UnSet()
 }
 
 func (s *StatPoller) stopYoutubeInfo() {
-	if s.sendingYoutubeInfo.Load() {
-		s.stopSendYoutubeInfo.Store(true)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.sendingYoutubeInfo.IsSet() {
+		s.cancelYoutube <- struct{}{}
 	}
 }
 
@@ -155,42 +159,46 @@ type valueAirPlayInfo struct {
 }
 
 func (s *StatPoller) sendAirPlayInfo(n int, interval time.Duration, ws *websocket.Conn) {
-	if s.sendingAirPlayInfo.Load() {
+	if s.sendingAirPlayInfo.IsSet() {
 		s.stopAirPlayInfo()
-		time.Sleep(interval)
 	}
 
-	s.sendingAirPlayInfo.Store(true)
-	defer s.sendingAirPlayInfo.Store(false)
+	s.airplayDispatchMu.Lock()
+	defer s.airplayDispatchMu.Unlock()
 
-	ap := s.br.Controller().AirPlay()
+	s.sendingAirPlayInfo.Set()
+
+	tick := time.NewTicker(interval)
+	defer tick.Stop()
+
+Top:
 	for i := 0; i != n; i++ {
-		now := time.Now()
-
-		resp := &Response{
-			Type:      RqtAirPlayInfo,
-			Iteration: i,
-			Value: &valueAirPlayInfo{
-				Server:         ap.Server(),
-				Clients:        ap.Clients(),
-				ArtworkURLPath: "/api/bridge/artwork",
-			},
+		select {
+		case <-s.cancelAirPlay:
+			break Top
+		case <-tick.C:
+			if err := ws.WriteJSON(&Response{
+				Type:      RqtAirPlayInfo,
+				Iteration: i,
+				Value: &valueAirPlayInfo{
+					Server:         s.br.Controller().AirPlay().Server(),
+					Clients:        s.br.Controller().AirPlay().Clients(),
+					ArtworkURLPath: "/api/bridge/artwork",
+				},
+			}); err != nil {
+				log.Logger.WithField("category", "StatPoll AirPlayInfo").Errorf("Error writing JSON over websocket: %v", err)
+				break Top
+			}
 		}
-
-		if s.stopSendAirPlayInfo.Load() {
-			s.stopSendAirPlayInfo.Store(false)
-			return
-		}
-		if err := ws.WriteJSON(resp); err != nil {
-			log.Logger.WithField("category", "StatPoll AirPlayInfo").Errorf("Error writing JSON over websocket: %v", err)
-			return
-		}
-		time.Sleep(interval - time.Since(now))
 	}
+	s.sendingAirPlayInfo.UnSet()
 }
 
 func (s *StatPoller) stopAirPlayInfo() {
-	if s.sendingAirPlayInfo.Load() {
-		s.stopSendAirPlayInfo.Store(true)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.sendingAirPlayInfo.IsSet() {
+		s.cancelAirPlay <- struct{}{}
+		log.Logger.WithField("category", "StatPoll Dispatcher").Info("Stopping current AirPlay dispatcher...")
 	}
 }

@@ -4,36 +4,46 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/carterpeel/abool/v2"
 	"github.com/gorilla/websocket"
-	"go.uber.org/atomic"
 	"io"
 	"ledfx/audio/audiobridge"
 	log "ledfx/logger"
+	"sync"
 	"time"
 )
 
 type StatPoller struct {
+	mu *sync.RWMutex
+
 	br *audiobridge.Bridge
 
-	sendingBridgeInfo  *atomic.Bool
-	stopSendBridgeInfo *atomic.Bool
+	bridgeDispatchMu  *sync.Mutex
+	sendingBridgeInfo *abool.AtomicBool
+	cancelBridge      chan struct{}
 
-	sendingYoutubeInfo  *atomic.Bool
-	stopSendYoutubeInfo *atomic.Bool
+	youtubeDispatchMu  *sync.Mutex
+	sendingYoutubeInfo *abool.AtomicBool
+	cancelYoutube      chan struct{}
 
-	sendingAirPlayInfo  *atomic.Bool
-	stopSendAirPlayInfo *atomic.Bool
+	airplayDispatchMu  *sync.Mutex
+	sendingAirPlayInfo *abool.AtomicBool
+	cancelAirPlay      chan struct{}
 }
 
 func New(br *audiobridge.Bridge) (s *StatPoller) {
 	return &StatPoller{
-		br:                  br,
-		sendingBridgeInfo:   atomic.NewBool(false),
-		stopSendBridgeInfo:  atomic.NewBool(false),
-		sendingYoutubeInfo:  atomic.NewBool(false),
-		stopSendYoutubeInfo: atomic.NewBool(false),
-		sendingAirPlayInfo:  atomic.NewBool(false),
-		stopSendAirPlayInfo: atomic.NewBool(false),
+		br:                 br,
+		mu:                 &sync.RWMutex{},
+		sendingBridgeInfo:  abool.New(),
+		cancelBridge:       make(chan struct{}),
+		bridgeDispatchMu:   &sync.Mutex{},
+		sendingYoutubeInfo: abool.New(),
+		cancelYoutube:      make(chan struct{}),
+		youtubeDispatchMu:  &sync.Mutex{},
+		sendingAirPlayInfo: abool.New(),
+		cancelAirPlay:      make(chan struct{}),
+		airplayDispatchMu:  &sync.Mutex{},
 	}
 }
 
@@ -86,8 +96,8 @@ Check:
 	case r.Iterations == 0:
 		r.Iterations = 1
 		goto Check
-	case r.Iterations != 1 && r.IntervalMs <= 0:
-		r.IntervalMs = 250
+	case r.IntervalMs <= 0:
+		r.IntervalMs = 1
 	}
 
 	switch r.Type {

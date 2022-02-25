@@ -7,7 +7,6 @@ import (
 	"ledfx/config"
 	"ledfx/device"
 	"ledfx/effect"
-	"ledfx/logger"
 	log "ledfx/logger"
 	"time"
 )
@@ -229,24 +228,22 @@ func PlayVirtual(virtualID string, playState bool, clr string) (err error) {
 }
 
 func StopVirtual(virtualid string) (err error) {
-	fmt.Println("Clear Effect of ", virtualid)
+	log.Logger.WithField("category", "Virtual Stopper").Infof("CLEAR EFFECT OF: %s", virtualid)
 
 	if virtualid == "" {
-		err = errors.New("Virtual id is empty. Please provide Id to add virtual to config")
-		return
+		return errors.New("virtual id is empty, please provide id to add virtual to config")
 	}
 
 	for i, d := range config.GlobalConfig.Virtuals {
 		if d.Id == virtualid {
 			if config.GlobalConfig.Virtuals[i].IsDevice != "" {
-				fmt.Println("WTF Clear Effect of ", config.GlobalConfig.Virtuals[i].Effect.Name)
+				log.Logger.WithField("category", "Virtual Stopper").Warnf("WTC Clear Effect of %s", config.GlobalConfig.Virtuals[i].Effect.Name)
 				for in, de := range config.GlobalConfig.Devices {
 					if de.Id == config.GlobalConfig.Virtuals[i].IsDevice {
-						var currentEffect effect.Effect = &effect.PulsingEffect{}
 						go func() {
-							err := effect.StopEffect(config.GlobalConfig.Devices[in].Config, currentEffect, "#000000", 60, done)
-							if err != nil {
-								logger.Logger.Warn(err)
+							var currentEffect effect.Effect = &effect.PulsingEffect{}
+							if err := effect.StopEffect(config.GlobalConfig.Devices[in].Config, currentEffect, "#000000", 60, done); err != nil {
+								log.Logger.WithField("category", "Virtual Stopper").Warnf("Error stopping current effect: %v", err)
 							}
 						}()
 					}

@@ -16,9 +16,7 @@ func (e *PulsingEffect) AssembleFrame(phase float64, ledCount int, effectColor c
 		0.5 * (math.Sin(phase) + 1) * effectColor[1],
 		0.5 * (math.Sin(phase) + 1) * effectColor[2],
 	}
-	for i := 0; i < ledCount; i++ {
-		// calculate the LED values for the effect's current frame
-		// TODO: this brightness calculation might be better done using HSV instead of RGB
+	for i := range colors {
 		colors[i] = newColor
 	}
 	return colors

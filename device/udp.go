@@ -16,14 +16,14 @@ const (
 	// TODO: Add more here
 )
 
-var UdpProtocols = map[string]byte{
+var UDPProtocols = map[string]byte{
 	"WARLS": WARLS,
 	"DRGB":  DRGB,
 	"DRGBW": DRGBW,
 	"DNRGB": DNRGB,
 }
 
-type UdpDevice struct {
+type UDPDevice struct {
 	Name       string
 	Port       int
 	Connection net.Conn
@@ -44,7 +44,7 @@ func ColorsToBytes(colors []color.Color) []byte {
 }
 
 // Need to store the connection on the device struct
-func (d *UdpDevice) Init() error {
+func (d *UDPDevice) Init() error {
 	// hostName := d.Config.IpAddress
 
 	// service := hostName + ":" + strconv.Itoa(d.Port)
@@ -69,7 +69,7 @@ func (d *UdpDevice) Init() error {
 	return nil
 }
 
-func (d *UdpDevice) Close() error {
+func (d *UDPDevice) Close() error {
 	err := d.Connection.Close()
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ func (d *UdpDevice) Close() error {
 	return nil
 }
 
-func (d *UdpDevice) SendData(colors []color.Color, timeout byte) error {
+func (d *UDPDevice) SendData(colors []color.Color, timeout byte) error {
 	if d.Connection == nil {
 		return errors.New("device must first be initialized")
 	}
@@ -92,7 +92,7 @@ func (d *UdpDevice) SendData(colors []color.Color, timeout byte) error {
 	return nil
 }
 
-func (d *UdpDevice) BuildPacket(colors []color.Color, timeout byte) []byte {
+func (d *UDPDevice) BuildPacket(colors []color.Color, timeout byte) []byte {
 	// TODO: read from config
 	var protocol byte
 	if d.Protocol == 0x00 {
@@ -117,6 +117,6 @@ func (d *UdpDevice) BuildPacket(colors []color.Color, timeout byte) []byte {
 	return packet
 }
 
-func (d *UdpDevice) PacketBuilder() *PacketBuilder {
+func (d *UDPDevice) PacketBuilder() *PacketBuilder {
 	return d.pb
 }

@@ -4,12 +4,11 @@ import (
 	"flag"
 	"fmt"
 	"ledfx/audio"
-	"ledfx/color"
 	"ledfx/config"
 	"ledfx/constants"
-	"ledfx/device"
 	"ledfx/logger"
 	"ledfx/utils"
+	"ledfx/virtual"
 	"log"
 	"os"
 	"os/signal"
@@ -70,51 +69,6 @@ func main() {
 	  SentryCrash
 	*/
 
-	// REMOVEME: testing only
-	// Initialize config
-	var deviceConfig config.DeviceConfig
-	var foundDevice bool = false
-	for _, d := range config.GlobalConfig.Devices {
-		if d.Type == "udp" {
-			deviceConfig = d.Config
-			foundDevice = true
-			break
-		}
-	}
-
-	if !foundDevice {
-		logger.Logger.Info("No UDP device found in config")
-	} else {
-
-		// NOTE: This type of code should be run in a goroutine
-		var device = &device.UdpDevice{
-			Name:     deviceConfig.Name,
-			Port:     deviceConfig.Port,
-			Protocol: device.UdpProtocols[deviceConfig.UdpPacketType],
-			Config:   deviceConfig,
-		}
-
-		var data []color.Color
-		for i := 0; i < device.Config.PixelCount; i++ {
-			newColor, err := color.NewColor(color.LedFxColors["orange"])
-			data = append(data, newColor)
-			if err != nil {
-				logger.Logger.Fatal(err)
-			}
-		}
-		err = device.Init()
-		if err != nil {
-			logger.Logger.Fatal(err)
-		}
-		err = device.SendData(data, 0x01)
-		if err != nil {
-			logger.Logger.Fatal(err)
-		}
-
-		defer device.Close()
-	}
-	// REMOVEME: END
-
 	audio.LogAudioDevices()
 	//go audio.CaptureDemo()
 
@@ -136,6 +90,10 @@ func main() {
 	systray.Run(utils.OnReady, utils.OnExit)
 	os.TempDir()
 
+	err = virtual.LoadVirtuals()
+	if err != nil {
+		logger.Logger.Warn(err)
+	}
 }
 
 func shutdown() {

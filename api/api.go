@@ -36,18 +36,27 @@ func HandleApi() {
 		SetHeader(w)
 		audioDevices, err := audio.GetAudioDevices()
 		if err != nil {
-			return
+			logger.Logger.Warn(err)
 		}
-		json.NewEncoder(w).Encode(audioDevices)
+		err = json.NewEncoder(w).Encode(audioDevices)
+		if err != nil {
+			logger.Logger.Warn(err)
+		}
 	})
 	http.HandleFunc("/api/config", func(w http.ResponseWriter, r *http.Request) {
 		SetHeader(w)
-		json.NewEncoder(w).Encode(config.GlobalConfig)
+		err := json.NewEncoder(w).Encode(config.GlobalConfig)
+		if err != nil {
+			logger.Logger.Warn(err)
+		}
 	})
 
 	http.HandleFunc("/api/devices", func(w http.ResponseWriter, r *http.Request) {
 		SetHeader(w)
-		json.NewEncoder(w).Encode(config.GlobalConfig)
+		err := json.NewEncoder(w).Encode(config.GlobalConfig)
+		if err != nil {
+			logger.Logger.Warn(err)
+		}
 		// TODO: See comment for Virtuals
 		// json.NewEncoder(w).Encode(config.GlobalConfig.Devices)
 	})
@@ -56,18 +65,25 @@ func HandleApi() {
 		SetHeader(w)
 		// TODO:
 		// this is too much, we only need Virtuals
-		json.NewEncoder(w).Encode(config.GlobalConfig)
+		err := json.NewEncoder(w).Encode(config.GlobalConfig)
+		if err != nil {
+			logger.Logger.Warn(err)
+		}
 
 		// this is too less, we need the key also: {"virtuals": ...}
 		// json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
 	})
 	http.HandleFunc("/api/virtuals/", func(w http.ResponseWriter, r *http.Request) {
+		if LastColor == "" {
+			LastColor = "#ff0000"
+		}
 		SetHeader(w)
 		logger.Logger.Debug(r.Method)
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
 			return
 		} else {
+
 			var p Resp
 			var category string
 			var virtualid string
@@ -84,19 +100,45 @@ func HandleApi() {
 				logger.Logger.Warn(err)
 				return
 			}
+
+			if r.Method == "DELETE" {
+				err := virtual.StopVirtual(virtualid)
+				if err != nil {
+					logger.Logger.Warn(err)
+				}
+				return
+			}
+			if r.Method == "POST" || r.Method == "PUT" {
+				err := json.NewDecoder(r.Body).Decode(&p)
+				if err != nil {
+					logger.Logger.Warn(err)
+					// http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+			}
+
 			if category == "effects" {
 				LastColor = p.Config.Color
-				virtual.PlayVirtual(virtualid, true, LastColor)
+				err := virtual.PlayVirtual(virtualid, true, LastColor)
+				if err != nil {
+					logger.Logger.Warn(err)
+				}
 			} else if category == "presets" {
 				logger.Logger.Debug("No Presets yet ;)")
 			} else {
 				if LastColor == "" {
 					LastColor = "#000fff"
 				}
-				virtual.PlayVirtual(virtualid, p.Active, LastColor)
+				err := virtual.PlayVirtual(virtualid, p.Active, LastColor)
+				if err != nil {
+					logger.Logger.Warn(err)
+				}
 			}
 
-			json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
+			err = json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
+			if err != nil {
+				logger.Logger.Warn(err)
+			}
 
 		}
 	})

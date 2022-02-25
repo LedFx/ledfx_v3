@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"ledfx/logger"
 	"net/http"
 )
 
@@ -80,7 +81,10 @@ func HandleColors() {
 		}
 		fmt.Println(objmap)
 
-		json.NewEncoder(w).Encode(objmap)
+		err = json.NewEncoder(w).Encode(objmap)
+		if err != nil {
+			logger.Logger.Warn(err)
+		}
 		// json.NewEncoder(w).Encode(config.Schema.Effects)
 	})
 
@@ -306,7 +310,10 @@ func HandleColors() {
 		}
 		fmt.Println(objmap)
 
-		json.NewEncoder(w).Encode(objmap)
+		err = json.NewEncoder(w).Encode(objmap)
+		if err != nil {
+			logger.Logger.Warn(err)
+		}
 		// json.NewEncoder(w).Encode(config.Schema.Effects)
 	})
 }

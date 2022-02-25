@@ -6,16 +6,18 @@ import (
 	"ledfx/color"
 	"ledfx/config"
 	"ledfx/device"
+	"ledfx/effect"
+	"ledfx/logger"
 	log "ledfx/logger"
 	"time"
 )
 
 var (
-	devMap map[string]*device.UdpDevice
+	devMap map[string]*device.UDPDevice
 )
 
 func init() {
-	devMap = make(map[string]*device.UdpDevice)
+	devMap = make(map[string]*device.UDPDevice)
 }
 
 type Virtual interface {
@@ -63,10 +65,10 @@ func RepeatN(virtualID string, playState bool, clr string, n int) error {
 			if config.GlobalConfig.Virtuals[i].IsDevice != "" {
 				for in, de := range config.GlobalConfig.Devices {
 					if de.Id == config.GlobalConfig.Virtuals[i].IsDevice {
-						devMap[virtualID] = &device.UdpDevice{
+						devMap[virtualID] = &device.UDPDevice{
 							Name:     config.GlobalConfig.Devices[in].Config.Name,
 							Port:     config.GlobalConfig.Devices[in].Config.Port,
-							Protocol: device.UdpProtocols[config.GlobalConfig.Devices[in].Config.UdpPacketType],
+							Protocol: device.UDPProtocols[config.GlobalConfig.Devices[in].Config.UdpPacketType],
 							Config:   config.GlobalConfig.Devices[in].Config,
 						}
 
@@ -112,10 +114,10 @@ func RepeatNSmooth(virtualID string, playState bool, clr string, n int) error {
 			if config.GlobalConfig.Virtuals[i].IsDevice != "" {
 				for in, de := range config.GlobalConfig.Devices {
 					if de.Id == config.GlobalConfig.Virtuals[i].IsDevice {
-						var dev = &device.UdpDevice{
+						var dev = &device.UDPDevice{
 							Name:     config.GlobalConfig.Devices[in].Config.Name,
 							Port:     config.GlobalConfig.Devices[in].Config.Port,
-							Protocol: device.UdpProtocols[config.GlobalConfig.Devices[in].Config.UdpPacketType],
+							Protocol: device.UDPProtocols[config.GlobalConfig.Devices[in].Config.UdpPacketType],
 							Config:   config.GlobalConfig.Devices[in].Config,
 						}
 
@@ -160,6 +162,9 @@ func RepeatNSmooth(virtualID string, playState bool, clr string, n int) error {
 	return nil
 }
 
+// TODO: this should belong to the virtual instance
+var done chan bool
+
 func PlayVirtual(virtualID string, playState bool, clr string) (err error) {
 	//fmt.Println("Set PlayState of ", virtualID, " to ", playState)
 	if clr != "" {
@@ -184,10 +189,10 @@ func PlayVirtual(virtualID string, playState bool, clr string) (err error) {
 			if config.GlobalConfig.Virtuals[i].IsDevice != "" {
 				for in, de := range config.GlobalConfig.Devices {
 					if de.Id == config.GlobalConfig.Virtuals[i].IsDevice {
-						var dev = &device.UdpDevice{
+						var dev = &device.UDPDevice{
 							Name:     config.GlobalConfig.Devices[in].Config.Name,
 							Port:     config.GlobalConfig.Devices[in].Config.Port,
-							Protocol: device.UdpProtocols[config.GlobalConfig.Devices[in].Config.UdpPacketType],
+							Protocol: device.UDPProtocols[config.GlobalConfig.Devices[in].Config.UdpPacketType],
 							Config:   config.GlobalConfig.Devices[in].Config,
 						}
 
@@ -211,7 +216,6 @@ func PlayVirtual(virtualID string, playState bool, clr string) (err error) {
 							return fmt.Errorf("error sending data to WLED: %w", err)
 						}
 					}
-
 				}
 			}
 		}
@@ -222,4 +226,53 @@ func PlayVirtual(virtualID string, playState bool, clr string) (err error) {
 		err = config.GlobalViper.WriteConfig()
 	}
 	return
+}
+
+func StopVirtual(virtualid string) (err error) {
+	fmt.Println("Clear Effect of ", virtualid)
+
+	if virtualid == "" {
+		err = errors.New("Virtual id is empty. Please provide Id to add virtual to config")
+		return
+	}
+
+	for i, d := range config.GlobalConfig.Virtuals {
+		if d.Id == virtualid {
+			if config.GlobalConfig.Virtuals[i].IsDevice != "" {
+				fmt.Println("WTF Clear Effect of ", config.GlobalConfig.Virtuals[i].Effect.Name)
+				for in, de := range config.GlobalConfig.Devices {
+					if de.Id == config.GlobalConfig.Virtuals[i].IsDevice {
+						var currentEffect effect.Effect = &effect.PulsingEffect{}
+						go func() {
+							err := effect.StopEffect(config.GlobalConfig.Devices[in].Config, currentEffect, "#000000", 60, done)
+							if err != nil {
+								logger.Logger.Warn(err)
+							}
+						}()
+					}
+
+				}
+			}
+		}
+	}
+	return
+}
+
+// LoadVirtuals loads the virtuals from the config file and plays any effects that are active on them
+func LoadVirtuals() (err error) {
+	// TODO: load all virtuals from config
+
+	// c := &config.GlobalConfig
+	// v := config.GlobalViper
+
+	// for i, virtualConfig := range config.GlobalConfig.Virtuals {
+	// 	if config.GlobalConfig.Virtuals[i].Active == true {
+	// 		if config.GlobalConfig.Virtuals[i].IsDevice != "" {
+	//       // TODO: instantiate a virtual
+	// 			// PlayVirtual(virtual)
+	// 		}
+	// 	}
+	// }
+
+	return nil
 }

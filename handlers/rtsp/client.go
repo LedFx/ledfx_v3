@@ -9,8 +9,10 @@ import (
 
 // Client Rtsp client
 type Client struct {
-	conn net.Conn
-	seq  int64
+	conn       net.Conn
+	seq        int64
+	localAddr  string
+	remoteAddr string
 }
 
 // NewClient instantiates a new client connecting to the address specified
@@ -19,7 +21,12 @@ func NewClient(address string, port int) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Client{conn: conn, seq: 1}, nil
+	return &Client{
+		conn:       conn,
+		seq:        1,
+		localAddr:  conn.LocalAddr().(*net.TCPAddr).IP.To4().String(),
+		remoteAddr: conn.RemoteAddr().(*net.TCPAddr).IP.To4().String(),
+	}, nil
 }
 
 // Send will send a request to the server
@@ -40,10 +47,14 @@ func (c *Client) Send(request *Request) (*Response, error) {
 
 // LocalAddress returns the local (our) address
 func (c *Client) LocalAddress() string {
-	return c.conn.LocalAddr().(*net.TCPAddr).IP.String()
+	return c.localAddr
 }
 
 // RemoteAddress returns the remote address
 func (c *Client) RemoteAddress() string {
-	return c.conn.RemoteAddr().(*net.TCPAddr).IP.String()
+	return c.remoteAddr
+}
+
+func (c *Client) Close() error {
+	return c.conn.Close()
 }

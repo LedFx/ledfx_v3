@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"ledfx/audio"
 	"ledfx/config"
@@ -17,6 +18,9 @@ import (
 )
 
 func init() {
+	flag.StringVar(&ip, "ip", "0.0.0.0", "The IP address the frontend will run on")
+	flag.IntVar(&port, "port", 8080, "The port the frontend will run on")
+
 	// Capture ctrl-c or sigterm to gracefully shutdown
 	c := make(chan os.Signal, 2)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
@@ -31,7 +35,13 @@ func init() {
 	if err != nil {
 		log.Println(err)
 	}
+
 }
+
+var (
+	ip   string
+	port int
+)
 
 func main() {
 	// Just print version and return if flag is set
@@ -60,14 +70,14 @@ func main() {
 	*/
 
 	audio.LogAudioDevices()
-	go audio.CaptureDemo()
+	//go audio.CaptureDemo()
 
 	go func() {
 		utils.SetupRoutes()
 	}()
 
 	go func() {
-		utils.InitFrontend()
+		utils.InitFrontend(ip, port)
 	}()
 
 	go func() {
@@ -78,6 +88,7 @@ func main() {
 	}()
 
 	systray.Run(utils.OnReady, utils.OnExit)
+	os.TempDir()
 
 	err = virtual.LoadVirtuals()
 	if err != nil {
@@ -88,5 +99,5 @@ func main() {
 func shutdown() {
 	logger.Logger.Info("Shutting down LedFx")
 	// kill systray
-	utils.OnExit()
+	systray.Quit()
 }

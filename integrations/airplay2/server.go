@@ -1,6 +1,7 @@
 package airplay2
 
 import (
+	"encoding/json"
 	"ledfx/audio"
 	"ledfx/handlers/raop"
 	log "ledfx/logger"
@@ -15,16 +16,35 @@ func init() {
 }
 
 type Server struct {
-	mu     sync.Mutex
-	player *audioPlayer
-	conf   *Config
-	svc    *raop.AirplayServer
+	mu      sync.Mutex
+	player  *audioPlayer
+	conf    *Config
+	svc     *raop.AirplayServer
+	stopped bool
 
 	done chan struct{}
 }
 
-func NewServer(conf Config, intWriter audio.IntWriter, byteWriter *audio.AsyncMultiWriter) (s *Server) {
-	pl := newPlayer(intWriter, byteWriter)
+func (s *Server) MarshalJSON() (b []byte, err error) {
+	return json.Marshal(&struct {
+		AdvertName string       `json:"advertisement_name"`
+		Port       int          `json:"port"`
+		Verbose    bool         `json:"verbose"`
+		Player     *audioPlayer `json:"player"`
+	}{
+		AdvertName: s.conf.AdvertisementName,
+		Port:       s.conf.Port,
+		Verbose:    s.conf.VerboseLogging,
+		Player:     s.player,
+	})
+}
+
+func (s *Server) Artwork() (b []byte) {
+	return s.player.GetAlbumArt()
+}
+
+func NewServer(conf Config, byteWriter *audio.AsyncMultiWriter) (s *Server) {
+	pl := newPlayer(byteWriter)
 
 	if conf.Port == 0 {
 		conf.Port = 7000
@@ -71,10 +91,15 @@ func (s *Server) Wait() {
 }
 
 func (s *Server) Stop() {
+	s.stopped = true
 	if s.svc != nil {
 		s.svc.Stop()
 	}
 	if s.player != nil {
 		s.player.Close()
 	}
+}
+
+func (s *Server) Stopped() bool {
+	return s.stopped
 }

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	readBuffer = 1024 * 16
+	readBuffer = 2048
 )
 
 // Decrypter decrypts a received packet
@@ -58,22 +58,21 @@ func (s *Session) InitReceive() error {
 	if err != nil {
 		return err
 	}
-	// keep track of the actual connection so we close it later
+	// keep track of the actual connection, so we can close it later
 	s.dataConn = conn
 	localAddr := strings.Split(conn.LocalAddr().String(), ":")
-	port := localAddr[len(localAddr)-1]
-	s.LocalPorts.Data, _ = strconv.Atoi(port)
+	s.LocalPorts.Data, _ = strconv.Atoi(localAddr[len(localAddr)-1])
 	return nil
 }
 
 // Close closes a session
 func (s *Session) Close(closeDone chan struct{}) {
-	log.Logger.WithField("category", "RTSP Session").Println("Closing session,,,")
+	log.Logger.WithField("category", "RTSP Session").Infoln("Closing session...")
 	s.stopChan = closeDone
 	if s.dataConn != nil {
 		s.dataConn.Close()
 	} else {
-		log.Logger.WithField("category", "RTSP Session").Println("Currently no data connection...")
+		log.Logger.WithField("category", "RTSP Session").Infoln("Currently no data connection...")
 		s.stopChan <- struct{}{}
 	}
 }
@@ -81,7 +80,7 @@ func (s *Session) Close(closeDone chan struct{}) {
 // StartReceiving starts a session for listening for data
 func (s *Session) StartReceiving() error {
 	// start listening for audio data
-	log.Logger.WithField("category", "RTSP Session").Println("Session started. Listening for audio packets...")
+	log.Logger.WithField("category", "RTSP Session").Infoln("Session started. Listening for audio packets...")
 	go func(conn *net.UDPConn) {
 		for {
 			n, _, err := conn.ReadFromUDP(s.buf.Bytes())
@@ -94,17 +93,17 @@ func (s *Session) StartReceiving() error {
 			packet := s.buf.Bytes()[:n]
 			// send the data to the decoder
 			if s.decrypter != nil {
-				packet, err = s.decrypter.Decode(packet)
-				if err != nil {
+				if packet, err = s.decrypter.Decode(packet); err != nil {
 					log.Logger.WithField("category", "RTSP Session").Errorf("Error decrypting packet: %v", err)
 					return
 				}
 			}
+
 			s.sendBuf = make([]byte, len(packet))
 			copy(s.sendBuf, packet)
 			s.DataChan <- s.sendBuf
 		}
-		log.Logger.WithField("category", "RTSP Session").Println("Signalling Session is closed")
+		log.Logger.WithField("category", "RTSP Session").Infoln("Signalling Session is closed")
 		if s.stopChan != nil {
 			s.stopChan <- struct{}{}
 		}
@@ -114,12 +113,11 @@ func (s *Session) StartReceiving() error {
 
 // StartSending starts a session for sending data
 func (s *Session) StartSending() (err error) {
+	// keep track of the actual connection, so we can close it later.
 	if s.dataConn, err = net.Dial("udp", fmt.Sprintf("%s:%d", s.RemotePorts.Address, s.RemotePorts.Data)); err != nil {
 		return fmt.Errorf("error dialing '%s:%d': %w", s.RemotePorts.Address, s.RemotePorts.Data, err)
 	}
-
-	// keep track of the actual connection, so we can close it later.
-	log.Logger.WithField("category", "RTSP Session").Println("Sending session started successfully")
+	log.Logger.WithField("category", "RTSP Session").Infoln("Sending session started successfully")
 	return nil
 }
 

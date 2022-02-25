@@ -3,70 +3,82 @@ package youtube
 import (
 	"errors"
 	"fmt"
+	"go.uber.org/atomic"
 	"io"
 	"ledfx/audio"
 	"os"
 	"sync"
+	"time"
 )
 
 type Player struct {
 	mu *sync.Mutex
 
-	done    bool
-	paused  bool
+	done    *atomic.Bool
+	paused  *atomic.Bool
 	unpause chan bool
+	playing *atomic.Bool
 
-	in     *os.File
-	out    *audio.AsyncMultiWriter
-	intOut audio.IntWriter
+	in  *FileBuffer
+	out *audio.AsyncMultiWriter
+
+	elapsed time.Duration
 }
 
-func (p *Player) Reset(input *os.File) {
-	p.done = true
-	defer func() {
-		p.done = false
-	}()
+func (p *Player) Reset(input *FileBuffer) {
 	p.mu.Lock()
-	defer p.mu.Unlock()
-	if p.in != nil {
-		p.in.Close()
-		p.in = nil
-	}
+	p.done.Store(true)
+
+	defer func() {
+		p.done.Store(false)
+		p.mu.Unlock()
+	}()
+
+	p.Stop()
 	p.in = input
 }
 
 func (p *Player) Start() error {
 	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.playing.Store(true)
+	defer func() {
+		p.playing.Store(false)
+		p.mu.Unlock()
+	}()
+
 	buf := make([]byte, 1408)
+	p.elapsed = 0
+	now := time.Now()
 	for {
 		switch {
-		case p.paused:
+		case p.paused.Load():
 			<-p.unpause
-		case p.done:
+		case p.done.Load():
 			return nil
 		default:
+			p.elapsed += time.Since(now)
+			now = time.Now()
+
 			n, err := io.ReadAtLeast(p.in, buf, 1408)
 			if err != nil {
-				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.ErrShortBuffer) {
+				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.ErrShortBuffer) && !errors.Is(err, os.ErrClosed) {
+					p.elapsed += time.Since(now)
 					return fmt.Errorf("unexpected error copying to output writer: %w", err)
 				}
+				p.elapsed += time.Since(now)
 				return nil
 			}
 
-			if p.intOut != nil {
-				if _, err := p.intOut.Write(audio.BytesToAudioBuffer(buf[:n][:])); err != nil {
-					return fmt.Errorf("error writing to int writer: %w", err)
-				}
-			}
-
-			if _, err := p.out.Write(buf[:n][:]); err != nil {
+			if _, err := p.out.Write(buf[:n]); err != nil {
 				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) {
+					p.elapsed += time.Since(now)
 					return fmt.Errorf("unexpected error copying to output writer: %w", err)
 				}
+				p.elapsed += time.Since(now)
 				return nil
 			}
 			if n < 1408 {
+				p.elapsed += time.Since(now)
 				return nil
 			}
 		}
@@ -74,19 +86,29 @@ func (p *Player) Start() error {
 }
 
 func (p *Player) Pause() {
-	p.paused = true
+	p.paused.Store(true)
 }
 
 func (p *Player) Unpause() {
-	p.paused = false
+	p.paused.Store(false)
 	p.unpause <- true
 }
 
+func (p *Player) Stop() {
+	if p.in != nil {
+		p.in.Close()
+	}
+}
+
+func (p *Player) IsPlaying() bool {
+	return p.playing.Load()
+}
+
 func (p *Player) Close() error {
-	if p.paused {
+	if p.paused.Load() {
 		p.unpause <- true
 	}
-	p.done = true
+	p.done.Store(true)
 	if p.in == nil {
 		return nil
 	} else {

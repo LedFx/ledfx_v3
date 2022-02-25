@@ -30,7 +30,7 @@ func HandleSchema() {
 				"name": "Single Color",
 				"category": "Non-Reactive"
 			},
-			"pulsing": {
+			"audioRandom": {
 				"schema": {
 					"properties": {
 						"color": {
@@ -42,9 +42,9 @@ func HandleSchema() {
 						}
 					}
 				},
-				"id": "pulsing",
-				"name": "Pulsing",
-				"category": "Non-Reactive"
+				"id": "audioRandom",
+				"name": "Audio Random",
+				"category": "Reactive"
 			}
 		}
 	}`)

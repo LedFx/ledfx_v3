@@ -16,15 +16,41 @@ func (br *Bridge) wireAirPlayOutput(client *airplay2.Client) (err error) {
 	case inputTypeLocal:
 		fallthrough
 	case inputTypeYoutube:
-		err = br.AddOutputWriter(client, client.Identifier())
+		err = br.AddOutputWriter(client, client.WriterID())
 	default:
 		err = fmt.Errorf("unrecognized input type '%d'", br.inputType)
+	}
+	if err != nil {
+		br.outputs = append(br.outputs, &OutputInfo{
+			Type: outputTypeAirPlay,
+			Value: &AirPlayOutputInfo{
+				IP:          client.RemoteIP().String(),
+				Hostname:    client.Hostname(),
+				AdvertName:  client.Name(),
+				Type:        client.Type(),
+				Port:        client.RemotePort(),
+				SampleRate:  client.SampleRate(),
+				DeviceModel: client.DeviceModel(),
+			},
+		})
 	}
 	return err
 }
 
-func (br *Bridge) wireLocalOutput(handler *playback.Handler) error {
-	return br.AddOutputWriter(handler, handler.Identifier())
+func (br *Bridge) wireLocalOutput(handler playback.Handler) error {
+	if err := br.AddOutputWriter(handler, handler.Identifier()); err != nil {
+		return err
+	}
+	br.outputs = append(br.outputs, &OutputInfo{
+		Type: outputTypeLocal,
+		Value: &LocalOutputInfo{
+			Device:     handler.Device(),
+			Identifier: handler.Identifier(),
+			SampleRate: handler.SampleRate(),
+			Channels:   handler.NumChannels(),
+		},
+	})
+	return nil
 }
 
 func (br *Bridge) AddOutputWriter(wr io.Writer, name string) error {

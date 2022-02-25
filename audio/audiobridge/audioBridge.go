@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gordonklaus/portaudio"
 	"ledfx/audio"
+	"ledfx/audio/audiobridge/assets"
 	log "ledfx/logger"
 )
 
@@ -12,25 +13,38 @@ func NewBridge(bufferCallback func(buf audio.Buffer)) (br *Bridge, err error) {
 	if err := portaudio.Initialize(); err != nil {
 		return nil, fmt.Errorf("error initializing PortAudio: %w", err)
 	}
-
-	cbHandler := &CallbackWrapper{
-		Callback: bufferCallback,
-	}
-
 	br = &Bridge{
 		bufferCallback: bufferCallback,
 		byteWriter:     audio.NewAsyncMultiWriter(),
-		intWriter:      cbHandler,
 		inputType:      inputType(-1), // -1 signifies undefined
 		done:           make(chan bool),
+		outputs:        make([]*OutputInfo, 0),
 	}
+
+	br.info = &Info{
+		br: br,
+	}
+
+	if err := br.byteWriter.AddWriter(&CallbackWrapper{
+		Callback: bufferCallback,
+	}, "CallbackWrapper"); err != nil {
+		return nil, fmt.Errorf("error adding callback wrapper to writer: %w", err)
+	}
+
 	br.ctl = br.newController()
 	return br, nil
 }
 
-func (cbw *CallbackWrapper) Write(b audio.Buffer) (int, error) {
-	cbw.Callback(b)
-	return len(b), nil
+func (cbw *CallbackWrapper) Write(p []byte) (int, error) {
+	cbw.Callback(audio.BytesToAudioBuffer(p))
+	return len(p), nil
+}
+
+func (br *Bridge) Artwork() []byte {
+	if br.Controller().AirPlay().Server() != nil {
+		return br.Controller().AirPlay().Server().Artwork()
+	}
+	return assets.BlankAlbumArt()
 }
 
 // Stop stops the bridge. Any further references to 'br *Bridge'
@@ -53,6 +67,24 @@ func (br *Bridge) Stop() {
 
 	log.Logger.WithField("category", "Audio Bridge").Warnf("Terminating PortAudio...")
 	_ = portaudio.Terminate()
+}
+
+func (br *Bridge) closeInput() {
+	switch br.inputType {
+	case inputTypeAirPlayServer:
+		if !br.airplay.server.Stopped() {
+			br.airplay.server.Stop()
+		}
+	case inputTypeLocal:
+		if !br.local.capture.Stopped() {
+			br.local.capture.Quit()
+		}
+	case inputTypeYoutube:
+		if !br.youtube.handler.Stopped() {
+			br.youtube.handler.Quit()
+
+		}
+	}
 }
 
 // Wait waits for the bridge to finish.

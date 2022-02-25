@@ -3,11 +3,12 @@ package audiobridge
 import (
 	"fmt"
 	"ledfx/integrations/airplay2"
+	log "ledfx/logger"
 )
 
 func (br *Bridge) StartAirPlayInput(name string, port int, verbose bool) error {
 	if br.inputType != -1 {
-		return fmt.Errorf("an input source has already been defined for this bridge")
+		br.closeInput()
 	}
 	br.inputType = inputTypeAirPlayServer
 
@@ -15,13 +16,11 @@ func (br *Bridge) StartAirPlayInput(name string, port int, verbose bool) error {
 		br.airplay = newAirPlayHandler()
 	}
 
-	if br.airplay.server == nil {
-		br.airplay.server = airplay2.NewServer(airplay2.Config{
-			AdvertisementName: name,
-			Port:              port,
-			VerboseLogging:    verbose,
-		}, br.intWriter, br.byteWriter)
-	}
+	br.airplay.server = airplay2.NewServer(airplay2.Config{
+		AdvertisementName: name,
+		Port:              port,
+		VerboseLogging:    verbose,
+	}, br.byteWriter)
 
 	if err := br.airplay.server.Start(); err != nil {
 		return fmt.Errorf("error starting AirPlay server: %w", err)
@@ -60,6 +59,18 @@ func (br *Bridge) AddAirPlayOutput(searchKey string, searchType AirPlaySearchTyp
 		return fmt.Errorf("error initializing AirPlay client: %w", err)
 	}
 
+	// Close any connections that would be a duplicate of our current connection.
+	for i := range br.airplay.clients {
+		if br.airplay.clients[i].RemoteIP().Equal(client.RemoteIP()) {
+			log.Logger.WithField("category", "AirPlay Client Init").Warnf("Closing previous session with matching remote address...")
+			br.airplay.clients[i].Close()
+		}
+	}
+
+	if err := client.ConfirmConnect(); err != nil {
+		return fmt.Errorf("error confirming connection for AirPlay client: %w", err)
+	}
+
 	br.airplay.clients = append(br.airplay.clients, client)
 
 	if err := br.wireAirPlayOutput(client); err != nil {
@@ -88,11 +99,11 @@ func (aph *AirPlayHandler) Stop() {
 	}
 }
 
-type AirPlaySearchType int8
+type AirPlaySearchType string
 
 const (
-	AirPlaySearchByName AirPlaySearchType = iota
-	AirPlaySearchByIP
+	AirPlaySearchByName AirPlaySearchType = "name"
+	AirPlaySearchByIP                     = "ip"
 )
 
 func (a AirPlaySearchType) MarshalJSON() ([]byte, error) {

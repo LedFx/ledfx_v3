@@ -17,10 +17,12 @@ require (
 	github.com/nathan-fiscaletti/consolesize-go v0.0.0-20210105204122-a87d9f614b9d
 	github.com/ojrac/opensimplex-go v1.0.2
 	github.com/ritchie46/GOPHY v0.0.0-20170315173114-9b8a7f05cfa1
+	github.com/rs/cors v1.8.2
 	github.com/simonassank/aubio-go v0.0.0-20210318191226-729d3d668592
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.10.1
 	github.com/u2takey/ffmpeg-go v0.4.0
+	go.uber.org/atomic v1.9.0
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
 	golang.org/x/text v0.3.7
 	tailscale.com v1.20.2
@@ -66,8 +68,6 @@ require (
 	go4.org/intern v0.0.0-20211027215823-ae77deb06f29 // indirect
 	go4.org/mem v0.0.0-20210711025021-927187094b94 // indirect
 	go4.org/unsafe/assume-no-moving-gc v0.0.0-20211027215541-db492cf91b37 // indirect
-	golang.org/x/exp v0.0.0-20200331195152-e8c3332aa8e5 // indirect
-	golang.org/x/mobile v0.0.0-20190719004257-d2bd2a29d028 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.zx2c4.com/wireguard/windows v0.4.10 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
@@ -85,7 +85,6 @@ require (
 )
 
 require (
-	github.com/hajimehoshi/oto v1.0.1
 	github.com/maghul/alac v0.0.0-20161106215514-129591bceef4
 	github.com/maghul/go.alac v0.0.0-20161106215514-129591bceef4 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect

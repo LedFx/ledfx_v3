@@ -2,11 +2,6 @@ package youtube
 
 import (
 	"fmt"
-	"github.com/dustin/go-humanize"
-	pretty "github.com/fatih/color"
-	yt "github.com/kkdai/youtube/v2"
-	"github.com/schollz/progressbar/v3"
-	ffmpeg "github.com/u2takey/ffmpeg-go"
 	"io"
 	"ledfx/audio"
 	log "ledfx/logger"
@@ -15,78 +10,139 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	humanize "github.com/dustin/go-humanize"
+	pretty "github.com/fatih/color"
+	yt "github.com/kkdai/youtube/v2"
+	progressbar "github.com/schollz/progressbar/v3"
+	ffmpeg "github.com/u2takey/ffmpeg-go"
+	"go.uber.org/atomic"
 )
 
 type Handler struct {
 	cl         *yt.Client
-	intWriter  audio.IntWriter
 	byteWriter *audio.AsyncMultiWriter
 	verbose    bool
 	p          *Player
 	pp         *PlaylistPlayer
+	stopped    bool
+
+	nowPlaying TrackInfo
+	history    []TrackInfo
 }
 
-func NewHandler(intWriter audio.IntWriter, byteWriter *audio.AsyncMultiWriter, verbose bool) *Handler {
+func (h *Handler) Quit() {
+	h.stopped = true
+	if h.p != nil {
+		h.p.Close()
+	}
+	if h.pp != nil {
+		h.pp.Stop()
+	}
+}
+func (h *Handler) Stopped() bool {
+	return h.stopped
+}
+
+func NewHandler(byteWriter *audio.AsyncMultiWriter, verbose bool) *Handler {
 	h := &Handler{
 		cl: &yt.Client{
 			Debug:      false,
 			HTTPClient: http.DefaultClient,
 		},
-		intWriter:  intWriter,
 		byteWriter: byteWriter,
 		verbose:    verbose,
+		history:    make([]TrackInfo, 0),
 		p: &Player{
 			mu:      &sync.Mutex{},
-			paused:  false,
+			done:    atomic.NewBool(false),
+			paused:  atomic.NewBool(false),
 			unpause: make(chan bool),
-			done:    false,
+			playing: atomic.NewBool(false),
 			in:      nil,
 			out:     byteWriter,
-			intOut:  intWriter,
 		},
 	}
 	h.pp = &PlaylistPlayer{
 		h:        h,
 		trackNum: -1,
-		tracks:   nil,
+		tracks:   make([]TrackInfo, 0),
 	}
 	return h
 }
-
 func (h *Handler) Play(url string) (p *Player, err error) {
-	videoInfo, tmp, err := h.downloadToMP3(url)
+	trackInfo, tmp, err := h.downloadToMP3(url)
 	if err != nil {
 		return nil, fmt.Errorf("error writing video data to tmpfile: %w", err)
 	}
 
+	h.history = append(h.history, trackInfo)
+	h.nowPlaying = trackInfo
+
 	if h.verbose {
 		log.Logger.WithField("category", "YT Player").Infof(
-			"[CREATOR=\"%s\", SAMPLERATE=\"%d\", SIZE=\"%s\", CHANNELS=\"%d\", DURATION=\"%v\"]",
-			videoInfo.Creator,
-			videoInfo.SampleRate,
-			humanize.Bytes(uint64(videoInfo.WavSize)),
-			videoInfo.Channels,
-			videoInfo.duration,
+			"[ARTIST=\"%s\", SAMPLERATE=\"%d\", SIZE=\"%s\", CHANNELS=\"%d\", DURATION=\"%s\"]",
+			trackInfo.Artist,
+			trackInfo.SampleRate,
+			humanize.Bytes(uint64(trackInfo.FileSize)),
+			trackInfo.AudioChannels,
+			time.Duration(trackInfo.Duration).String(),
 		)
 	}
 
-	_, _ = pretty.Set(pretty.BgHiCyan, pretty.FgBlack, pretty.Bold).Print("🎵 Now playing")
-	pretty.Unset()
+	logTrack(trackInfo.Title, trackInfo.Artist)
 
-	_, _ = pretty.Set(pretty.FgHiWhite, pretty.Bold).Print(" ➜ ")
-	pretty.Unset()
+	fileBuffer, err := NewFileBuffer(tmp)
+	if err != nil {
+		return nil, fmt.Errorf("error creating new file buffer: %v", err)
+	}
 
-	_, _ = pretty.Set(pretty.BgMagenta, pretty.FgWhite, pretty.Bold).Printf("%s by %s", videoInfo.Title, videoInfo.Creator)
-	pretty.Unset()
-	fmt.Println()
-
-	h.p.Reset(tmp)
+	h.p.Reset(fileBuffer)
 
 	return h.p, nil
+}
+
+func (h *Handler) NowPlaying() TrackInfo {
+	return h.nowPlaying
+}
+func (h *Handler) QueuedTracks() []TrackInfo {
+	return h.pp.tracks
+}
+func (h *Handler) TimeElapsed() time.Duration {
+	return h.p.elapsed
+}
+
+func (h *Handler) IsPaused() bool {
+	return h.p.paused.Load()
+}
+func (h *Handler) TrackIndex() int {
+	if len(h.QueuedTracks()) == 0 {
+		return 0
+	} else {
+		return h.pp.trackNum
+	}
+}
+func (h *Handler) IsPlaying() bool {
+	return h.p.IsPlaying()
+}
+
+type CompletionPercent float32
+
+func (c CompletionPercent) MarshalJSON() ([]byte, error) {
+	if c > 100 || c < 0 {
+		return nil, fmt.Errorf("CompletionPercent can only be in range 0-100")
+	}
+	return []byte(fmt.Sprintf("%0.2f", c)), nil
+}
+
+func (h *Handler) PercentComplete() (CompletionPercent, error) {
+	if !h.IsPlaying() {
+		return 0, nil
+	}
+	return CompletionPercent((float32(h.p.in.CurrentOffset()) / float32(h.NowPlaying().FileSize)) * float32(100)), nil
 }
 
 func (h *Handler) PlayPlaylist(playlistURL string) (pp *PlaylistPlayer, err error) {
@@ -97,39 +153,35 @@ func (h *Handler) PlayPlaylist(playlistURL string) (pp *PlaylistPlayer, err erro
 
 	h.pp.Stop()
 
-	h.pp.tracks = make([]string, len(pl.Videos))
+	h.pp.tracks = make([]TrackInfo, len(pl.Videos))
 
 	for i := range pl.Videos {
-		h.pp.tracks[i] = fmt.Sprintf("https://youtu.be/%s", pl.Videos[i].ID)
+		h.pp.tracks[i] = TrackInfo{
+			Artist:   pl.Videos[i].Author,
+			Title:    pl.Videos[i].Title,
+			Duration: SongDuration(pl.Videos[i].Duration),
+			URL:      fmt.Sprintf("https://youtu.be/%s", pl.Videos[i].ID),
+		}
 	}
 	return h.pp, nil
 }
 
-type VideoInfo struct {
-	Title      string
-	Creator    string
-	WavSize    int64
-	SampleRate int
-	Channels   int
-	duration   time.Duration
-}
-
-func (h *Handler) downloadToMP3(url string) (videoInfo VideoInfo, tmp *os.File, err error) {
+func (h *Handler) downloadToMP3(url string) (videoInfo TrackInfo, tmp *os.File, err error) {
 	video, err := h.cl.GetVideo(url)
 	if err != nil {
 		return videoInfo, nil, fmt.Errorf("error getting video: %w", err)
 	}
 
-	videoInfo = VideoInfo{
-		Title:      video.Title,
-		Creator:    video.Author,
-		duration:   video.Duration,
-		SampleRate: -1,
+	videoInfo = TrackInfo{
+		Artist:   video.Author,
+		Title:    video.Title,
+		Duration: SongDuration(video.Duration),
+		URL:      url,
 	}
 
-	audioFile := fmt.Sprintf("/tmp/%s.wav", cleanTitle(video.Title))
+	audioFile := filepath.Join(os.TempDir(), cleanTitle(video.Title)+".wav")
 	tmpVideoName := fmt.Sprintf("%s.ytdl", util.RandString(8))
-	tmpVideoNameAndPath := filepath.Join("/tmp/", tmpVideoName)
+	tmpVideoNameAndPath := filepath.Join(os.TempDir(), tmpVideoName)
 
 	if util.FileExists(audioFile) {
 		if tmp, err = os.Open(audioFile); err != nil {
@@ -140,17 +192,15 @@ func (h *Handler) downloadToMP3(url string) (videoInfo VideoInfo, tmp *os.File, 
 			return videoInfo, nil, fmt.Errorf("error statting tmpfile: %w", err)
 		}
 
-		videoInfo.WavSize = st.Size()
+		videoInfo.FileSize = st.Size()
 
 		return videoInfo, tmp, nil
 	}
 
 Download:
 	format := video.Formats.WithAudioChannels().FindByQuality("tiny")
-	if videoInfo.SampleRate, err = strconv.Atoi(format.AudioSampleRate); err != nil {
-		log.Logger.WithField("category", "YT Downloader").Warnf("Error converting sample rate to integer: %v", err)
-	}
-	videoInfo.Channels = format.AudioChannels
+	videoInfo.SampleRate = 44100
+	videoInfo.AudioChannels = 2
 
 	reader, size, err := h.cl.GetStream(video, format)
 	if err != nil {
@@ -175,12 +225,12 @@ Download:
 	}
 
 	if h.verbose {
-		if err := ffmpeg.Input(tmpVideoNameAndPath).Audio().Output(audioFile, ffmpeg.KwArgs{"sample_fmt": "s16", "ar": "44100"}).OverWriteOutput().WithErrorOutput(os.Stderr).Run(); err != nil {
-			return videoInfo, nil, fmt.Errorf("error converting YouTube download to wav: %w", err)
+		if err := ffmpeg.Input(tmpVideoNameAndPath).Audio().Output(audioFile, ffmpeg.KwArgs{"sample_fmt": "s16", "ar": "44100", "ac": 2}).OverWriteOutput().WithErrorOutput(os.Stderr).Run(); err != nil {
+			return videoInfo, nil, fmt.Errorf("error converting YouTubeSet download to wav: %w", err)
 		}
 	} else {
-		if err := ffmpeg.Input(tmpVideoNameAndPath).Audio().Output(audioFile, ffmpeg.KwArgs{"sample_fmt": "s16", "ar": "44100"}).OverWriteOutput().Run(); err != nil {
-			return videoInfo, nil, fmt.Errorf("error converting YouTube download to wav: %w", err)
+		if err := ffmpeg.Input(tmpVideoNameAndPath).Audio().Output(audioFile, ffmpeg.KwArgs{"sample_fmt": "s16", "ar": "44100", "ac": 2}).OverWriteOutput().Run(); err != nil {
+			return videoInfo, nil, fmt.Errorf("error converting YouTubeSet download to wav: %w", err)
 		}
 	}
 
@@ -193,13 +243,28 @@ Download:
 		return videoInfo, tmp, fmt.Errorf("statting WAV output file: %w", err)
 	}
 
-	videoInfo.WavSize = st.Size()
+	videoInfo.FileSize = st.Size()
 
 	return videoInfo, tmp, nil
 }
 
+var (
+	titleCleaner, _ = regexp.Compile("[^a-zA-Z0-9 ]+")
+)
+
 func cleanTitle(title string) string {
 	// Make a Regex to say we only want letters and numbers
-	reg, _ := regexp.Compile("[^a-zA-Z0-9 ]+")
-	return strings.ReplaceAll(reg.ReplaceAllString(title, ""), " ", "_")
+	return strings.ReplaceAll(titleCleaner.ReplaceAllString(title, ""), " ", "_")
+}
+
+func logTrack(track, author string) {
+	_, _ = pretty.Set(pretty.BgHiCyan, pretty.FgBlack, pretty.Bold).Print("🎵 Now playing")
+	pretty.Unset()
+
+	_, _ = pretty.Set(pretty.FgHiWhite, pretty.Bold).Print(" ➜ ")
+	pretty.Unset()
+
+	_, _ = pretty.Set(pretty.BgMagenta, pretty.FgWhite, pretty.Bold).Printf("%s by %s", track, author)
+	pretty.Unset()
+	fmt.Println()
 }

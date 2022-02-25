@@ -34,10 +34,10 @@ func StartEffect(deviceConfig config.DeviceConfig, effect Effect, clr string, fp
 	phase := 0.0 // phase of the effect (range 0.0 to 2π)
 
 	// TODO: choose type of device dynamically based on the deviceConfig
-	var device = &device.UdpDevice{
+	var device = &device.UDPDevice{
 		Name:     deviceConfig.Name,
 		Port:     deviceConfig.Port,
-		Protocol: device.UdpProtocols[deviceConfig.UdpPacketType],
+		Protocol: device.UDPProtocols[deviceConfig.UdpPacketType],
 		Config:   deviceConfig,
 	}
 
@@ -91,10 +91,10 @@ func StartEffect(deviceConfig config.DeviceConfig, effect Effect, clr string, fp
 func StopEffect(deviceConfig config.DeviceConfig, effect Effect, clr string, fps int, done <-chan bool) error {
 
 	// TODO: choose type of device dynamically based on the deviceConfig
-	var device = &device.UdpDevice{
+	var device = &device.UDPDevice{
 		Name:     deviceConfig.Name,
 		Port:     deviceConfig.Port,
-		Protocol: device.UdpProtocols[deviceConfig.UdpPacketType],
+		Protocol: device.UDPProtocols[deviceConfig.UdpPacketType],
 		Config:   deviceConfig,
 	}
 

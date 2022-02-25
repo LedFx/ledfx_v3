@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	devMap map[string]*device.UdpDevice
+	devMap map[string]*device.UDPDevice
 )
 
 func init() {
-	devMap = make(map[string]*device.UdpDevice)
+	devMap = make(map[string]*device.UDPDevice)
 }
 
 type Virtual interface {
@@ -65,10 +65,10 @@ func RepeatN(virtualID string, playState bool, clr string, n int) error {
 			if config.GlobalConfig.Virtuals[i].IsDevice != "" {
 				for in, de := range config.GlobalConfig.Devices {
 					if de.Id == config.GlobalConfig.Virtuals[i].IsDevice {
-						devMap[virtualID] = &device.UdpDevice{
+						devMap[virtualID] = &device.UDPDevice{
 							Name:     config.GlobalConfig.Devices[in].Config.Name,
 							Port:     config.GlobalConfig.Devices[in].Config.Port,
-							Protocol: device.UdpProtocols[config.GlobalConfig.Devices[in].Config.UdpPacketType],
+							Protocol: device.UDPProtocols[config.GlobalConfig.Devices[in].Config.UdpPacketType],
 							Config:   config.GlobalConfig.Devices[in].Config,
 						}
 
@@ -114,10 +114,10 @@ func RepeatNSmooth(virtualID string, playState bool, clr string, n int) error {
 			if config.GlobalConfig.Virtuals[i].IsDevice != "" {
 				for in, de := range config.GlobalConfig.Devices {
 					if de.Id == config.GlobalConfig.Virtuals[i].IsDevice {
-						var dev = &device.UdpDevice{
+						var dev = &device.UDPDevice{
 							Name:     config.GlobalConfig.Devices[in].Config.Name,
 							Port:     config.GlobalConfig.Devices[in].Config.Port,
-							Protocol: device.UdpProtocols[config.GlobalConfig.Devices[in].Config.UdpPacketType],
+							Protocol: device.UDPProtocols[config.GlobalConfig.Devices[in].Config.UdpPacketType],
 							Config:   config.GlobalConfig.Devices[in].Config,
 						}
 
@@ -189,10 +189,10 @@ func PlayVirtual(virtualID string, playState bool, clr string) (err error) {
 			if config.GlobalConfig.Virtuals[i].IsDevice != "" {
 				for in, de := range config.GlobalConfig.Devices {
 					if de.Id == config.GlobalConfig.Virtuals[i].IsDevice {
-						var dev = &device.UdpDevice{
+						var dev = &device.UDPDevice{
 							Name:     config.GlobalConfig.Devices[in].Config.Name,
 							Port:     config.GlobalConfig.Devices[in].Config.Port,
-							Protocol: device.UdpProtocols[config.GlobalConfig.Devices[in].Config.UdpPacketType],
+							Protocol: device.UDPProtocols[config.GlobalConfig.Devices[in].Config.UdpPacketType],
 							Config:   config.GlobalConfig.Devices[in].Config,
 						}
 

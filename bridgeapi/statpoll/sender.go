@@ -21,7 +21,7 @@ type valueBridgeInfo struct {
 	Outputs   []*audiobridge.OutputInfo `json:"outputs"`
 }
 
-func (s *StatPoller) sendBridgeInfo(n int, interval time.Duration, ws *websocket.Conn) {
+func (s *StatPoller) sendBridgeInfo(r *Request, interval time.Duration, ws *websocket.Conn) {
 	if s.sendingBridgeInfo.IsSet() {
 		s.stopBridgeInfo()
 	}
@@ -35,11 +35,11 @@ func (s *StatPoller) sendBridgeInfo(n int, interval time.Duration, ws *websocket
 	defer tick.Stop()
 
 Top:
-	for i := 0; i != n; i++ {
+	for i := 0; i != r.Iterations; i++ {
 		select {
 		case <-tick.C:
 			if err := ws.WriteJSON(&Response{
-				Type:      RqtBridgeInfo,
+				Type:      ReqBridgeInfo,
 				Iteration: i,
 				Value: &valueBridgeInfo{
 					InputType: s.br.Info().InputType(),
@@ -66,16 +66,16 @@ func (s *StatPoller) stopBridgeInfo() {
 
 // valueYoutubeInfo contains all information on youtube.Handler
 type valueYoutubeInfo struct {
-	NowPlaying        youtube.TrackInfo `json:"now_playing"`
-	TrackDurationNs   int64             `json:"track_duration_ns"`
-	ElapsedDurationNs int64             `json:"elapsed_duration_ns"`
+	NowPlaying        *youtube.TrackInfo `json:"now_playing,omitempty"`
+	TrackDurationNs   int64              `json:"track_duration_ns,omitempty"`
+	ElapsedDurationNs int64              `json:"elapsed_duration_ns,omitempty"`
 
-	TrackIndex   int  `json:"track_index"`
-	Paused       bool `json:"paused"`
-	QueuedTracks []youtube.TrackInfo
+	TrackIndex   int                 `json:"track_index,omitempty"`
+	Paused       bool                `json:"paused,omitempty"`
+	QueuedTracks []youtube.TrackInfo `json:"queued_tracks,omitempty"`
 }
 
-func (s *StatPoller) sendYoutubeInfo(n int, interval time.Duration, ws *websocket.Conn) {
+func (s *StatPoller) sendYoutubeInfo(r *Request, interval time.Duration, ws *websocket.Conn) {
 	if s.sendingYoutubeInfo.IsSet() {
 		s.stopYoutubeInfo()
 	}
@@ -89,49 +89,53 @@ func (s *StatPoller) sendYoutubeInfo(n int, interval time.Duration, ws *websocke
 	defer tick.Stop()
 
 Top:
-	for i := 0; i != n; i++ {
+	for i := 0; i != r.Iterations; i++ {
 		select {
 		case <-tick.C:
+			if len(r.Params) <= 0 {
+				r.Params = []ReqParam{YtParamNowPlaying, YtParamTrackDuration, YtParamElapsedTime, YtParamPaused, YtParamTrackIndex, YtParamQueuedTracks}
+			}
 			nowPlaying, err := s.br.Controller().YouTube().NowPlaying()
 			if err != nil {
 				ws.WriteJSON(errorToJson(err))
 				break Top
 			}
+			value := new(valueYoutubeInfo)
 
-			isPlaying, err := s.br.Controller().YouTube().IsPlaying()
-			if err != nil {
-				ws.WriteJSON(errorToJson(err))
-				break Top
+			for i2 := range r.Params {
+				switch r.Params[i2] {
+				case YtParamNowPlaying:
+					value.NowPlaying = &nowPlaying
+				case YtParamTrackDuration:
+					value.TrackDurationNs = time.Duration(nowPlaying.Duration).Nanoseconds()
+				case YtParamElapsedTime:
+					elapsed, err := s.br.Controller().YouTube().TimeElapsed()
+					if err != nil {
+						ws.WriteJSON(errorToJson(err))
+						break Top
+					}
+					value.ElapsedDurationNs = elapsed.Nanoseconds()
+				case YtParamPaused:
+					if value.Paused, err = s.br.Controller().YouTube().IsPaused(); err != nil {
+						ws.WriteJSON(errorToJson(err))
+						break Top
+					}
+				case YtParamTrackIndex:
+					if value.TrackIndex, err = s.br.Controller().YouTube().TrackIndex(); err != nil {
+						ws.WriteJSON(errorToJson(err))
+						break Top
+					}
+				case YtParamQueuedTracks:
+					if value.QueuedTracks, err = s.br.Controller().YouTube().QueuedTracks(); err != nil {
+						ws.WriteJSON(errorToJson(err))
+						break Top
+					}
+				}
 			}
-
-			trackIndex, err := s.br.Controller().YouTube().TrackIndex()
-			if err != nil {
-				ws.WriteJSON(errorToJson(err))
-				break Top
-			}
-
-			allTracks, err := s.br.Controller().YouTube().QueuedTracks()
-			if err != nil {
-				ws.WriteJSON(errorToJson(err))
-				break Top
-			}
-
-			elapsed, err := s.br.Controller().YouTube().TimeElapsed()
-			if err != nil {
-				ws.WriteJSON(errorToJson(err))
-				break Top
-			}
-			if err := ws.WriteJSON(&Response{
-				Type:      RqtYoutubeInfo,
+			if err = ws.WriteJSON(&Response{
+				Type:      ReqYoutubeInfo,
 				Iteration: i,
-				Value: &valueYoutubeInfo{
-					NowPlaying:        nowPlaying,
-					TrackDurationNs:   time.Duration(nowPlaying.Duration).Nanoseconds(),
-					ElapsedDurationNs: elapsed.Nanoseconds(),
-					TrackIndex:        trackIndex,
-					Paused:            !isPlaying,
-					QueuedTracks:      allTracks,
-				},
+				Value:     value,
 			}); err != nil {
 				log.Logger.WithField("category", "StatPoll BridgeInfo").Errorf("Error writing JSON over websocket: %v", err)
 				break Top
@@ -158,7 +162,7 @@ type valueAirPlayInfo struct {
 	ArtworkURLPath string             `json:"artwork_url_path"`
 }
 
-func (s *StatPoller) sendAirPlayInfo(n int, interval time.Duration, ws *websocket.Conn) {
+func (s *StatPoller) sendAirPlayInfo(r *Request, interval time.Duration, ws *websocket.Conn) {
 	if s.sendingAirPlayInfo.IsSet() {
 		s.stopAirPlayInfo()
 	}
@@ -172,13 +176,13 @@ func (s *StatPoller) sendAirPlayInfo(n int, interval time.Duration, ws *websocke
 	defer tick.Stop()
 
 Top:
-	for i := 0; i != n; i++ {
+	for i := 0; i != r.Iterations; i++ {
 		select {
 		case <-s.cancelAirPlay:
 			break Top
 		case <-tick.C:
 			if err := ws.WriteJSON(&Response{
-				Type:      RqtAirPlayInfo,
+				Type:      ReqAirPlayInfo,
 				Iteration: i,
 				Value: &valueAirPlayInfo{
 					Server:         s.br.Controller().AirPlay().Server(),

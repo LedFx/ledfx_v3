@@ -22,7 +22,8 @@ type Player struct {
 	in  *FileBuffer
 	out *audio.AsyncMultiWriter
 
-	elapsed time.Duration
+	elapsed *atomic.Duration
+	ticker  *time.Ticker
 }
 
 func (p *Player) Reset(input *FileBuffer) {
@@ -36,6 +37,28 @@ func (p *Player) Reset(input *FileBuffer) {
 
 	p.Stop()
 	p.in = input
+	p.elapsed.Store(0)
+}
+
+func (p *Player) elapsedLoop(done chan struct{}) {
+	if p.ticker == nil {
+		p.ticker = time.NewTicker(time.Second)
+	} else {
+		p.ticker.Reset(time.Second)
+	}
+
+	defer p.ticker.Stop()
+
+	for {
+		select {
+		case <-done:
+			return
+		case <-p.ticker.C:
+			if !p.paused.Load() {
+				p.elapsed.Add(1 * time.Second)
+			}
+		}
+	}
 }
 
 func (p *Player) Start() error {
@@ -46,9 +69,15 @@ func (p *Player) Start() error {
 		p.mu.Unlock()
 	}()
 
-	buf := make([]byte, 1408)
-	p.elapsed = 0
-	now := time.Now()
+	doneCh := make(chan struct{})
+
+	defer func() {
+		doneCh <- struct{}{}
+		close(doneCh)
+	}()
+
+	go p.elapsedLoop(doneCh)
+
 	for {
 		switch {
 		case p.paused.Load():
@@ -56,29 +85,10 @@ func (p *Player) Start() error {
 		case p.done.Load():
 			return nil
 		default:
-			p.elapsed += time.Since(now)
-			now = time.Now()
-
-			n, err := io.ReadAtLeast(p.in, buf, 1408)
-			if err != nil {
+			if _, err := io.CopyN(p.out, p.in, 1408); err != nil {
 				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.ErrShortBuffer) && !errors.Is(err, os.ErrClosed) {
-					p.elapsed += time.Since(now)
 					return fmt.Errorf("unexpected error copying to output writer: %w", err)
 				}
-				p.elapsed += time.Since(now)
-				return nil
-			}
-
-			if _, err := p.out.Write(buf[:n]); err != nil {
-				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) {
-					p.elapsed += time.Since(now)
-					return fmt.Errorf("unexpected error copying to output writer: %w", err)
-				}
-				p.elapsed += time.Since(now)
-				return nil
-			}
-			if n < 1408 {
-				p.elapsed += time.Since(now)
 				return nil
 			}
 		}

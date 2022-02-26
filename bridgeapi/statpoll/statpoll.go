@@ -90,8 +90,8 @@ Check:
 		fallthrough
 	case ws == nil:
 		return errors.New("(ws *websocket.Conn) and (r *Request) must be non-nil")
-	case r.Type == "": // If Request.Type is unspecified, default to RqtBridgeInfo
-		r.Type = RqtBridgeInfo
+	case r.Type == "": // If Request.Type is unspecified, default to ReqBridgeInfo
+		r.Type = ReqBridgeInfo
 		goto Check
 	case r.Iterations == 0:
 		r.Iterations = 1
@@ -101,17 +101,17 @@ Check:
 	}
 
 	switch r.Type {
-	case RqtBridgeInfo:
-		go s.sendBridgeInfo(r.Iterations, time.Duration(r.IntervalMs)*time.Millisecond, ws)
-	case RqtStopBridgeInfo:
+	case ReqBridgeInfo:
+		go s.sendBridgeInfo(r, time.Duration(r.IntervalMs)*time.Millisecond, ws)
+	case ReqStopBridgeInfo:
 		go s.stopBridgeInfo()
-	case RqtYoutubeInfo:
-		go s.sendYoutubeInfo(r.Iterations, time.Duration(r.IntervalMs)*time.Millisecond, ws)
-	case RqtStopYoutubeInfo:
+	case ReqYoutubeInfo:
+		go s.sendYoutubeInfo(r, time.Duration(r.IntervalMs)*time.Millisecond, ws)
+	case ReqStopYoutubeInfo:
 		go s.stopYoutubeInfo()
-	case RqtAirPlayInfo:
-		go s.sendAirPlayInfo(r.Iterations, time.Duration(r.IntervalMs)*time.Millisecond, ws)
-	case RqtStopAirPlayInfo:
+	case ReqAirPlayInfo:
+		go s.sendAirPlayInfo(r, time.Duration(r.IntervalMs)*time.Millisecond, ws)
+	case ReqStopAirPlayInfo:
 		go s.stopAirPlayInfo()
 	default:
 		return fmt.Errorf("unknown request type '%s'", r.Type)
@@ -120,9 +120,10 @@ Check:
 }
 
 type Request struct {
-	Type       ReqType `json:"type"`
-	Iterations int     `json:"iterations"`
-	IntervalMs int64   `json:"interval_ms"`
+	Type       ReqType    `json:"type"`
+	Params     []ReqParam `json:"params"`
+	Iterations int        `json:"iterations"`
+	IntervalMs int64      `json:"interval_ms"`
 }
 
 var (

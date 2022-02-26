@@ -21,8 +21,10 @@ type TrackInfo struct {
 	Duration      SongDuration `json:"duration,omitempty"`
 	SampleRate    int64        `json:"samplerate,omitempty"`
 	FileSize      int64        `json:"filesize,omitempty"`
-	URL           string       `json:"url"`
+	URL           string       `json:"url,omitempty"`
 	AudioChannels int          `json:"audio_channels,omitempty"`
+
+	invalid bool
 }
 
 type PlaylistPlayer struct {
@@ -40,9 +42,13 @@ func (pp *PlaylistPlayer) Unpause() {
 
 func (pp *PlaylistPlayer) Next(waitDone bool) error {
 	pp.inc()
-	if len(pp.tracks) <= pp.trackNum {
+	switch {
+	case len(pp.tracks) <= pp.trackNum:
 		return fmt.Errorf("no tracks found with index %d", pp.trackNum)
+	case pp.tracks[pp.trackNum].invalid:
+		return pp.Next(waitDone)
 	}
+
 	p, err := pp.h.Play(pp.tracks[pp.trackNum].URL)
 	if err != nil {
 		if errors.Is(err, yt.ErrNotPlayableInEmbed) {
@@ -67,6 +73,14 @@ func (pp *PlaylistPlayer) Next(waitDone bool) error {
 
 func (pp *PlaylistPlayer) Previous(waitDone bool) error {
 	pp.dec()
+
+	switch {
+	case len(pp.tracks) <= pp.trackNum:
+		return fmt.Errorf("no tracks found with index %d", pp.trackNum)
+	case pp.tracks[pp.trackNum].invalid:
+		return pp.Next(waitDone)
+	}
+
 	p, err := pp.h.Play(pp.tracks[pp.trackNum].URL)
 	if err != nil {
 		if errors.Is(err, yt.ErrNotPlayableInEmbed) {
@@ -89,7 +103,7 @@ func (pp *PlaylistPlayer) Previous(waitDone bool) error {
 }
 
 func (pp *PlaylistPlayer) inc() {
-	if pp.trackNum >= len(pp.tracks)-1 {
+	if pp.trackNum >= len(pp.tracks) {
 		pp.trackNum = 0
 	} else {
 		pp.trackNum++
@@ -136,5 +150,9 @@ func (pp *PlaylistPlayer) Stop() {
 }
 
 func (pp *PlaylistPlayer) StopCurrentTrack() {
-	pp.h.p.Stop()
+	if pp.h != nil {
+		if pp.h.p != nil {
+			pp.h.p.Stop()
+		}
+	}
 }

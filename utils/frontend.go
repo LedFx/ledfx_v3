@@ -69,14 +69,11 @@ func InitFrontend(ip string, port int) {
 	switch runtime.GOOS {
 	case "darwin":
 		keyCombPrinter.Print("[CMD]+Click: ")
-	default:
-		keyCombPrinter.Print("[CTRL]+Click: ")
-	}
-	linkPrinter.Print("http://localhost:8080/#/?newCore=1")
-	switch runtime.GOOS {
-	case "darwin":
+		linkPrinter.Print("http://localhost:8080/#/?newCore=1")
 		borderPrinter.Print("     │")
 	default:
+		keyCombPrinter.Print("[CTRL]+Click: ")
+		linkPrinter.Print("http://localhost:8080/#/?newCore=1")
 		borderPrinter.Print("    │")
 	}
 	fmt.Println()

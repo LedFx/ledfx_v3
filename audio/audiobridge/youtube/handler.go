@@ -64,6 +64,7 @@ func NewHandler(byteWriter *audio.AsyncMultiWriter, verbose bool) *Handler {
 			playing: atomic.NewBool(false),
 			in:      nil,
 			out:     byteWriter,
+			elapsed: atomic.NewDuration(0),
 		},
 	}
 	h.pp = &PlaylistPlayer{
@@ -112,7 +113,7 @@ func (h *Handler) QueuedTracks() []TrackInfo {
 	return h.pp.tracks
 }
 func (h *Handler) TimeElapsed() time.Duration {
-	return h.p.elapsed
+	return h.p.elapsed.Load()
 }
 
 func (h *Handler) IsPaused() bool {
@@ -155,14 +156,46 @@ func (h *Handler) PlayPlaylist(playlistURL string) (pp *PlaylistPlayer, err erro
 
 	h.pp.tracks = make([]TrackInfo, len(pl.Videos))
 
-	for i := range pl.Videos {
-		h.pp.tracks[i] = TrackInfo{
-			Artist:   pl.Videos[i].Author,
-			Title:    pl.Videos[i].Title,
-			Duration: SongDuration(pl.Videos[i].Duration),
-			URL:      fmt.Sprintf("https://youtu.be/%s", pl.Videos[i].ID),
+	sentReady := atomic.NewBool(false)
+	ready := make(chan struct{})
+
+	go func(r chan struct{}, sentR *atomic.Bool) {
+		for i := range pl.Videos {
+			h.pp.tracks[i] = TrackInfo{
+				Artist:   pl.Videos[i].Author,
+				Title:    pl.Videos[i].Title,
+				Duration: SongDuration(pl.Videos[i].Duration),
+				URL:      fmt.Sprintf("https://youtu.be/%s", pl.Videos[i].ID),
+			}
+
+			_, tmp, err := h.downloadToMP3(h.pp.tracks[i].URL)
+			if err != nil {
+				if tmp != nil {
+					_ = tmp.Close()
+				}
+				log.Logger.WithField("category", "YouTube Downloader").Errorf("Error downloading playlist entry %d as MP3: %v", i, err)
+				h.pp.tracks[i].invalid = true
+				continue
+			}
+			_ = tmp.Close()
+			if !sentR.Load() {
+				sentR.Store(true)
+				r <- struct{}{}
+			}
 		}
-	}
+	}(ready, sentReady)
+
+	go func(r chan struct{}) {
+		defer close(r)
+		<-r
+		for {
+			if err := h.pp.Next(true); err != nil {
+				log.Logger.WithField("category", "Playlist Player").Errorf("Error waiting for next song to complete: %v", err)
+				return
+			}
+		}
+	}(ready)
+
 	return h.pp, nil
 }
 

@@ -53,11 +53,11 @@ func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (err error) 
 
 	// Ctl handlers
 	s.mux.HandleFunc("/api/bridge/ctl/youtube/set", s.handleCtlYouTube)
-	s.mux.HandleFunc("/api/bridge/ctl/youtube/info", s.handleCtlYouTubeGetInfo)
-
 	s.mux.HandleFunc("/api/bridge/ctl/airplay/set", s.handleCtlAirPlaySet)
+
+	/* TODO statpoll for these endpoints
 	s.mux.HandleFunc("/api/bridge/ctl/airplay/clients", s.handleCtlAirPlayGetClients)
-	s.mux.HandleFunc("/api/bridge/ctl/airplay/info", s.handleCtlAirPlayGetInfo)
+	s.mux.HandleFunc("/api/bridge/ctl/airplay/info", s.handleCtlAirPlayGetInfo) */
 
 	// StatPoller handler
 	s.mux.HandleFunc("/api/bridge/statpoll/ws", s.handleStatPollInitWs)

@@ -120,12 +120,12 @@ func (j *JsonCTL) YouTubeSet(jsonData []byte) (respBytes []byte, err error) {
 }
 
 type YouTubeInfo struct {
-	IsPlaying       bool                      `json:"is_playing"`
-	PercentComplete youtube.CompletionPercent `json:"percent_complete"`
-	Paused          bool                      `json:"paused"`
-	TrackIndex      int                       `json:"track_index"`
-	NowPlaying      youtube.TrackInfo         `json:"now_playing"`
-	Queued          []youtube.TrackInfo       `json:"queued"`
+	IsPlaying         bool                `json:"is_playing"`
+	ElapsedDurationNs int64               `json:"elapsed_duration_ns"`
+	Paused            bool                `json:"paused"`
+	TrackIndex        int                 `json:"track_index"`
+	NowPlaying        youtube.TrackInfo   `json:"now_playing"`
+	Queued            []youtube.TrackInfo `json:"queued"`
 }
 
 func (ytinfo YouTubeInfo) AsJSON() ([]byte, error) {
@@ -138,9 +138,17 @@ func (j *JsonCTL) YouTubeGetInfo() (resultJson []byte, err error) {
 	if info.IsPlaying, err = j.w.br.Controller().YouTube().IsPlaying(); err != nil {
 		return nil, fmt.Errorf("error getting 'IsPlaying()': %w", err)
 	}
-	if info.PercentComplete, err = j.w.br.Controller().YouTube().SongCompletionPercent(); err != nil {
-		return nil, fmt.Errorf("error getting 'SongCompletionPercent()': %w", err)
+
+	elapsed, err := j.w.br.Controller().YouTube().TimeElapsed()
+	if err != nil {
+		return nil, fmt.Errorf("error getting 'TimeElapsed()': %w", err)
 	}
+	if elapsed == 0 {
+		info.ElapsedDurationNs = -1
+	} else {
+		info.ElapsedDurationNs = elapsed.Nanoseconds()
+	}
+
 	if info.Paused, err = j.w.br.Controller().YouTube().IsPaused(); err != nil {
 		return nil, fmt.Errorf("error getting 'IsPaused()': %w", err)
 	}

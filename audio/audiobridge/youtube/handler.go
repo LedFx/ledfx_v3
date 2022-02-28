@@ -3,6 +3,11 @@ package youtube
 import (
 	"errors"
 	"fmt"
+	ffmpeg "github.com/carterpeel/ffmpeg-go"
+	pretty "github.com/fatih/color"
+	yt "github.com/kkdai/youtube/v2"
+	progressbar "github.com/schollz/progressbar/v3"
+	"go.uber.org/atomic"
 	"io"
 	"ledfx/audio"
 	log "ledfx/logger"
@@ -14,13 +19,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
-
-	ffmpeg "github.com/carterpeel/ffmpeg-go"
-	pretty "github.com/fatih/color"
-	yt "github.com/kkdai/youtube/v2"
-	progressbar "github.com/schollz/progressbar/v3"
-	"go.uber.org/atomic"
 )
 
 type Handler struct {
@@ -85,44 +83,6 @@ func NewHandler(byteWriter *audio.AsyncMultiWriter, verbose bool) *Handler {
 
 	return h
 }
-func (h *Handler) NowPlaying() TrackInfo {
-	return h.nowPlaying
-}
-func (h *Handler) QueuedTracks() []TrackInfo {
-	return h.p.tracks
-}
-
-func (h *Handler) TimeElapsed() time.Duration {
-	return h.p.elapsed.Load()
-}
-
-func (h *Handler) IsPaused() bool {
-	return h.p.paused.Load()
-}
-func (h *Handler) TrackIndex() int {
-	h.p.trackMu.Lock()
-	defer h.p.trackMu.Unlock()
-	return int(h.p.trackNum.Load())
-}
-func (h *Handler) IsPlaying() bool {
-	return h.p.IsPlaying()
-}
-
-type CompletionPercent float32
-
-func (c CompletionPercent) MarshalJSON() ([]byte, error) {
-	if c > 100 || c < 0 {
-		return nil, fmt.Errorf("CompletionPercent can only be in range 0-100")
-	}
-	return []byte(fmt.Sprintf("%0.2f", c)), nil
-}
-
-func (h *Handler) PercentComplete() (CompletionPercent, error) {
-	if !h.IsPlaying() {
-		return 0, nil
-	}
-	return CompletionPercent((float32(h.p.in.CurrentOffset()) / float32(h.NowPlaying().FileSize)) * float32(100)), nil
-}
 
 func (h *Handler) downloadWAV(info TrackInfo, current, max int, clearBar bool) (path string, err error) {
 	if info.video == nil {
@@ -131,7 +91,7 @@ func (h *Handler) downloadWAV(info TrackInfo, current, max int, clearBar bool) (
 		}
 	}
 
-	path = filepath.Join(os.TempDir(), cleanTitle(info.Title)+".wav")
+	path = filepath.Join(os.TempDir(), fmt.Sprintf("%s_%s.wav", cleanString(info.Title), cleanString(info.Artist)))
 
 	// Don't re-download files we already have
 	if util.FileExists(path) {
@@ -247,12 +207,12 @@ Retry:
 }
 
 var (
-	titleCleaner, _ = regexp.Compile("[^a-zA-Z0-9 ]+")
+	stringCleaner, _ = regexp.Compile("[^a-zA-Z0-9 ]+")
 )
 
-func cleanTitle(title string) string {
+func cleanString(title string) string {
 	// Make a Regex to say we only want letters and numbers
-	return strings.ReplaceAll(titleCleaner.ReplaceAllString(title, ""), " ", "_")
+	return strings.ReplaceAll(stringCleaner.ReplaceAllString(title, ""), " ", "_")
 }
 
 func logTrack(track, author string) {

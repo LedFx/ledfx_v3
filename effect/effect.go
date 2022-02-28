@@ -6,6 +6,7 @@ import (
 	"ledfx/config"
 	"ledfx/device"
 	"ledfx/logger"
+	"ledfx/tickpool"
 	"math"
 	"time"
 )
@@ -30,8 +31,8 @@ func StartEffect(deviceConfig config.DeviceConfig, effect Effect, clr string, fp
 	usPerFrameDuration := time.Duration(usPerFrame*1000000.0) * time.Microsecond
 	logger.Logger.WithField("category", "Effect Starter").Debugf("[FPS=%v, FrameDuration=%vμs]", fps, usPerFrameDuration.Microseconds())
 
-	ticker := time.NewTicker(usPerFrameDuration)
-	defer ticker.Stop()
+	ticker := tickpool.Get(usPerFrameDuration)
+	defer tickpool.Put(ticker)
 
 	phase := 0.0 // phase of the effect (range 0.0 to 2π)
 

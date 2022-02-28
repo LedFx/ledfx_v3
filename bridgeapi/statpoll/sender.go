@@ -6,6 +6,7 @@ import (
 	"ledfx/audio/audiobridge/youtube"
 	"ledfx/integrations/airplay2"
 	log "ledfx/logger"
+	"ledfx/tickpool"
 	"time"
 )
 
@@ -31,8 +32,8 @@ func (s *StatPoller) sendBridgeInfo(r *Request, interval time.Duration, ws *webs
 
 	s.sendingBridgeInfo.Set()
 
-	tick := time.NewTicker(interval)
-	defer tick.Stop()
+	tick := tickpool.Get(interval)
+	defer tickpool.Put(tick)
 
 Top:
 	for i := 0; i != r.Iterations; i++ {
@@ -85,8 +86,8 @@ func (s *StatPoller) sendYoutubeInfo(r *Request, interval time.Duration, ws *web
 
 	s.sendingYoutubeInfo.Set()
 
-	tick := time.NewTicker(interval)
-	defer tick.Stop()
+	tick := tickpool.Get(interval)
+	defer tickpool.Put(tick)
 
 Top:
 	for i := 0; i != r.Iterations; i++ {
@@ -95,6 +96,7 @@ Top:
 			if len(r.Params) <= 0 {
 				r.Params = []ReqParam{YtParamNowPlaying, YtParamTrackDuration, YtParamElapsedTime, YtParamPaused, YtParamTrackIndex, YtParamQueuedTracks}
 			}
+
 			nowPlaying, err := s.br.Controller().YouTube().NowPlaying()
 			if err != nil {
 				ws.WriteJSON(errorToJson(err))
@@ -114,7 +116,12 @@ Top:
 						ws.WriteJSON(errorToJson(err))
 						break Top
 					}
-					value.ElapsedDurationNs = elapsed.Nanoseconds()
+
+					if elapsed == 0 {
+						value.ElapsedDurationNs = -1
+					} else {
+						value.ElapsedDurationNs = elapsed.Nanoseconds()
+					}
 				case YtParamPaused:
 					if value.Paused, err = s.br.Controller().YouTube().IsPaused(); err != nil {
 						ws.WriteJSON(errorToJson(err))
@@ -172,8 +179,8 @@ func (s *StatPoller) sendAirPlayInfo(r *Request, interval time.Duration, ws *web
 
 	s.sendingAirPlayInfo.Set()
 
-	tick := time.NewTicker(interval)
-	defer tick.Stop()
+	tick := tickpool.Get(interval)
+	defer tickpool.Put(tick)
 
 Top:
 	for i := 0; i != r.Iterations; i++ {

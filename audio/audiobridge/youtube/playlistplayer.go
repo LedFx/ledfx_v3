@@ -1,5 +1,6 @@
 package youtube
 
+/*
 import (
 	"encoding/json"
 	"errors"
@@ -156,3 +157,4 @@ func (pp *PlaylistPlayer) StopCurrentTrack() {
 		}
 	}
 }
+*/

@@ -7,6 +7,7 @@ import (
 	"ledfx/config"
 	"ledfx/constants"
 	"ledfx/logger"
+	"ledfx/profiler"
 	"ledfx/utils"
 	"ledfx/virtual"
 	"log"
@@ -44,6 +45,8 @@ var (
 )
 
 func main() {
+	profiler.Start()
+
 	// Just print version and return if flag is set
 	if config.GlobalConfig.Version {
 		fmt.Println("LedFx " + constants.VERSION)

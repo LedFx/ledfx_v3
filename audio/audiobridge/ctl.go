@@ -30,22 +30,6 @@ func (c *Controller) YouTube() *YoutubeController {
 		handler: c.br.youtube,
 	}
 }
-func (ytc *YoutubeController) PlayPlaylist(playlistURL string) (*youtube.PlaylistPlayer, error) {
-	if ytc.handler != nil {
-		if ytc.handler.handler != nil {
-			return ytc.handler.handler.PlayPlaylist(playlistURL)
-		}
-	}
-	return nil, fmt.Errorf("YouTube handler is not active")
-}
-func (ytc *YoutubeController) Play(videoURL string) (*youtube.Player, error) {
-	if ytc.handler != nil {
-		if ytc.handler.handler != nil {
-			return ytc.handler.handler.Play(videoURL)
-		}
-	}
-	return nil, fmt.Errorf("YouTube handler is not active")
-}
 
 func (ytc *YoutubeController) NowPlaying() (info youtube.TrackInfo, err error) {
 	if ytc.handler != nil {

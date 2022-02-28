@@ -4,37 +4,40 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go.uber.org/atomic"
 	"ledfx/audio/audiobridge/youtube"
 	log "ledfx/logger"
-	"strings"
-)
-
-type youTubePlayerType int
-
-const (
-	youTubePlayerTypeSingle youTubePlayerType = iota
-	youTubePlayerTypePlaylist
 )
 
 type YouTubeAction string
 
 const (
-	// YouTubeActionDownload stores the requested URL and prepares the handler to play it
+	// YouTubeActionDownload
+	//
+	// If supplied with a playlist URL, the handler downloads
+	// all corresponding audio track(s) from each playlist entry.
+	//
+	// If supplied with a video URL, the handler downloads the
+	// audio track from the provided video.
 	YouTubeActionDownload YouTubeAction = "download"
-	// YouTubeActionPlay plays the requested URL or playlist
+
+	// YouTubeActionPlay plays all tracks until the end of the queue is reached.
+	// Upon completion, YouTubeActionResume must be called to restart from the beginning.
 	YouTubeActionPlay = "play"
+
 	// YouTubeActionPause pauses playback
 	YouTubeActionPause = "pause"
+
 	// YouTubeActionResume resumes/unpauses playback
 	YouTubeActionResume = "resume"
+
 	// YouTubeActionStop stops the handler, closes all playback, and clears the queue.
 	// This should NOT be used for pausing.
 	YouTubeActionStop = "stop"
 
-	// YouTubeActionNext only applies to playlists
+	// YouTubeActionNext skips the current track.
 	YouTubeActionNext = "next"
-	// YouTubeActionPrevious only applies to playlists
+
+	// YouTubeActionPrevious rewinds to the previous track.
 	YouTubeActionPrevious = "previous"
 )
 
@@ -48,109 +51,53 @@ func (ytctl YouTubeCTLJSON) AsJSON() ([]byte, error) {
 }
 
 // YouTubeSet takes a marshalled YouTubeCTLJSON
-func (j *JsonCTL) YouTubeSet(jsonData []byte) (err error) {
+func (j *JsonCTL) YouTubeSet(jsonData []byte) (respBytes []byte, err error) {
 	conf := YouTubeCTLJSON{}
 	if err := json.Unmarshal(jsonData, &conf); err != nil {
-		return fmt.Errorf("error unmarshalling JSON: %w", err)
+		return nil, fmt.Errorf("error unmarshalling JSON: %w", err)
 	}
 
 	switch {
-	case conf.Action == YouTubeActionDownload && conf.URL == "":
-		return errors.New("action 'Download' requires the 'url' field to be populated")
-	case conf.Action != YouTubeActionDownload && j.curYouTubePlayerType == -1:
-		return errors.New("download must be called before any other YouTubeSet control statements")
+	case j.w.br.youtube == nil:
+		fallthrough
+	case j.w.br.youtube.handler == nil:
+		return nil, errors.New("YouTube handler is nil")
+	default:
+		j.curYouTubePlayer = j.w.br.youtube.handler.Player()
 	}
 
 	switch conf.Action {
 	case YouTubeActionDownload:
-		j.keepPlaying.Store(false)
-		if strings.Contains(strings.ToLower(conf.URL), "list=") {
-			j.curYouTubePlayerType = youTubePlayerTypePlaylist
-			log.Logger.WithField("category", "YouTube JSONCTL").Infof("Downloading all audio tracks from playlist URL '%s'", conf.URL)
-			if j.curYouTubePlaylistPlayer, err = j.w.br.Controller().YouTube().PlayPlaylist(conf.URL); err != nil {
-				return fmt.Errorf("error downloading playlist: %w", err)
-			}
-		} else {
-			j.curYouTubePlayerType = youTubePlayerTypeSingle
-			log.Logger.WithField("category", "YouTube JSONCTL").Infof("Downloading audio from video URL '%s'", conf.URL)
-			if j.curYouTubePlayer, err = j.w.br.Controller().YouTube().Play(conf.URL); err != nil {
-				return fmt.Errorf("error downloading url: %w", err)
-			}
-		}
+		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Downloading audio track(s) from URL '%s'", conf.URL)
+		return nil, j.curYouTubePlayer.Download(conf.URL)
 	case YouTubeActionPlay:
 		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Starting YouTube playback...")
-		switch j.curYouTubePlayerType {
-		case youTubePlayerTypeSingle:
-			if j.curYouTubePlayer.IsPlaying() {
-				return errors.New("already playing")
-			}
-			return j.curYouTubePlayer.Start()
-		case youTubePlayerTypePlaylist:
-			if j.keepPlaying.Load() {
-				return errors.New("already playing")
-			}
-			j.keepPlayingFn = func(pp *youtube.PlaylistPlayer) error {
-				return pp.Next(true)
-			}
-			j.keepPlaying.Store(false)
-			j.curYouTubePlaylistPlayer.StopCurrentTrack()
-			j.keepPlaying.Store(true)
-			go j.autoPlayback(j.curYouTubePlaylistPlayer, j.keepPlaying)
-			return nil
+		if err := j.curYouTubePlayer.Play(); err != nil {
+			return nil, err
 		}
+		return json.Marshal(j.curYouTubePlayer.NowPlaying())
 	case YouTubeActionStop:
 		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Stopping YouTube player...")
-		switch j.curYouTubePlayerType {
-		case youTubePlayerTypeSingle:
-			j.curYouTubePlayer.Stop()
-			return nil
-		case youTubePlayerTypePlaylist:
-			j.curYouTubePlaylistPlayer.Stop()
-		}
+		return nil, j.curYouTubePlayer.Close()
 	case YouTubeActionPause:
 		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Pausing YouTube playback...")
-		switch j.curYouTubePlayerType {
-		case youTubePlayerTypeSingle:
-			j.curYouTubePlayer.Pause()
-		case youTubePlayerTypePlaylist:
-			j.curYouTubePlaylistPlayer.Pause()
-		}
+		j.curYouTubePlayer.Pause()
 	case YouTubeActionResume:
 		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Resuming YouTube playback...")
-		switch j.curYouTubePlayerType {
-		case youTubePlayerTypeSingle:
-			j.curYouTubePlayer.Unpause()
-		case youTubePlayerTypePlaylist:
-			j.curYouTubePlaylistPlayer.Unpause()
-		}
+		j.curYouTubePlayer.Unpause()
+		return json.Marshal(j.curYouTubePlayer.NowPlaying())
 	case YouTubeActionNext:
-		switch j.curYouTubePlayerType {
-		case youTubePlayerTypeSingle:
-			return errors.New("playlist required for 'next' and 'previous' action types")
-		case youTubePlayerTypePlaylist:
-			log.Logger.WithField("category", "YouTube JSONCTL").Infof("Skipping current YouTube playlist track...")
-			j.keepPlayingFn = func(pp *youtube.PlaylistPlayer) error {
-				return pp.Next(true)
-			}
-			j.curYouTubePlaylistPlayer.StopCurrentTrack()
-			return nil
-		}
+		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Skipping to next YouTube track...")
+		j.curYouTubePlayer.Next()
+		return json.Marshal(j.curYouTubePlayer.NowPlaying())
 	case YouTubeActionPrevious:
-		switch j.curYouTubePlayerType {
-		case youTubePlayerTypeSingle:
-			return errors.New("playlist required for 'next' and 'previous' action types")
-		case youTubePlayerTypePlaylist:
-			log.Logger.WithField("category", "YouTube JSONCTL").Infof("Rewinding to previous YouTube playlist track...")
-			j.keepPlayingFn = func(pp *youtube.PlaylistPlayer) error {
-				return pp.Previous(true)
-			}
-			j.curYouTubePlaylistPlayer.StopCurrentTrack()
-			return nil
-		}
+		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Rewinding to previous YouTube track...")
+		j.curYouTubePlayer.Previous()
+		return json.Marshal(j.curYouTubePlayer.NowPlaying())
 	default:
-		return fmt.Errorf("unknown action '%s'", conf.Action)
+		return nil, fmt.Errorf("unknown action '%s'", conf.Action)
 	}
-	return nil
+	return nil, nil
 }
 
 type YouTubeInfo struct {
@@ -189,12 +136,4 @@ func (j *JsonCTL) YouTubeGetInfo() (resultJson []byte, err error) {
 	}
 
 	return info.AsJSON()
-}
-
-func (j *JsonCTL) autoPlayback(pp *youtube.PlaylistPlayer, keepPlaying *atomic.Bool) {
-	for keepPlaying.Load() {
-		if err := j.keepPlayingFn(pp); err != nil {
-			log.Logger.WithField("category", "YouTubeSet JSON Handler").Errorf("Error playing playlist track: %v", err)
-		}
-	}
 }

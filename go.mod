@@ -4,12 +4,14 @@ go 1.17
 
 require (
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
+	github.com/carterpeel/abool v1.2.1-0.20220225054344-4f95bb28612b
+	github.com/carterpeel/ffmpeg-go v0.4.1-0.20220226201032-e6786be815f4
 	github.com/carterpeel/go.alac v0.0.0-20220120210858-abcf099555b4
-	github.com/dustin/go-humanize v1.0.0
 	github.com/fatih/color v1.13.0
+	github.com/felixge/fgprof v0.9.2
 	github.com/getlantern/systray v1.1.0
 	github.com/gordonklaus/portaudio v0.0.0-20200911161147-bb74aa485641
-	github.com/gorilla/websocket v1.4.2
+	github.com/gorilla/websocket v1.5.0
 	github.com/grandcat/zeroconf v1.0.0
 	github.com/grantmd/go-airplay v0.0.0-20150101054745-99b46766924c
 	github.com/mazznoer/colorgrad v0.8.1
@@ -21,8 +23,6 @@ require (
 	github.com/simonassank/aubio-go v0.0.0-20210318191226-729d3d668592
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.10.1
-	github.com/tevino/abool v1.2.0
-	github.com/u2takey/ffmpeg-go v0.4.0
 	go.uber.org/atomic v1.9.0
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
 	golang.org/x/text v0.3.7
@@ -33,7 +33,6 @@ require (
 	github.com/alexbrainman/sspi v0.0.0-20210105120005-909beea2cc74 // indirect
 	github.com/aws/aws-sdk-go v1.38.20 // indirect
 	github.com/bitly/go-simplejson v0.5.0 // indirect
-	github.com/carterpeel/abool v1.2.1-0.20220225054344-4f95bb28612b // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
 	github.com/fsnotify/fsnotify v1.5.1 // indirect
@@ -45,6 +44,7 @@ require (
 	github.com/getlantern/ops v0.0.0-20190325191751-d70cb0d6f85f // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
+	github.com/google/pprof v0.0.0-20220113144219-d25a53d42d00 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
@@ -83,7 +83,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.8.6
 	golang.org/x/crypto v0.0.0-20220210151621-f4118a5b28e2 // indirect
 	golang.org/x/net v0.0.0-20220111093109-d55c255bac03 // indirect
-	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
+	golang.org/x/sys v0.0.0-20220224120231-95c6836cb0e7 // indirect
 )
 
 require (

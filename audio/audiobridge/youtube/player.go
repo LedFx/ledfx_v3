@@ -6,7 +6,10 @@ import (
 	"go.uber.org/atomic"
 	"io"
 	"ledfx/audio"
+	log "ledfx/logger"
+	"net/url"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -14,30 +17,189 @@ import (
 type Player struct {
 	mu *sync.Mutex
 
-	done    *atomic.Bool
+	h *Handler
+
+	isDone *atomic.Bool
+	done   chan struct{}
+
 	paused  *atomic.Bool
-	unpause chan bool
+	pause   chan struct{}
+	unpause chan struct{}
+
 	playing *atomic.Bool
+	play    chan []byte
+
+	cycling *atomic.Bool
+
+	next     chan struct{}
+	nextDone chan struct{}
+	prev     chan struct{}
+	prevDone chan struct{}
 
 	in  *FileBuffer
 	out *audio.AsyncMultiWriter
 
 	elapsed *atomic.Duration
 	ticker  *time.Ticker
+
+	trackMu    *sync.Mutex
+	trackNum   *atomic.Int32
+	tracks     []TrackInfo
+	trackPaths []string
+
+	curWav *FileBuffer
 }
 
-func (p *Player) Reset(input *FileBuffer) {
-	p.mu.Lock()
-	p.done.Store(true)
+func (p *Player) Download(URL string) error {
+	parsed, err := url.Parse(URL)
+	if err != nil {
+		return fmt.Errorf("error parsing URL: %w", err)
+	}
+	URL = parsed.String()
 
-	defer func() {
-		p.done.Store(false)
-		p.mu.Unlock()
-	}()
+	var toDownload []TrackInfo
 
-	p.Stop()
-	p.in = input
-	p.elapsed.Store(0)
+	if strings.Contains(strings.ToLower(URL), "list=") {
+		playlist, err := p.h.cl.GetPlaylist(URL)
+		if err != nil {
+			return fmt.Errorf("error getting playlist metadata from URL %q: %w", URL, err)
+		}
+		toDownload = make([]TrackInfo, len(playlist.Videos))
+
+		for i, v := range playlist.Videos {
+			video, err := p.h.cl.VideoFromPlaylistEntry(v)
+			if err != nil {
+				log.Logger.WithField("category", "YouTube Download Handler").Errorf("Error getting entry metadata for %q: %v", cleanTitle(v.Title), err)
+				toDownload = toDownload[:len(toDownload)-1]
+				continue
+			}
+			toDownload[i] = TrackInfo{
+				Artist:        v.Author,
+				Title:         v.Title,
+				Duration:      SongDuration(v.Duration),
+				SampleRate:    44100,
+				FileSize:      -1,
+				URL:           fmt.Sprintf("https://youtu.be/%s", v.ID),
+				AudioChannels: 2,
+				video:         video,
+			}
+		}
+	} else {
+		video, err := p.h.cl.GetVideo(URL)
+		if err != nil {
+			return fmt.Errorf("error getting video metadata from URL %q: %w", URL, err)
+		}
+		toDownload = []TrackInfo{
+			{
+				Artist:        video.Author,
+				Title:         video.Title,
+				Duration:      SongDuration(video.Duration),
+				SampleRate:    44100,
+				FileSize:      -1,
+				URL:           URL,
+				AudioChannels: 2,
+				video:         video,
+			},
+		}
+	}
+
+	p.trackMu.Lock()
+	defer p.trackMu.Unlock()
+
+	var clearBar bool
+
+	for current, v := range toDownload {
+		if current >= len(toDownload)-1 {
+			clearBar = true
+		}
+		path, err := p.h.downloadWAV(v, current+1, len(toDownload), clearBar)
+		if err != nil {
+			log.Logger.WithField("category", "YouTube Download Handler").Errorf("Error downloading %q: %v", cleanTitle(v.Title), err)
+			continue
+		}
+		p.tracks = append(p.tracks, v)
+		p.trackPaths = append(p.trackPaths, path)
+	}
+
+	return nil
+}
+
+func (p *Player) Play() error {
+	if len(p.trackPaths) <= 0 || len(p.tracks) <= 0 {
+		return errors.New("no tracks found")
+	}
+
+	// This does nothing if the playback loop is already active.
+	p.playLoop()
+
+	// This does nothing if the track cycle is already active.
+	p.cycleTracks()
+
+	return nil
+}
+
+func (p *Player) Pause() {
+	if p.playing.Load() {
+		p.paused.Store(true)
+		p.pause <- struct{}{}
+	}
+}
+
+func (p *Player) Unpause() {
+	if p.playing.Load() {
+		p.paused.Store(false)
+		p.unpause <- struct{}{}
+	}
+}
+
+func (p *Player) Next() {
+	if p.paused.Load() {
+		p.Unpause()
+	}
+
+	if p.playing.Load() {
+		p.next <- struct{}{}
+		<-p.nextDone
+	}
+}
+func (p *Player) Previous() {
+	if p.playing.Load() {
+		p.prev <- struct{}{}
+		<-p.prevDone
+	}
+}
+
+func (p *Player) IsPlaying() bool {
+	return p.playing.Load()
+}
+
+func (p *Player) NowPlaying() TrackInfo {
+	if p.cycling.Load() {
+		p.trackMu.Lock()
+		defer p.trackMu.Unlock()
+		return p.tracks[p.trackNum.Load()]
+	} else {
+		return TrackInfo{
+			Artist:        "N/A",
+			Title:         "N/A",
+			Duration:      0,
+			SampleRate:    -1,
+			FileSize:      -1,
+			URL:           "N/A",
+			AudioChannels: -1,
+			Invalid:       true,
+		}
+	}
+}
+
+func (p *Player) Close() error {
+	if p.playing.Load() {
+		p.done <- struct{}{}
+	} else {
+		return errors.New("cannot close inactive player")
+	}
+
+	return nil
 }
 
 func (p *Player) elapsedLoop(done chan struct{}) {
@@ -61,67 +223,107 @@ func (p *Player) elapsedLoop(done chan struct{}) {
 	}
 }
 
-func (p *Player) Start() error {
-	p.mu.Lock()
+func (p *Player) playLoop() {
+	if p.playing.Load() {
+		return
+	}
+
 	p.playing.Store(true)
-	defer func() {
-		p.playing.Store(false)
-		p.mu.Unlock()
-	}()
 
-	doneCh := make(chan struct{})
+	go func() {
+		defer func() {
+			p.playing.Store(false)
+		}()
 
-	defer func() {
-		doneCh <- struct{}{}
-		close(doneCh)
-	}()
-
-	go p.elapsedLoop(doneCh)
-
-	for {
-		switch {
-		case p.paused.Load():
-			<-p.unpause
-		case p.done.Load():
-			return nil
-		default:
-			if _, err := io.CopyN(p.out, p.in, 1408); err != nil {
-				if !errors.Is(err, io.EOF) && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.ErrShortBuffer) && !errors.Is(err, os.ErrClosed) {
-					return fmt.Errorf("unexpected error copying to output writer: %w", err)
+		for {
+			select {
+			case <-p.next:
+				p.trackMu.Lock()
+				if int(p.trackNum.Inc()) >= len(p.trackPaths) {
+					p.trackNum.Store(0)
 				}
-				return nil
+				p.trackMu.Unlock()
+				_ = p.curWav.Close()
+				p.nextDone <- struct{}{}
+			case <-p.prev:
+				p.trackMu.Lock()
+				if p.trackNum.Dec() < 0 {
+					p.trackNum.Store(int32(len(p.trackPaths) - 1))
+				}
+				p.trackMu.Unlock()
+				_ = p.curWav.Close()
+				p.prevDone <- struct{}{}
+			case <-p.pause:
+				<-p.unpause
+			case <-p.done:
+				log.Logger.WithField("category", "YouTube Playback Loop").Warnf("Got 'DONE' signal...")
+				return
+			case buf := <-p.play:
+				_, _ = p.out.Write(buf)
 			}
 		}
+	}()
+}
+
+func (p *Player) cycleTracks() {
+	if p.cycling.Load() {
+		return
 	}
-}
 
-func (p *Player) Pause() {
-	p.paused.Store(true)
-}
+	p.cycling.Store(true)
+	p.trackNum = atomic.NewInt32(0)
 
-func (p *Player) Unpause() {
-	p.paused.Store(false)
-	p.unpause <- true
-}
+	go func() {
+		defer func() {
+			close(p.pause)
+			close(p.done)
+			close(p.play)
+		}()
 
-func (p *Player) Stop() {
-	if p.in != nil {
-		p.in.Close()
-	}
-}
+		buf := make([]byte, 1408)
+		for p.playing.Load() {
+			p.trackMu.Lock()
+			path := p.trackPaths[p.trackNum.Load()]
+			p.trackMu.Unlock()
 
-func (p *Player) IsPlaying() bool {
-	return p.playing.Load()
-}
+			func() {
+				wav, err := os.Open(path)
+				if err != nil {
+					log.Logger.WithField("category", "YouTube Track Cycle").Errorf("Error opening %q: %v", path, err)
+					return
+				}
 
-func (p *Player) Close() error {
-	if p.paused.Load() {
-		p.unpause <- true
-	}
-	p.done.Store(true)
-	if p.in == nil {
-		return nil
-	} else {
-		return p.in.Close()
-	}
+				if p.curWav, err = NewFileBuffer(wav); err != nil {
+					log.Logger.WithField("category", "YouTube Track Cycle").Errorf("Error creating new file buffer: %v", err)
+					return
+				}
+				defer p.curWav.Close()
+
+				for {
+					n, err := p.curWav.Read(buf)
+					if err != nil {
+						switch {
+						case errors.Is(err, os.ErrClosed):
+							return
+						case errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
+							p.Next()
+							if n > 0 {
+								goto Send
+							} else {
+								return
+							}
+						}
+					}
+				Send:
+					cpy := make([]byte, n)
+					copy(cpy, buf[:n])
+					p.play <- cpy
+				}
+
+			}()
+
+		}
+
+	}()
+
 }

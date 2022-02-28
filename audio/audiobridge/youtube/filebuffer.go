@@ -9,6 +9,7 @@ import (
 type FileBuffer struct {
 	buf    *bytes.Buffer
 	offset int64
+	closed bool
 }
 
 func NewFileBuffer(fi *os.File) (*FileBuffer, error) {
@@ -27,11 +28,17 @@ func (fb *FileBuffer) CurrentOffset() int64 {
 	return fb.offset
 }
 func (fb *FileBuffer) Read(p []byte) (n int, err error) {
-	n, err = fb.buf.Read(p)
-	fb.offset += int64(n)
-	return n, err
+	if fb.closed {
+		return 0, os.ErrClosed
+	} else {
+		n, err = fb.buf.Read(p)
+		fb.offset += int64(n)
+		return n, err
+	}
 }
+
 func (fb *FileBuffer) Close() error {
+	fb.closed = true
 	fb.buf.Reset()
 	fb.buf = &bytes.Buffer{}
 	return nil

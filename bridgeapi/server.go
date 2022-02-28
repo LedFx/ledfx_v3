@@ -2,6 +2,7 @@ package bridgeapi
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"io"
@@ -173,7 +174,7 @@ func (s *Server) handleSetInputYouTube(w http.ResponseWriter, r *http.Request) {
 		w.Write(errToBytes(err))
 		return
 	}
-	log.Logger.Infoln("Setting input source to YouTubeSet....")
+	log.Logger.Infoln("Setting input source to YouTube...")
 	if err := s.br.JSONWrapper().StartYouTubeInput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error starting YouTubeSet input: %v", err)
@@ -187,15 +188,22 @@ func (s *Server) handleCtlYouTube(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error reading request body: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
-	if err := s.br.JSONWrapper().CTL().YouTubeSet(bodyBytes); err != nil {
+
+	respBytes, err := s.br.JSONWrapper().CTL().YouTubeSet(bodyBytes)
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error running YouTubeSet CTL action: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
+
+	if respBytes != nil {
+		w.Write(respBytes)
+	}
+
 }
 
 func (s *Server) handleCtlYouTubeGetInfo(w http.ResponseWriter, r *http.Request) {
@@ -259,4 +267,9 @@ func (s *Server) handleArtwork(w http.ResponseWriter, r *http.Request) {
 
 func errToBytes(err error) []byte {
 	return []byte(err.Error() + "\n")
+}
+
+func errToJson(err error) []byte {
+	b, _ := json.Marshal(map[string]string{"error": err.Error()})
+	return b
 }

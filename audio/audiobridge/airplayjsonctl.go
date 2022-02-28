@@ -6,17 +6,17 @@ import (
 	"ledfx/integrations/airplay2"
 )
 
-type AirPlaySetAction string
+type AirPlayAction string
 
 const (
-	AirPlayActionStopServer AirPlaySetAction = "stop"
+	AirPlayActionStopServer AirPlayAction = "stop"
 )
 
-type AirPlayJsonCtlSet struct {
-	Action AirPlaySetAction `json:"action"`
+type AirPlayCTLJSON struct {
+	Action AirPlayAction `json:"action"`
 }
 
-func (apctls AirPlayJsonCtlSet) AsJSON() ([]byte, error) {
+func (apctls AirPlayCTLJSON) AsJSON() ([]byte, error) {
 	return json.Marshal(&apctls)
 }
 
@@ -28,9 +28,9 @@ func (cl *ClientList) AsJSON() ([]byte, error) {
 	return json.Marshal(cl)
 }
 
-// AirPlaySet takes a marshalled AirPlayJsonCtlSet
+// AirPlaySet takes a marshalled AirPlayCTLJSON
 func (j *JsonCTL) AirPlaySet(jsonData []byte) (err error) {
-	conf := AirPlayJsonCtlSet{}
+	conf := AirPlayCTLJSON{}
 	if err := json.Unmarshal(jsonData, &conf); err != nil {
 		return fmt.Errorf("error unmarshalling JSON: %w", err)
 	}

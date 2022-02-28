@@ -36,6 +36,9 @@ type Player struct {
 	prev     chan struct{}
 	prevDone chan struct{}
 
+	playByIndex     chan int32
+	playByIndexDone chan struct{}
+
 	in  *FileBuffer
 	out *audio.AsyncMultiWriter
 
@@ -139,31 +142,33 @@ func (p *Player) Play() error {
 }
 
 func (p *Player) Pause() {
-	if p.playing.Load() {
+	if p.playing.Load() && !p.paused.Load() {
 		p.paused.Store(true)
 		p.pause <- struct{}{}
 	}
 }
 
 func (p *Player) Unpause() {
-	if p.playing.Load() {
+	if p.playing.Load() && p.paused.Load() {
 		p.paused.Store(false)
 		p.unpause <- struct{}{}
 	}
 }
 
 func (p *Player) Next() {
-	if p.paused.Load() {
-		p.Unpause()
-	}
-
 	if p.playing.Load() {
+		if p.paused.Load() {
+			p.Unpause()
+		}
 		p.next <- struct{}{}
 		<-p.nextDone
 	}
 }
 func (p *Player) Previous() {
 	if p.playing.Load() {
+		if p.paused.Load() {
+			p.Unpause()
+		}
 		p.prev <- struct{}{}
 		<-p.prevDone
 	}
@@ -171,6 +176,37 @@ func (p *Player) Previous() {
 
 func (p *Player) IsPlaying() bool {
 	return p.playing.Load()
+}
+
+func (p *Player) IsPaused() bool {
+	return p.paused.Load()
+}
+
+func (p *Player) PlayTrack(index int) error {
+	switch {
+	case index >= len(p.tracks), index < 0:
+		return fmt.Errorf("index value must be between 0 and %d", len(p.tracks))
+	case !p.playing.Load():
+		if err := p.Play(); err != nil {
+			return err
+		}
+	case p.paused.Load():
+		p.Unpause()
+	}
+
+	p.playByIndex <- int32(index)
+	<-p.playByIndexDone
+
+	return nil
+}
+
+func (p *Player) PlayTrackByName(name string) error {
+	for index := range p.tracks {
+		if strings.Contains(strings.ToLower(p.tracks[index].Title), strings.ToLower(name)) {
+			return p.PlayTrack(index)
+		}
+	}
+	return fmt.Errorf("cannot find track with name %q", name)
 }
 
 func (p *Player) NowPlaying() TrackInfo {
@@ -237,13 +273,21 @@ func (p *Player) playLoop() {
 
 		for {
 			select {
+			case index := <-p.playByIndex:
+				p.trackMu.Lock()
+				p.trackNum.Store(index)
+				_ = p.curWav.Close()
+				p.trackMu.Unlock()
+
+				p.playByIndexDone <- struct{}{}
 			case <-p.next:
 				p.trackMu.Lock()
 				if int(p.trackNum.Inc()) >= len(p.trackPaths) {
 					p.trackNum.Store(0)
 				}
-				p.trackMu.Unlock()
 				_ = p.curWav.Close()
+				p.trackMu.Unlock()
+
 				p.nextDone <- struct{}{}
 			case <-p.prev:
 				p.trackMu.Lock()
@@ -275,9 +319,12 @@ func (p *Player) cycleTracks() {
 
 	go func() {
 		defer func() {
-			close(p.pause)
-			close(p.done)
 			close(p.play)
+			close(p.playByIndex)
+			close(p.playByIndexDone)
+			close(p.pause)
+			close(p.unpause)
+			close(p.done)
 		}()
 
 		buf := make([]byte, 1408)

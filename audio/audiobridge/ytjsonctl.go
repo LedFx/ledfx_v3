@@ -24,6 +24,12 @@ const (
 	// Upon completion, YouTubeActionResume must be called to restart from the beginning.
 	YouTubeActionPlay = "play"
 
+	// YouTubeActionPlayByIndex plays the track at the provided YouTubeCTLJSON.Index.
+	YouTubeActionPlayByIndex = "play_by_index"
+
+	// YouTubeActionPlayByName plays the track at the provided YouTubeCTLJSON.TrackName.
+	YouTubeActionPlayByName = "play_by_name"
+
 	// YouTubeActionPause pauses playback
 	YouTubeActionPause = "pause"
 
@@ -42,8 +48,10 @@ const (
 )
 
 type YouTubeCTLJSON struct {
-	Action YouTubeAction `json:"action"`
-	URL    string        `json:"url"`
+	Action    YouTubeAction `json:"action"`
+	URL       string        `json:"url,omitempty"`
+	Index     int           `json:"index,omitempty"`
+	TrackName string        `json:"track_name,omitempty"`
 }
 
 func (ytctl YouTubeCTLJSON) AsJSON() ([]byte, error) {
@@ -94,6 +102,17 @@ func (j *JsonCTL) YouTubeSet(jsonData []byte) (respBytes []byte, err error) {
 		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Rewinding to previous YouTube track...")
 		j.curYouTubePlayer.Previous()
 		return json.Marshal(j.curYouTubePlayer.NowPlaying())
+	case YouTubeActionPlayByIndex:
+		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Plauing track by index %d...", conf.Index)
+		if err := j.curYouTubePlayer.PlayTrack(conf.Index); err != nil {
+			return nil, fmt.Errorf("error playing track by index: %w", err)
+		}
+		return json.Marshal(j.curYouTubePlayer.NowPlaying())
+	case YouTubeActionPlayByName:
+		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Playing track %q...", conf.TrackName)
+		if err := j.curYouTubePlayer.PlayTrackByName(conf.TrackName); err != nil {
+			return nil, fmt.Errorf("error playing track by name: %w", err)
+		}
 	default:
 		return nil, fmt.Errorf("unknown action '%s'", conf.Action)
 	}

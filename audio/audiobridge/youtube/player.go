@@ -7,6 +7,7 @@ import (
 	"io"
 	"ledfx/audio"
 	log "ledfx/logger"
+	"ledfx/tickpool"
 	"net/url"
 	"os"
 	"strings"
@@ -72,7 +73,7 @@ func (p *Player) Download(URL string) error {
 		for i, v := range playlist.Videos {
 			video, err := p.h.cl.VideoFromPlaylistEntry(v)
 			if err != nil {
-				log.Logger.WithField("category", "YouTube Download Handler").Errorf("Error getting entry metadata for %q: %v", cleanTitle(v.Title), err)
+				log.Logger.WithField("category", "YouTube Download Handler").Errorf("Error getting entry metadata for %q: %v", cleanString(v.Title), err)
 				toDownload = toDownload[:len(toDownload)-1]
 				continue
 			}
@@ -117,7 +118,7 @@ func (p *Player) Download(URL string) error {
 		}
 		path, err := p.h.downloadWAV(v, current+1, len(toDownload), clearBar)
 		if err != nil {
-			log.Logger.WithField("category", "YouTube Download Handler").Errorf("Error downloading %q: %v", cleanTitle(v.Title), err)
+			log.Logger.WithField("category", "YouTube Download Handler").Errorf("Error downloading %q: %v", cleanString(v.Title), err)
 			continue
 		}
 		p.tracks = append(p.tracks, v)
@@ -228,6 +229,12 @@ func (p *Player) NowPlaying() TrackInfo {
 	}
 }
 
+func (p *Player) QueuedTracks() []TrackInfo {
+	p.trackMu.Lock()
+	defer p.trackMu.Unlock()
+	return p.tracks
+}
+
 func (p *Player) Close() error {
 	if p.playing.Load() {
 		p.done <- struct{}{}
@@ -238,14 +245,17 @@ func (p *Player) Close() error {
 	return nil
 }
 
-func (p *Player) elapsedLoop(done chan struct{}) {
-	if p.ticker == nil {
-		p.ticker = time.NewTicker(time.Second)
-	} else {
-		p.ticker.Reset(time.Second)
-	}
+func (p *Player) TimeElapsed() time.Duration {
+	return p.elapsed.Load()
+}
 
-	defer p.ticker.Stop()
+func (p *Player) TrackIndex() int {
+	return int(p.trackNum.Load())
+}
+
+func (p *Player) elapsedLoop(done chan struct{}) {
+	p.ticker = tickpool.Get(time.Second)
+	defer tickpool.Put(p.ticker)
 
 	for {
 		select {
@@ -277,25 +287,33 @@ func (p *Player) playLoop() {
 				p.trackMu.Lock()
 				p.trackNum.Store(index)
 				_ = p.curWav.Close()
+				p.elapsed.Store(0)
 				p.trackMu.Unlock()
 
 				p.playByIndexDone <- struct{}{}
 			case <-p.next:
 				p.trackMu.Lock()
+
 				if int(p.trackNum.Inc()) >= len(p.trackPaths) {
 					p.trackNum.Store(0)
 				}
 				_ = p.curWav.Close()
+				p.elapsed.Store(0)
+
 				p.trackMu.Unlock()
 
 				p.nextDone <- struct{}{}
 			case <-p.prev:
 				p.trackMu.Lock()
+
 				if p.trackNum.Dec() < 0 {
 					p.trackNum.Store(int32(len(p.trackPaths) - 1))
 				}
-				p.trackMu.Unlock()
 				_ = p.curWav.Close()
+				p.elapsed.Store(0)
+
+				p.trackMu.Unlock()
+
 				p.prevDone <- struct{}{}
 			case <-p.pause:
 				<-p.unpause
@@ -318,6 +336,8 @@ func (p *Player) cycleTracks() {
 	p.trackNum = atomic.NewInt32(0)
 
 	go func() {
+		elapsedDone := make(chan struct{})
+		go p.elapsedLoop(elapsedDone)
 		defer func() {
 			close(p.play)
 			close(p.playByIndex)
@@ -325,6 +345,7 @@ func (p *Player) cycleTracks() {
 			close(p.pause)
 			close(p.unpause)
 			close(p.done)
+			close(elapsedDone)
 		}()
 
 		buf := make([]byte, 1408)

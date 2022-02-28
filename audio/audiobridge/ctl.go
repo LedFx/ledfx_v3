@@ -34,7 +34,7 @@ func (c *Controller) YouTube() *YoutubeController {
 func (ytc *YoutubeController) NowPlaying() (info youtube.TrackInfo, err error) {
 	if ytc.handler != nil {
 		if ytc.handler.handler != nil {
-			return ytc.handler.handler.NowPlaying(), nil
+			return ytc.handler.handler.Player().NowPlaying(), nil
 		}
 	}
 	return info, fmt.Errorf("YouTube handler is not active")
@@ -42,7 +42,7 @@ func (ytc *YoutubeController) NowPlaying() (info youtube.TrackInfo, err error) {
 func (ytc *YoutubeController) QueuedTracks() ([]youtube.TrackInfo, error) {
 	if ytc.handler != nil {
 		if ytc.handler.handler != nil {
-			return ytc.handler.handler.QueuedTracks(), nil
+			return ytc.handler.handler.Player().QueuedTracks(), nil
 		}
 	}
 	return nil, fmt.Errorf("YouTube handler is not active")
@@ -51,7 +51,7 @@ func (ytc *YoutubeController) QueuedTracks() ([]youtube.TrackInfo, error) {
 func (ytc *YoutubeController) TimeElapsed() (time.Duration, error) {
 	if ytc.handler != nil {
 		if ytc.handler.handler != nil {
-			return ytc.handler.handler.TimeElapsed(), nil
+			return ytc.handler.handler.Player().TimeElapsed(), nil
 		}
 	}
 	return -1, errors.New("YouTube handler is not active")
@@ -60,7 +60,7 @@ func (ytc *YoutubeController) TimeElapsed() (time.Duration, error) {
 func (ytc *YoutubeController) IsPaused() (bool, error) {
 	if ytc.handler != nil {
 		if ytc.handler.handler != nil {
-			return ytc.handler.handler.IsPaused(), nil
+			return ytc.handler.handler.Player().IsPaused(), nil
 		}
 	}
 	return false, fmt.Errorf("YouTube handler is not active")
@@ -68,7 +68,7 @@ func (ytc *YoutubeController) IsPaused() (bool, error) {
 func (ytc *YoutubeController) TrackIndex() (int, error) {
 	if ytc.handler != nil {
 		if ytc.handler.handler != nil {
-			return ytc.handler.handler.TrackIndex(), nil
+			return ytc.handler.handler.Player().TrackIndex(), nil
 		}
 	}
 	return -1, fmt.Errorf("YouTube handler is not active")
@@ -76,18 +76,10 @@ func (ytc *YoutubeController) TrackIndex() (int, error) {
 func (ytc *YoutubeController) IsPlaying() (bool, error) {
 	if ytc.handler != nil {
 		if ytc.handler.handler != nil {
-			return ytc.handler.handler.IsPlaying(), nil
+			return ytc.handler.handler.Player().IsPlaying(), nil
 		}
 	}
 	return false, fmt.Errorf("YouTube handler is not active")
-}
-func (ytc *YoutubeController) SongCompletionPercent() (youtube.CompletionPercent, error) {
-	if ytc.handler != nil {
-		if ytc.handler.handler != nil {
-			return ytc.handler.handler.PercentComplete()
-		}
-	}
-	return -1, fmt.Errorf("YouTube handler is not active")
 }
 
 // --- END YOUTUBE CTL ---

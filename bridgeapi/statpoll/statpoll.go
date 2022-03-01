@@ -3,14 +3,13 @@ package statpoll
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/carterpeel/abool/v2"
 	"github.com/gorilla/websocket"
-	"io"
 	"ledfx/audio/audiobridge"
-	log "ledfx/logger"
+	"net/http"
+	"strconv"
+	"strings"
 	"sync"
-	"time"
 )
 
 type StatPoller struct {
@@ -47,88 +46,50 @@ func New(br *audiobridge.Bridge) (s *StatPoller) {
 	}
 }
 
-func (s *StatPoller) AddWebsocket(ws *websocket.Conn) error {
+func (s *StatPoller) AddWebsocket(ws *websocket.Conn, r *http.Request) error {
 	if ws == nil {
 		return errors.New("ws cannot be nil")
 	}
 
-	go s.socketLoop(ws)
-	return nil
-}
+	statReq := Request{}
 
-func (s *StatPoller) socketLoop(ws *websocket.Conn) {
-	defer ws.Close()
-	for {
-		req := &Request{}
-		if err := ws.ReadJSON(req); err != nil {
-			switch {
-			case errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
-				break
-			case errors.As(err, &websocketClosedError):
-				log.Logger.WithField("category", "StatPoll SocketLoop").Warnln("Websocket session closed")
-				return
-			case errors.As(err, &jsonSyntaxErr), errors.As(err, &jsonInvalidCharErr):
-				log.Logger.WithField("category", "StatPoll SocketLoop").Warnln("Invalid request data received, skipping...")
-				_ = ws.WriteJSON(errorToJson(err))
-				continue
-			default:
-				log.Logger.WithField("category", "StatPoll SocketLoop").Errorf("Error reading JSON message from socket: %v", err)
-				return
-			}
+	var err error
+
+	if intervalStr := r.URL.Query().Get("interval_ms"); intervalStr != "" {
+		if statReq.IntervalMs, err = strconv.ParseInt(intervalStr, 10, 64); err != nil || statReq.IntervalMs < 1000 {
+			statReq.IntervalMs = 1000
 		}
-		if err := s.respondTo(ws, req); err != nil {
-			log.Logger.WithField("category", "StatPoll SocketLoop").Errorf("Error initializing socket response: %v", err)
-			return
+	} else {
+		statReq.IntervalMs = 1000
+	}
+
+	if paramsStr := r.URL.Query().Get("params"); paramsStr != "" {
+		params := strings.Split(paramsStr, ",")
+		statReq.Params = make([]ReqParam, len(params))
+		for i := range params {
+			statReq.Params[i] = ReqParam(params[i])
+		}
+	} else {
+		statReq.Params = []ReqParam{
+			YtParamNowPlaying,
+			YtParamTrackDuration,
+			YtParamElapsedTime,
+			YtParamPaused,
+			YtParamTrackIndex,
+			YtParamQueuedTracks,
 		}
 	}
-}
 
-func (s *StatPoller) respondTo(ws *websocket.Conn, r *Request) error {
-Check:
-	switch {
-	case r == nil:
-		fallthrough
-	case ws == nil:
-		return errors.New("(ws *websocket.Conn) and (r *Request) must be non-nil")
-	case r.Type == "": // If Request.Type is unspecified, default to ReqBridgeInfo
-		r.Type = ReqBridgeInfo
-		goto Check
-	case r.Iterations == 0:
-		r.Iterations = 1
-		goto Check
-	case r.IntervalMs <= 0:
-		r.IntervalMs = 1
-	}
-
-	switch r.Type {
-	case ReqBridgeInfo:
-		go s.sendBridgeInfo(r, time.Duration(r.IntervalMs)*time.Millisecond, ws)
-	case ReqStopBridgeInfo:
-		go s.stopBridgeInfo()
-	case ReqYoutubeInfo:
-		go s.sendYoutubeInfo(r, time.Duration(r.IntervalMs)*time.Millisecond, ws)
-	case ReqStopYoutubeInfo:
-		go s.stopYoutubeInfo()
-	case ReqAirPlayInfo:
-		go s.sendAirPlayInfo(r, time.Duration(r.IntervalMs)*time.Millisecond, ws)
-	case ReqStopAirPlayInfo:
-		go s.stopAirPlayInfo()
-	default:
-		return fmt.Errorf("unknown request type '%s'", r.Type)
-	}
+	go s.socketLoop(ws, &statReq)
 	return nil
 }
 
 type Request struct {
-	Type       ReqType    `json:"type"`
 	Params     []ReqParam `json:"params"`
-	Iterations int        `json:"iterations"`
 	IntervalMs int64      `json:"interval_ms"`
 }
 
 var (
-	jsonSyntaxErr        *json.SyntaxError
-	jsonInvalidCharErr   *json.InvalidUnmarshalError
 	websocketClosedError *websocket.CloseError
 )
 
@@ -144,4 +105,9 @@ func errorToJson(err error) *JsonError {
 	return &JsonError{
 		Error: err.Error(),
 	}
+}
+
+func errToJsonBytes(err error) []byte {
+	b, _ := json.Marshal(map[string]string{"error": err.Error()})
+	return b
 }

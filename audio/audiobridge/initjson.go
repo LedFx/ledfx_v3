@@ -78,6 +78,13 @@ func (w *BridgeJSONWrapper) StartAirPlayInput(jsonData []byte) (err error) {
 		return fmt.Errorf("error unmarshalling JSON: %w", err)
 	}
 
+	if conf.Name == "" {
+		conf.Name = "LedFX"
+	}
+	if conf.Port == 0 {
+		conf.Port = 7000
+	}
+
 	if err := w.br.StartAirPlayInput(conf.Name, conf.Port, conf.Verbose); err != nil {
 		return fmt.Errorf("error starting AirPlay Server: %w", err)
 	}

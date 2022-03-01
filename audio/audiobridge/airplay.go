@@ -103,16 +103,5 @@ type AirPlaySearchType string
 
 const (
 	AirPlaySearchByName AirPlaySearchType = "name"
-	AirPlaySearchByIP                     = "ip"
+	AirPlaySearchByIP   AirPlaySearchType = "ip"
 )
-
-func (a AirPlaySearchType) MarshalJSON() ([]byte, error) {
-	switch a {
-	case AirPlaySearchByName:
-		return []byte("0"), nil
-	case AirPlaySearchByIP:
-		return []byte("1"), nil
-	default:
-		return nil, fmt.Errorf("unknown search type '%d'", a)
-	}
-}

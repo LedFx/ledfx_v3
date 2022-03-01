@@ -31,6 +31,15 @@ func (c *Controller) YouTube() *YoutubeController {
 	}
 }
 
+func (ytc *YoutubeController) CheckErr() error {
+	if ytc.handler != nil {
+		if ytc.handler.handler != nil {
+			return nil
+		}
+	}
+	return fmt.Errorf("YouTube handler is not active")
+}
+
 func (ytc *YoutubeController) NowPlaying() (info youtube.TrackInfo, err error) {
 	if ytc.handler != nil {
 		if ytc.handler.handler != nil {

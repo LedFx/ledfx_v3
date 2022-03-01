@@ -72,10 +72,10 @@ func (s *Server) handleStatPollInitWs(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Logger.Errorf("Error upgrading connection to websocket: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
-	if err := s.statPoller.AddWebsocket(ws); err != nil {
+	if err := s.statPoller.AddWebsocket(ws, r); err != nil {
 		log.Logger.Errorf("Error adding websocket to statpoller: %v", err)
 		_ = ws.Close()
 	}
@@ -87,14 +87,14 @@ func (s *Server) handleSetInputAirPlay(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error reading request body: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
 	log.Logger.Infoln("Setting input source to AirPlay server....")
 	if err := s.br.JSONWrapper().StartAirPlayInput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error starting AirPlay input: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -104,14 +104,14 @@ func (s *Server) handleAddOutputAirPlay(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error reading request body: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
 	log.Logger.Infoln("Adding AirPlay audio output...")
 	if err := s.br.JSONWrapper().AddAirPlayOutput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error starting AirPlay output: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -128,14 +128,14 @@ func (s *Server) handleCtlAirPlaySet(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error reading request body: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
 
 	if err := s.br.JSONWrapper().CTL().AirPlaySet(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error getting return JSON from AirPlay CTL: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -171,14 +171,14 @@ func (s *Server) handleSetInputYouTube(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error reading request body: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
 	log.Logger.Infoln("Setting input source to YouTube...")
 	if err := s.br.JSONWrapper().StartYouTubeInput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error starting YouTubeSet input: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
 }
@@ -211,7 +211,7 @@ func (s *Server) handleCtlYouTubeGetInfo(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error running YouTubeGet CTL action: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -226,14 +226,14 @@ func (s *Server) handleSetInputCapture(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error reading request body: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
 	log.Logger.Infoln("Setting input source to local capture...")
 	if err := s.br.JSONWrapper().StartLocalInput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error starting local capture input: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
 }
@@ -242,14 +242,14 @@ func (s *Server) handleAddOutputLocal(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error reading request body: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
 	log.Logger.Infoln("Adding local audio output...")
 	if err := s.br.JSONWrapper().AddLocalOutput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Logger.Errorf("Error starting local output: %v", err)
-		w.Write(errToBytes(err))
+		w.Write(errToJson(err))
 		return
 	}
 	w.WriteHeader(http.StatusOK)

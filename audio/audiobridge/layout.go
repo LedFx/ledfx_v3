@@ -1,6 +1,7 @@
 package audiobridge
 
 import (
+	"fmt"
 	"ledfx/audio"
 )
 
@@ -44,6 +45,21 @@ const (
 	inputTypeYoutube
 )
 
+func (i inputType) String() string {
+	switch i {
+	case -1:
+		return "UNDEFINED"
+	case inputTypeAirPlayServer:
+		return "AIRPLAY"
+	case inputTypeLocal:
+		return "CAPTURE"
+	case inputTypeYoutube:
+		return "YOUTUBE"
+	default:
+		return fmt.Sprintf("UNKNOWN:%d", i)
+	}
+}
+
 // CallbackWrapper wraps a buffer Callback into a struct
 type CallbackWrapper struct {
 	Callback func(buf audio.Buffer)
@@ -65,8 +81,8 @@ const (
 )
 
 type OutputInfo struct {
-	Type  OutputType `json:"type"`
-	Value interface{}
+	Type OutputType  `json:"type"`
+	Info interface{} `json:"info"`
 }
 type AirPlayOutputInfo struct {
 	IP          string `json:"ip"`

@@ -22,6 +22,17 @@ type Controller struct {
 	br *Bridge
 }
 
+func (c *Controller) InputType() string {
+	return c.br.inputType.String()
+}
+func (c *Controller) Outputs() []OutputInfo {
+	outputs := make([]OutputInfo, len(c.br.outputs))
+	for i := range c.br.outputs {
+		outputs[i] = *c.br.outputs[i]
+	}
+	return outputs
+}
+
 // --- BEGIN YOUTUBE CTL ---
 
 // YouTube returns a YoutubeController

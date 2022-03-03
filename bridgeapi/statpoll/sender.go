@@ -23,28 +23,38 @@ func (s *StatPoller) socketLoop(ws *websocket.Conn, statReq *Request) {
 			Values: make(map[ReqParam]interface{}),
 		}
 
-		if err := s.br.Controller().YouTube().CheckErr(); err != nil {
-			ws.WriteJSON(errorToJson(err))
-			return
-		}
+		var err error
 
 		for _, value := range statReq.Params {
 			switch value {
+			case ParamInputType:
+				resp.Values[ParamInputType] = s.br.Controller().InputType()
+			case ParamOutputs:
+				resp.Values[ParamOutputs] = s.br.Controller().Outputs()
 			case YtParamNowPlaying:
-				resp.Values[YtParamNowPlaying], _ = s.br.Controller().YouTube().NowPlaying()
+				resp.Values[YtParamNowPlaying], err = s.br.Controller().YouTube().NowPlaying()
 			case YtParamTrackDuration:
-				nowPlaying, _ := s.br.Controller().YouTube().NowPlaying()
-				resp.Values[YtParamTrackDuration] = nowPlaying.Duration
+				if nowPlaying, err := s.br.Controller().YouTube().NowPlaying(); err != nil {
+					ws.WriteJSON(errorToJson(err))
+					return
+				} else {
+					resp.Values[YtParamTrackDuration] = nowPlaying.Duration
+				}
 			case YtParamElapsedTime:
-				resp.Values[YtParamElapsedTime], _ = s.br.Controller().YouTube().TimeElapsed()
+				resp.Values[YtParamElapsedTime], err = s.br.Controller().YouTube().TimeElapsed()
 			case YtParamPaused:
-				resp.Values[YtParamPaused], _ = s.br.Controller().YouTube().IsPaused()
+				resp.Values[YtParamPaused], err = s.br.Controller().YouTube().IsPaused()
 			case YtParamTrackIndex:
-				resp.Values[YtParamTrackIndex], _ = s.br.Controller().YouTube().TrackIndex()
+				resp.Values[YtParamTrackIndex], err = s.br.Controller().YouTube().TrackIndex()
 			case YtParamQueuedTracks:
-				resp.Values[YtParamQueuedTracks], _ = s.br.Controller().YouTube().QueuedTracks()
+				resp.Values[YtParamQueuedTracks], err = s.br.Controller().YouTube().QueuedTracks()
 			default:
 				resp.Values[value] = "ERR_UNKNOWN_PARAMETER"
+			}
+
+			if err != nil {
+				ws.WriteJSON(errorToJson(err))
+				return
 			}
 		}
 		select {

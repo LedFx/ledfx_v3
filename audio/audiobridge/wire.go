@@ -23,7 +23,7 @@ func (br *Bridge) wireAirPlayOutput(client *airplay2.Client) (err error) {
 	if err != nil {
 		br.outputs = append(br.outputs, &OutputInfo{
 			Type: outputTypeAirPlay,
-			Value: &AirPlayOutputInfo{
+			Info: &AirPlayOutputInfo{
 				IP:          client.RemoteIP().String(),
 				Hostname:    client.Hostname(),
 				AdvertName:  client.Name(),
@@ -43,7 +43,7 @@ func (br *Bridge) wireLocalOutput(handler playback.Handler) error {
 	}
 	br.outputs = append(br.outputs, &OutputInfo{
 		Type: outputTypeLocal,
-		Value: &LocalOutputInfo{
+		Info: &LocalOutputInfo{
 			Device:     handler.Device(),
 			Identifier: handler.Identifier(),
 			SampleRate: handler.SampleRate(),

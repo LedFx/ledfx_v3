@@ -265,10 +265,6 @@ func (s *Server) handleArtwork(w http.ResponseWriter, r *http.Request) {
 
 // ############### END MISC ###############
 
-func errToBytes(err error) []byte {
-	return []byte(err.Error() + "\n")
-}
-
 func errToJson(err error) []byte {
 	b, _ := json.Marshal(map[string]string{"error": err.Error()})
 	return b

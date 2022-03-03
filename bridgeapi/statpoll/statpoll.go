@@ -71,6 +71,8 @@ func (s *StatPoller) AddWebsocket(ws *websocket.Conn, r *http.Request) error {
 		}
 	} else {
 		statReq.Params = []ReqParam{
+			ParamInputType,
+			ParamOutputs,
 			YtParamNowPlaying,
 			YtParamTrackDuration,
 			YtParamElapsedTime,

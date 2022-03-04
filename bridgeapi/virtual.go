@@ -49,6 +49,8 @@ func (s *Server) HandleVirtuals(w http.ResponseWriter, r *http.Request) {
 			w.Write(errToJson(err))
 			return
 		}
+	default:
+		w.WriteHeader(http.StatusNotFound)
 	}
 }
 

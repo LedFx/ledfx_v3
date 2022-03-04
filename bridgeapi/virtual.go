@@ -31,10 +31,9 @@ func (s *Server) HandleVirtuals(w http.ResponseWriter, r *http.Request) {
 
 	switch filepath.Base(r.URL.Path) {
 	case "effects":
-		split := strings.Split(r.URL.Path, "/")
-		if len(split) != 2 {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(errToJson(err))
+		split := strings.Split(strings.TrimPrefix(r.URL.Path, "/"), "/")
+		if len(split) != 3 {
+			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 

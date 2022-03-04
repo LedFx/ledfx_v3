@@ -66,7 +66,7 @@ func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (err error) 
 	s.mux.HandleFunc(ArtworkURLPath, s.handleArtwork)
 
 	// LedFX Handlers
-	s.mux.HandleFunc("/virtuals", s.HandleVirtuals)
+	s.mux.HandleFunc("/virtuals/", s.HandleVirtuals)
 	return nil
 }
 

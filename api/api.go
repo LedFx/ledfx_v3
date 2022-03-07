@@ -140,6 +140,7 @@ func HandleApi() {
 
 			}
 		})
-	*/HandleSchema()
+	*/
+	HandleSchema()
 	HandleColors()
 }

@@ -33,19 +33,25 @@ func (s *Server) HandleVirtuals(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var p VirtualEffect
-	var category string
-	var virtualID string
 
-	path := strings.TrimPrefix(r.URL.Path, "/virtuals/")
-	if spl := strings.Split(path, "/api/virtuals"); len(spl) > 1 {
-		virtualID = spl[1]
-	}
-	pathNodes := strings.Split(virtualID, "/")
+	// Ex. r.URL.Path == "/api/virtuals/yz-quad-1/effects" (or with trailing slash)
 
-	if len(pathNodes) > 1 {
-		category = pathNodes[1]
-		virtualID = pathNodes[0]
+	// Ex. path == "yz-quad-1/effects"
+	path := strings.TrimSuffix(strings.TrimPrefix(r.URL.Path, "/api/virtuals/"), "/")
+
+	// Ex. split == ["yz-quad-1", "effects"]
+	split := strings.Split(path, "/")
+
+	// Check if bounds are correct
+	if len(split) != 2 {
+		http.Error(w, "invalid path format", http.StatusNotFound)
+		return
 	}
+
+	// Ex. virtualID == split[0] ("yz-quad-1")
+	virtualID := split[0]
+	// Ex. category == split[1] ("effects")
+	category := split[1]
 
 	defer r.Body.Close()
 	err := json.NewDecoder(r.Body).Decode(&p)

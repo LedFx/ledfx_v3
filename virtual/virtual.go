@@ -165,10 +165,7 @@ func RepeatNSmooth(virtualID string, playState bool, clr string, n int) error {
 var done chan bool
 
 func PlayVirtual(virtualID string, playState bool, clr string) (err error) {
-	// fmt.Println("Set PlayState of ", virtualID, " to ", playState)
-	if clr != "" {
-		//fmt.Println("Set color of ", virtualID, " to ", clr)
-	}
+	fmt.Println("Set PlayState of ", virtualID, " to ", playState)
 
 	if virtualID == "" {
 		return errors.New("virtual id is empty. Please provide Id to add virtual to config")

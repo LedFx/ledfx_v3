@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"ledfx/api"
+	"ledfx/color"
 	"ledfx/config"
 	"ledfx/logger"
 	"ledfx/virtual"
@@ -12,7 +13,7 @@ import (
 )
 
 type VirtualData struct {
-	LastColor string
+	LastColor string `json:"color"`
 }
 
 type VirtualEffect struct {
@@ -66,6 +67,11 @@ func (s *Server) HandleVirtuals(w http.ResponseWriter, r *http.Request) {
 			logger.Logger.WithField("category", fmt.Sprintf("HTTP/DELETE: %s", r.URL.Path)).Warnf("Error stopping virtual with ID %q: %v", virtualID, err)
 		}
 	case http.MethodPost, http.MethodPut:
+		if p.Type == "audioRandom" {
+			p.Active = true
+			p.Config.Color = color.RandomColor()
+		}
+
 		switch category {
 		case "effects":
 			s.virtuals.LastColor = p.Config.Color

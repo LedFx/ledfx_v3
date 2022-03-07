@@ -25,17 +25,14 @@ func NewColor(c string) (col Color, err error) {
 	switch {
 	case isPredef: // Color is predefined
 		col, err = parseHex(predef)
-	case c[0:4] == "rgb(": // "rgb(0, 127, 255)"
+	case strings.HasPrefix(c, "rgb("): // "rgb(0, 127, 255)"
 		col, err = parseRGB(c)
-	case c[0:1] == "#": // "#0088ff"
+	case strings.HasPrefix(c, "#"): // "#0088ff"
 		col, err = parseHex(c)
 	default:
-		err = errInvalidColor
+		return col, errInvalidColor
 	}
-	if err != nil {
-		col = Color{}
-	}
-	return col, err
+	return col, nil
 }
 
 func parseRGB(c string) (col Color, err error) {

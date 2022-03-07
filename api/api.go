@@ -6,9 +6,7 @@ import (
 	"ledfx/audio"
 	"ledfx/config"
 	"ledfx/logger"
-	"ledfx/virtual"
 	"net/http"
-	"strings"
 )
 
 func SetHeader(w http.ResponseWriter) {
@@ -73,75 +71,75 @@ func HandleApi() {
 		// this is too less, we need the key also: {"virtuals": ...}
 		// json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
 	})
-	http.HandleFunc("/api/virtuals/", func(w http.ResponseWriter, r *http.Request) {
-		if LastColor == "" {
-			LastColor = "#ff0000"
-		}
-		SetHeader(w)
-		logger.Logger.Debug(r.Method)
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		} else {
-
-			var p Resp
-			var category string
-			var virtualid string
-			path := strings.TrimPrefix(r.URL.Path, "/virtuals/")
-			virtualid = strings.Split(path, "/api/virtuals/")[1]
-			pathNodes := strings.Split(virtualid, "/")
-			if len(pathNodes) > 1 {
-				category = string(pathNodes[1])
-				virtualid = string(pathNodes[0])
+	/*	http.HandleFunc("/api/virtuals/", func(w http.ResponseWriter, r *http.Request) {
+			if LastColor == "" {
+				LastColor = "#ff0000"
 			}
-
-			err := json.NewDecoder(r.Body).Decode(&p)
-			if err != nil {
-				logger.Logger.Warn(err)
+			SetHeader(w)
+			logger.Logger.Debug(r.Method)
+			if r.Method == "OPTIONS" {
+				w.WriteHeader(http.StatusOK)
 				return
-			}
+			} else {
 
-			if r.Method == "DELETE" {
-				err := virtual.StopVirtual(virtualid)
-				if err != nil {
-					logger.Logger.Warn(err)
+				var p Resp
+				var category string
+				var virtualid string
+				path := strings.TrimPrefix(r.URL.Path, "/virtuals/")
+				virtualid = strings.Split(path, "/api/virtuals/")[1]
+				pathNodes := strings.Split(virtualid, "/")
+				if len(pathNodes) > 1 {
+					category = string(pathNodes[1])
+					virtualid = string(pathNodes[0])
 				}
-				return
-			}
-			if r.Method == "POST" || r.Method == "PUT" {
+
 				err := json.NewDecoder(r.Body).Decode(&p)
 				if err != nil {
 					logger.Logger.Warn(err)
-					// http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}
-			}
 
-			if category == "effects" {
-				LastColor = p.Config.Color
-				err := virtual.PlayVirtual(virtualid, true, LastColor)
+				if r.Method == "DELETE" {
+					err := virtual.StopVirtual(virtualid)
+					if err != nil {
+						logger.Logger.Warn(err)
+					}
+					return
+				}
+				if r.Method == "POST" || r.Method == "PUT" {
+					err := json.NewDecoder(r.Body).Decode(&p)
+					if err != nil {
+						logger.Logger.Warn(err)
+						// http.Error(w, err.Error(), http.StatusBadRequest)
+						return
+					}
+				}
+
+				if category == "effects" {
+					LastColor = p.Config.Color
+					err := virtual.PlayVirtual(virtualid, true, LastColor)
+					if err != nil {
+						logger.Logger.Warn(err)
+					}
+				} else if category == "presets" {
+					logger.Logger.Debug("No Presets yet ;)")
+				} else {
+					if LastColor == "" {
+						LastColor = "#000fff"
+					}
+					err := virtual.PlayVirtual(virtualid, p.Active, LastColor)
+					if err != nil {
+						logger.Logger.Warn(err)
+					}
+				}
+
+				err = json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
 				if err != nil {
 					logger.Logger.Warn(err)
 				}
-			} else if category == "presets" {
-				logger.Logger.Debug("No Presets yet ;)")
-			} else {
-				if LastColor == "" {
-					LastColor = "#000fff"
-				}
-				err := virtual.PlayVirtual(virtualid, p.Active, LastColor)
-				if err != nil {
-					logger.Logger.Warn(err)
-				}
-			}
 
-			err = json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
-			if err != nil {
-				logger.Logger.Warn(err)
 			}
-
-		}
-	})
-	HandleSchema()
+		})
+	*/HandleSchema()
 	HandleColors()
 }

@@ -24,6 +24,8 @@ type Server struct {
 	br         *audiobridge.Bridge
 	statPoller *statpoll.StatPoller
 	upgrader   *websocket.Upgrader
+
+	virtuals *VirtualData
 }
 
 func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (err error) {
@@ -33,6 +35,9 @@ func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (err error) 
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 			WriteBufferPool: &sync.Pool{},
+		},
+		virtuals: &VirtualData{
+			LastColor: "#ff0000",
 		},
 	}
 
@@ -66,7 +71,7 @@ func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (err error) 
 	s.mux.HandleFunc(ArtworkURLPath, s.handleArtwork)
 
 	// LedFX Handlers
-	s.mux.HandleFunc("/virtuals/", s.HandleVirtuals)
+	s.mux.HandleFunc("/api/virtuals/", s.HandleVirtuals)
 	return nil
 }
 

@@ -3,25 +3,84 @@ package bridgeapi
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"ledfx/api"
 	"ledfx/config"
+	"ledfx/logger"
 	"ledfx/virtual"
 	"net/http"
-	"path/filepath"
 	"strings"
 )
 
-type SetVirtualEffectReq struct {
-	Active bool               `json:"active"`
-	Type   string             `json:"type"`
-	Config VirtualColorConfig `json:"config"`
+type VirtualData struct {
+	LastColor string
 }
-type VirtualColorConfig struct {
+
+type VirtualEffect struct {
+	Active bool                `json:"active"`
+	Type   string              `json:"type"`
+	Config VirtualEffectConfig `json:"config"`
+}
+type VirtualEffectConfig struct {
 	Color string `json:"color"`
 }
 
 func (s *Server) HandleVirtuals(w http.ResponseWriter, r *http.Request) {
+	api.SetHeader(w)
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	var p VirtualEffect
+	var category string
+
+	path := strings.TrimPrefix(r.URL.Path, "/virtuals/")
+	virtualID := strings.Split(path, "/api/virtuals/")[1]
+	pathNodes := strings.Split(virtualID, "/")
+
+	if len(pathNodes) > 1 {
+		category = pathNodes[1]
+		virtualID = pathNodes[0]
+	}
+
 	defer r.Body.Close()
+	err := json.NewDecoder(r.Body).Decode(&p)
+	if err != nil {
+		logger.Logger.Warn(err)
+		return
+	}
+
+	switch r.Method {
+	case http.MethodDelete:
+		if err := virtual.StopVirtual(virtualID); err != nil {
+			logger.Logger.WithField("category", fmt.Sprintf("HTTP/DELETE: %s", r.URL.Path)).Warnf("Error stopping virtual with ID %q: %v", virtualID, err)
+		}
+	case http.MethodPost, http.MethodPut:
+		switch category {
+		case "effects":
+			s.virtuals.LastColor = p.Config.Color
+			if err := virtual.PlayVirtual(virtualID, true, s.virtuals.LastColor); err != nil {
+				logger.Logger.WithField("category", fmt.Sprintf("HTTP/%s: %s", r.Method, r.URL.Path)).Warnf("Error playing virtual effect with ID %q: %v", virtualID, err)
+			}
+		case "presets":
+			logger.Logger.WithField("category", fmt.Sprintf("HTTP/%s: %s", r.Method, r.URL.Path)).Debug("No Presets yet ;)")
+		default:
+			if s.virtuals.LastColor == "" {
+				s.virtuals.LastColor = "#000fff"
+			}
+			err := virtual.PlayVirtual(virtualID, p.Active, s.virtuals.LastColor)
+			if err != nil {
+				logger.Logger.WithField("category", fmt.Sprintf("HTTP/%s: %s", r.Method, r.URL.Path)).Warnf("Error playing virtual effect with ID %q: %v", virtualID, err)
+			}
+		}
+
+		if err := json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals); err != nil {
+			logger.Logger.WithField("category", fmt.Sprintf("HTTP/%s: %s", r.Method, r.URL.Path)).Warnf("Error encoding 'GlobalConfig.Virtuals': %v", err)
+		}
+	}
+
+	/*defer r.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -37,7 +96,7 @@ func (s *Server) HandleVirtuals(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		effectReq := SetVirtualEffectReq{}
+		effectReq := VirtualEffect{}
 		if err := json.Unmarshal(bodyBytes, &effectReq); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write(errToJson(err))
@@ -50,10 +109,10 @@ func (s *Server) HandleVirtuals(w http.ResponseWriter, r *http.Request) {
 		}
 	default:
 		w.WriteHeader(http.StatusNotFound)
-	}
+	}*/
 }
 
-func (s *Server) setVirtualEffect(effectReq *SetVirtualEffectReq, virtualID string) error {
+func (s *Server) setVirtualEffect(effectReq *VirtualEffect, virtualID string) error {
 	virtualIndex := -1
 	for index, virt := range config.GlobalConfig.Virtuals {
 		if virt.Id == virtualID {

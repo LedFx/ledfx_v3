@@ -34,9 +34,12 @@ func (s *Server) HandleVirtuals(w http.ResponseWriter, r *http.Request) {
 
 	var p VirtualEffect
 	var category string
+	var virtualID string
 
 	path := strings.TrimPrefix(r.URL.Path, "/virtuals/")
-	virtualID := strings.Split(path, "/api/virtuals/")[1]
+	if spl := strings.Split(path, "/api/virtuals"); len(spl) > 1 {
+		virtualID = spl[1]
+	}
 	pathNodes := strings.Split(virtualID, "/")
 
 	if len(pathNodes) > 1 {

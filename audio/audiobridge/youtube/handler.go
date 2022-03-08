@@ -167,11 +167,11 @@ Retry:
 		progressbar.OptionEnableColorCodes(true),
 		progressbar.OptionSetPredictTime(false),
 		progressbar.OptionShowBytes(true),
-		progressbar.OptionSetDescription(fmt.Sprintf("[_black_][bold][cyan][%d/%d] [red][bold]%s[cyan]", current, max, strings.TrimSuffix(info.video.Title, " "))),
+		progressbar.OptionSetDescription(fmt.Sprintf("[_black_][bold][cyan][%d/%d] [yellow]Downloading: [bold][red]%q[reset][_black_][cyan]", current, max, strings.TrimSuffix(info.video.Title, " "))),
 		progressbar.OptionSetTheme(progressbar.Theme{
-			Saucer:        "[_black_][bold][light_green]=[reset]",
-			SaucerHead:    "[_black_][bold][light_green]>[reset]",
-			SaucerPadding: "[_black_] ",
+			Saucer:        "[_black_][bold][light_green]▰[reset]",
+			SaucerHead:    "[_black_][bold][light_green]█[reset]",
+			SaucerPadding: "[_black_]▱",
 			BarStart:      "[bold][_black_][cyan]{",
 			BarEnd:        "[bold][_black_][cyan]}[reset]",
 		}),
@@ -193,14 +193,8 @@ Retry:
 		return path, fmt.Errorf("error copying YT stream to file: %w", err)
 	}
 
-	if h.verbose {
-		if err := ffmpeg.Input(tmpVideoNameAndPath).Audio().Output(path, ffmpeg.KwArgs{"sample_fmt": "s16", "ar": "44100", "ac": 2}).OverWriteOutput().WithErrorOutput(os.Stderr).Run(); err != nil {
-			return path, fmt.Errorf("error converting YouTubeSet download to wav: %w", err)
-		}
-	} else {
-		if err := ffmpeg.Input(tmpVideoNameAndPath).Audio().Output(path, ffmpeg.KwArgs{"sample_fmt": "s16", "ar": "44100", "ac": 2}).OverWriteOutput().Run(); err != nil {
-			return path, fmt.Errorf("error converting YouTubeSet download to wav: %w", err)
-		}
+	if err := ffmpeg.Input(tmpVideoNameAndPath).Audio().Output(path, ffmpeg.KwArgs{"sample_fmt": "s16", "ar": "44100", "ac": 2}).OverWriteOutput().Run(); err != nil {
+		return path, fmt.Errorf("error converting YouTubeSet download to wav: %w", err)
 	}
 
 	return path, nil

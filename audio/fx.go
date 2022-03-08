@@ -72,7 +72,7 @@ func (fx *FxHandler) Callback(buf Buffer) {
 			// ToDo: change singleColor to audioRandom after Effect-Type-Change is possible
 			if d.Active && config.GlobalConfig.Virtuals[i].Effect.Type == "singleColor" {
 				//fmt.Printf("%s\n", config.GlobalConfig.Virtuals[i].Effect.Type)
-				_ = virtual.PlayVirtual(config.GlobalConfig.Virtuals[i].Id, true, color.RandomColor())
+				_ = virtual.PlayVirtual(config.GlobalConfig.Virtuals[i].Id, true, color.RandomColor(), "audioRandom")
 			}
 		}
 	}

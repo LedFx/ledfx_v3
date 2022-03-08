@@ -70,20 +70,22 @@ func (p *Player) Download(URL string) error {
 		}
 		toDownload = make([]TrackInfo, len(playlist.Videos))
 
-		for i, v := range playlist.Videos {
-			video, err := p.h.cl.VideoFromPlaylistEntry(v)
+		for i := 0; i < len(playlist.Videos); i++ {
+			entry := playlist.Videos[i]
+			video, err := p.h.cl.VideoFromPlaylistEntry(playlist.Videos[i])
 			if err != nil {
-				log.Logger.WithField("category", "YouTube Download Handler").Errorf("Error getting entry metadata for %q: %v", cleanString(v.Title), err)
+				log.Logger.WithField("category", "YouTube Download Handler").Errorf("Error getting entry metadata for %q: %v", entry.Title, err)
+				playlist.Videos = append(playlist.Videos[:i], playlist.Videos[i+1:]...)
 				toDownload = toDownload[:len(toDownload)-1]
 				continue
 			}
 			toDownload[i] = TrackInfo{
-				Artist:        v.Author,
-				Title:         v.Title,
-				Duration:      SongDuration(v.Duration),
+				Artist:        entry.Author,
+				Title:         entry.Title,
+				Duration:      SongDuration(entry.Duration),
 				SampleRate:    44100,
 				FileSize:      -1,
-				URL:           fmt.Sprintf("https://youtu.be/%s", v.ID),
+				URL:           fmt.Sprintf("https://youtu.be/%s", entry.ID),
 				AudioChannels: 2,
 				video:         video,
 			}

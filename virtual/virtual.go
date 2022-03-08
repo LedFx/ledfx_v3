@@ -164,7 +164,7 @@ func RepeatNSmooth(virtualID string, playState bool, clr string, n int) error {
 // TODO: this should belong to the virtual instance
 var done chan bool
 
-func PlayVirtual(virtualID string, playState bool, clr string) (err error) {
+func PlayVirtual(virtualID string, playState bool, clr string, effectType string) (err error) {
 	fmt.Println("Set PlayState of ", virtualID, " to ", playState)
 
 	if virtualID == "" {
@@ -180,6 +180,12 @@ func PlayVirtual(virtualID string, playState bool, clr string) (err error) {
 
 	for i, d := range config.GlobalConfig.Virtuals {
 		if d.Id == virtualID {
+			if effectType != "" {
+				d.Effect.Type = effectType
+			}
+			if clr != "" {
+				d.Effect.Config.Color = clr
+			}
 			virtualExists = true
 			config.GlobalConfig.Virtuals[i].Active = playState
 			if config.GlobalConfig.Virtuals[i].IsDevice != "" {
@@ -217,11 +223,12 @@ func PlayVirtual(virtualID string, playState bool, clr string) (err error) {
 		}
 	}
 
-	if virtualExists {
-		config.GlobalViper.Set("virtuals", config.GlobalConfig.Virtuals)
-		err = config.GlobalViper.WriteConfig()
+	if !virtualExists {
+		return fmt.Errorf("virtual with ID %q does not exist", virtualID)
 	}
-	return
+
+	config.GlobalViper.Set("virtuals", config.GlobalConfig.Virtuals)
+	return config.GlobalViper.WriteConfig()
 }
 
 func StopVirtual(virtualid string) (err error) {

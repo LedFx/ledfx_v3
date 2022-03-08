@@ -70,12 +70,13 @@ func (s *Server) HandleVirtuals(w http.ResponseWriter, r *http.Request) {
 		if p.Type == "audioRandom" {
 			p.Active = true
 			p.Config.Color = color.RandomColor()
+			s.virtuals.LastColor = color.RandomColor()
 		}
 
 		switch category {
 		case "effects":
 			s.virtuals.LastColor = p.Config.Color
-			if err := virtual.PlayVirtual(virtualID, true, s.virtuals.LastColor); err != nil {
+			if err := virtual.PlayVirtual(virtualID, true, s.virtuals.LastColor, p.Type); err != nil {
 				logger.Logger.WithField("category", fmt.Sprintf("HTTP/%s: %s", r.Method, r.URL.Path)).Warnf("Error playing virtual effect with ID %q: %v", virtualID, err)
 			}
 		case "presets":
@@ -84,7 +85,7 @@ func (s *Server) HandleVirtuals(w http.ResponseWriter, r *http.Request) {
 			if s.virtuals.LastColor == "" {
 				s.virtuals.LastColor = "#000fff"
 			}
-			err := virtual.PlayVirtual(virtualID, p.Active, s.virtuals.LastColor)
+			err := virtual.PlayVirtual(virtualID, p.Active, s.virtuals.LastColor, p.Type)
 			if err != nil {
 				logger.Logger.WithField("category", fmt.Sprintf("HTTP/%s: %s", r.Method, r.URL.Path)).Warnf("Error playing virtual effect with ID %q: %v", virtualID, err)
 			}
@@ -143,5 +144,5 @@ func (s *Server) setVirtualEffect(effectReq *VirtualEffect, virtualID string) er
 	config.GlobalConfig.Virtuals[virtualIndex].Active = effectReq.Active
 	config.GlobalConfig.Virtuals[virtualIndex].Effect.Type = effectReq.Type
 	config.GlobalConfig.Virtuals[virtualIndex].Effect.Config.Color = effectReq.Config.Color
-	return virtual.PlayVirtual(virtualID, effectReq.Active, effectReq.Config.Color)
+	return virtual.PlayVirtual(virtualID, effectReq.Active, effectReq.Config.Color, effectReq.Type)
 }

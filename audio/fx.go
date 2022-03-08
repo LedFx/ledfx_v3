@@ -2,10 +2,11 @@ package audio
 
 import (
 	"fmt"
-	"go.uber.org/atomic"
 	"ledfx/color"
 	"ledfx/config"
 	"ledfx/virtual"
+
+	"go.uber.org/atomic"
 
 	aubio "github.com/simonassank/aubio-go"
 )
@@ -69,8 +70,7 @@ func (fx *FxHandler) Callback(buf Buffer) {
 	if sum > 1.2 {
 		//fmt.Printf("%0.3f\n", sum)
 		for i, d := range config.GlobalConfig.Virtuals {
-			// ToDo: change singleColor to audioRandom after Effect-Type-Change is possible
-			if d.Active && config.GlobalConfig.Virtuals[i].Effect.Type == "singleColor" {
+			if d.Active && config.GlobalConfig.Virtuals[i].Effect.Type == "audioRandom" {
 				//fmt.Printf("%s\n", config.GlobalConfig.Virtuals[i].Effect.Type)
 				_ = virtual.PlayVirtual(config.GlobalConfig.Virtuals[i].Id, true, color.RandomColor(), "audioRandom")
 			}

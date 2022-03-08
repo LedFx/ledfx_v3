@@ -67,6 +67,13 @@ func (s *Server) HandleVirtuals(w http.ResponseWriter, r *http.Request) {
 			logger.Logger.WithField("category", fmt.Sprintf("HTTP/DELETE: %s", r.URL.Path)).Warnf("Error stopping virtual with ID %q: %v", virtualID, err)
 		}
 	case http.MethodPost, http.MethodPut:
+		for i, d := range config.GlobalConfig.Virtuals {
+			if d.Id == virtualID {
+				config.GlobalConfig.Virtuals[i].Effect.Type = p.Type
+				config.GlobalConfig.Virtuals[i].Effect.Name = p.Type // ToDo @carterpeel: Take Name from refactored schema.go line 46
+
+			}
+		}
 		if p.Type == "audioRandom" {
 			p.Active = true
 			p.Config.Color = color.RandomColor()
@@ -76,6 +83,11 @@ func (s *Server) HandleVirtuals(w http.ResponseWriter, r *http.Request) {
 		switch category {
 		case "effects":
 			s.virtuals.LastColor = p.Config.Color
+			for i, d := range config.GlobalConfig.Virtuals {
+				if d.Id == virtualID {
+					config.GlobalConfig.Virtuals[i].Effect.Config.Color = s.virtuals.LastColor
+				}
+			}
 			if err := virtual.PlayVirtual(virtualID, true, s.virtuals.LastColor, p.Type); err != nil {
 				logger.Logger.WithField("category", fmt.Sprintf("HTTP/%s: %s", r.Method, r.URL.Path)).Warnf("Error playing virtual effect with ID %q: %v", virtualID, err)
 			}

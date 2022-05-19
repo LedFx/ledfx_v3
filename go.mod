@@ -3,12 +3,12 @@ module ledfx
 go 1.17
 
 require (
+	github.com/LedFx/aubio-go v0.0.0-20220511175620-cb4e37bfc8fe
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/carterpeel/abool v1.2.1-0.20220225054344-4f95bb28612b
 	github.com/carterpeel/ffmpeg-go v0.4.1-0.20220226201032-e6786be815f4
 	github.com/carterpeel/go.alac v0.0.0-20220120210858-abcf099555b4
 	github.com/fatih/color v1.13.0
-	github.com/felixge/fgprof v0.9.2
 	github.com/getlantern/systray v1.1.0
 	github.com/gordonklaus/portaudio v0.0.0-20200911161147-bb74aa485641
 	github.com/gorilla/websocket v1.5.0
@@ -20,7 +20,6 @@ require (
 	github.com/ojrac/opensimplex-go v1.0.2
 	github.com/ritchie46/GOPHY v0.0.0-20170315173114-9b8a7f05cfa1
 	github.com/rs/cors v1.8.2
-	github.com/simonassank/aubio-go v0.0.0-20210318191226-729d3d668592
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.10.1
 	go.uber.org/atomic v1.9.0
@@ -44,7 +43,6 @@ require (
 	github.com/getlantern/ops v0.0.0-20190325191751-d70cb0d6f85f // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
-	github.com/google/pprof v0.0.0-20220113144219-d25a53d42d00 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect

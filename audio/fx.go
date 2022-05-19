@@ -8,7 +8,7 @@ import (
 
 	"go.uber.org/atomic"
 
-	aubio "github.com/simonassank/aubio-go"
+	aubio "github.com/LedFx/aubio-go"
 )
 
 const (

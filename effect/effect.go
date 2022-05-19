@@ -14,6 +14,7 @@ import (
 // Effect is the interface for an effect
 type Effect interface {
 	AssembleFrame(phase float64, ledCount int, effectColor color.Color) (colors []color.Color)
+	Pixels []color.Color
 }
 
 // Config is the configuration for an effect

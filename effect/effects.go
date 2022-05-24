@@ -26,8 +26,9 @@ NEW EFFECTS MUST BE REGISTERED IN THESE TWO FUNCTIONS =====================
 
 // Generate a map schema for all effects
 func Schema() (schema map[string]interface{}, err error) {
+	schema = make(map[string]interface{})
 	// Copypaste for new effect types
-	schema["energy"], err = utils.CreateSchema(reflect.TypeOf((*Energy)(nil)).Elem())
+	schema["energy"], err = utils.CreateSchema(reflect.TypeOf((*EnergyConfig)(nil)).Elem())
 	return schema, err
 }
 
@@ -51,9 +52,12 @@ func New(effect_type string, config interface{}) (effect PixelGenerator, err err
 		}
 	}
 	// initialise the new effect with its id and config
-	effect.Initialize()
-	effect.UpdateConfig(config)
-	return effect, nil
+	err = effect.Initialize()
+	if err != nil {
+		return effect, nil
+	}
+	err = effect.UpdateConfig(config)
+	return effect, err
 }
 
 /*
@@ -61,7 +65,7 @@ Nothing to modify below here =====================
 */
 
 var effectInstances = make(map[string]PixelGenerator)
-var globalConfig = new(GlobalEffectsConfig)
+var globalConfig = GlobalEffectsConfig{}
 var validate *validator.Validate = validator.New()
 
 func init() {
@@ -69,7 +73,7 @@ func init() {
 	validate.RegisterValidation("color", validateColor)
 	// set global effect settings to default values
 	if err := defaults.Set(&globalConfig); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	// validate global effect settings
 	if err := validate.Struct(&globalConfig); err != nil {
@@ -79,11 +83,11 @@ func init() {
 
 // Settings applied to all effects
 type GlobalEffectsConfig struct {
-	Brightness     float64 `json:"brightness" description:"Global brightness modifier" default:"1" validate:"gte=0,lte=1"`
-	Hue            float64 `json:"hue" description:"Global hue modifier" default:"0" validate:"gte=0,lte=1"`
-	Saturation     float64 `json:"saturation" description:"Global saturation modifier" default:"1" validate:"gte=0,lte=1"`
-	TransitionMode string  `json:"transition_time" description:"Transition animation" default:"fade" validate:"oneof=fade wipe dissolve"` // TODO get this dynamically
-	TransitionTime float64 `json:"transition_mode" description:"Duration of transitions (seconds)" default:"1" validate:"gte=0,lte=5"`
+	Brightness     float64 `mapstructure:"brightness" json:"brightness" description:"Global brightness modifier" default:"1" validate:"gte=0,lte=1"`
+	Hue            float64 `mapstructure:"hue" json:"hue" description:"Global hue modifier" default:"0" validate:"gte=0,lte=1"`
+	Saturation     float64 `mapstructure:"saturation" json:"saturation" description:"Global saturation modifier" default:"1" validate:"gte=0,lte=1"`
+	TransitionMode string  `mapstructure:"transition_time" json:"transition_time" description:"Transition animation" default:"fade" validate:"oneof=fade wipe dissolve"` // TODO get this dynamically
+	TransitionTime float64 `mapstructure:"transition_mode" json:"transition_mode" description:"Duration of transitions (seconds)" default:"1" validate:"gte=0,lte=5"`
 }
 
 func validatePalette(fl validator.FieldLevel) bool {
@@ -99,24 +103,32 @@ func validateColor(fl validator.FieldLevel) bool {
 /*
 Updates the global effect settings. Config can be given
 as GlobalEffectsConfig, map[string]interface{}, or raw json
+For incremental config updates, you must use map or json.
 */
 func SetGlobalSettings(c interface{}) (err error) {
-	var config GlobalEffectsConfig
+	// create a copy of the config
+	newConfig := globalConfig
+	// update values
 	switch t := c.(type) {
 	case GlobalEffectsConfig:
-		config = c.(GlobalEffectsConfig)
+		newConfig = c.(GlobalEffectsConfig)
 	case map[string]interface{}:
-		err = mapstructure.Decode(t, config)
+		err = mapstructure.Decode(t, &newConfig)
 	case []byte:
-		err = json.Unmarshal(t, &config)
+		err = json.Unmarshal(t, &newConfig)
 	default:
-		err = fmt.Errorf("Invalid config type %T", c)
+		err = fmt.Errorf("invalid config type %T", c)
 	}
-	err = validate.Struct(&config)
 	if err != nil {
 		return err
 	}
-	globalConfig = &config
+	// validate new config
+	err = validate.Struct(&newConfig)
+	if err != nil {
+		return err
+	}
+	// assign it ready for use
+	globalConfig = newConfig
 	return nil
 }
 
@@ -131,13 +143,22 @@ func Get(id string) (PixelGenerator, error) {
 
 // Kill an effect instance
 func Destroy(id string) {
-	if _, exists := effectInstances[id]; exists {
-		delete(effectInstances, id)
+	delete(effectInstances, id)
+}
+
+func GetIDs() []string {
+	ids := []string{}
+	for id := range effectInstances {
+		ids = append(ids, id)
 	}
+	return ids
 }
 
 func JsonSchema() (jsonSchema []byte, err error) {
 	schema, err := Schema()
+	if err != nil {
+		return jsonSchema, err
+	}
 	jsonSchema, err = utils.CreateJsonSchema(schema)
 	return jsonSchema, err
 }

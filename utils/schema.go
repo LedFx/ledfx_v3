@@ -139,12 +139,13 @@ func CreateJsonSchema(s map[string]interface{}) ([]byte, error) {
 
 // Creates a schema for a given type
 func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
+	schema := make(map[string]interface{})
+
 	err := CheckConfigTags(t)
 	if err != nil {
-		log.Fatalf("Invalid config: %v", err)
+		return schema, fmt.Errorf("invalid config: %v", err)
 	}
 
-	schema := make(map[string]interface{})
 	fields := DeepFields(t)
 	for _, f := range fields {
 		desc, _ := f.Tag.Lookup("description")   // this is the "description"

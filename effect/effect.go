@@ -8,7 +8,7 @@ import (
 // PixelGenerator is the interface for effect types.
 // All effects generate pixels
 type PixelGenerator interface {
-	Initialize()
+	Initialize() error
 	UpdateConfig(c interface{}) (err error)
 	AssembleFrame(colors *color.Pixels)
 }
@@ -19,9 +19,6 @@ type AudioPixelGenerator interface {
 }
 
 type Effect struct {
-	Id     string
-	Type   string
-	Name   string
 	Config EffectConfig
 }
 

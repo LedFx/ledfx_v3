@@ -1,5 +1,5 @@
 //go:generate goversioninfo -icon=assets/logo.ico
-package utils
+package unstructuredold
 
 import (
 	_ "embed"

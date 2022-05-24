@@ -70,7 +70,7 @@ func (g *Palette) WebServe() (link *url.URL, err error) {
 		return nil, err
 	}
 
-	body := paletteBodyBuilder(g.rawCSS)
+	body := gradientBodyBuilder(g.rawCSS)
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "text/html")
 		w.Header().Set("content-length", strconv.Itoa(len(body)))
@@ -81,7 +81,7 @@ func (g *Palette) WebServe() (link *url.URL, err error) {
 }
 
 func (g *Palette) Raw(width, height int) ([]byte, error) {
-	grad, err := colorgrad.NewPalette().Colors(NormalizeColorList(g.colors)...).Build()
+	grad, err := colorgrad.NewGradient().Colors(NormalizeColorList(g.colors)...).Build()
 	if err != nil {
 		return nil, fmt.Errorf("error building palette: %w", err)
 	}
@@ -103,7 +103,7 @@ func (g *Palette) Raw(width, height int) ([]byte, error) {
 }
 
 func (g *Palette) RawNoise(width, height int, seed int64, evalFactor float64) ([]byte, error) {
-	grad, err := colorgrad.NewPalette().Colors(NormalizeColorList(g.colors)...).Build()
+	grad, err := colorgrad.NewGradient().Colors(NormalizeColorList(g.colors)...).Build()
 	if err != nil {
 		return nil, fmt.Errorf("error building palette: %w", err)
 	}
@@ -166,7 +166,7 @@ func AnimateAlbumArt(data []byte, width, height, numFrames int) ([]byte, error) 
 }
 
 func (g *Palette) RawNoiseWithPalette(width, height int, seed int64, pal []color.Color) (*image.Paletted, error) {
-	grad, err := colorgrad.NewPalette().Colors(NormalizeColorList(g.colors)...).Build()
+	grad, err := colorgrad.NewGradient().Colors(NormalizeColorList(g.colors)...).Build()
 	if err != nil {
 		return nil, fmt.Errorf("error building palette: %w", err)
 	}

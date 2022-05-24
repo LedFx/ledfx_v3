@@ -1,16 +1,15 @@
-package utils
+package unstructuredold
 
 import (
 	"fmt"
 	"ledfx/api"
 	"ledfx/audio"
 	"ledfx/bridgeapi"
-	log "ledfx/logger"
+	"log"
 	"net/http"
 	"path/filepath"
 	"runtime"
 
-	pretty "github.com/fatih/color"
 	"github.com/rs/cors"
 )
 

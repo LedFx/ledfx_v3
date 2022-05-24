@@ -15,12 +15,17 @@ type Energy struct {
 }
 
 type EnergyConfig struct {
-	baseConfig EffectConfig
+	EffectConfig `mapstructure:",squash"`
 }
 
-func (e *Energy) AssembleFrame(p *color.Pixels) {}
-func (e *Energy) Initialize(id string)          {}
-func (e *Energy) AudioUpdated()                 {}
+func (e *Energy) AssembleFrame(p *color.Pixels) {
+	bkgb := e.Config.BkgBrightness //eg.
+	fmt.Println(bkgb)
+}
+func (e *Energy) Initialize()   {}
+func (e *Energy) AudioUpdated() {}
+
+// BOILERPLATE CODE BELOW. COPYPASTE & REPLACE CONFIG TYPE WITH THIS EFFECT'S CONFIG
 
 /*
 Updates the config of the effect. Config can be given
@@ -33,7 +38,7 @@ func (e *Energy) UpdateConfig(c interface{}) (err error) {
 		config = c.(EnergyConfig)
 	case map[string]interface{}: // Decode a map structure
 		err = mapstructure.Decode(t, config)
-	case []byte: // Expect a JSON type. Unmarshal and update values from json
+	case []byte: // Unmarshal a json byte slice
 		err = json.Unmarshal(t, &config)
 	default:
 		return fmt.Errorf("Invalid config type: %s", t)

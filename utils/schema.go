@@ -1,4 +1,4 @@
-package config
+package utils
 
 import (
 	"encoding/json"
@@ -14,17 +14,13 @@ import (
 )
 
 /*
-Example of config schema utilities which can:
+Config schema utilities which can:
  - Create a JSON schema which describes data types and allowed values for a struct
  - Validate incoming JSON to assign to a struct
  - Support embedded structs
 */
 
-type ConfigSchemer interface {
-	ValidateTags()
-	Shema()
-	JsonSchema()
-}
+// DEMO ===================================================
 
 type Student struct {
 	Person
@@ -44,7 +40,8 @@ func main() {
 	// create json schema for student
 	// this describes the values we expect for a "Student"
 	studentType := reflect.TypeOf((*Student)(nil)).Elem()
-	jsonSchema, err := CreateJsonSchema(studentType)
+	schema, err := CreateSchema(studentType)
+	jsonSchema, err := CreateJsonSchema(schema)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,6 +95,14 @@ func NewPerson() Person {
 	return person
 }
 
+// END OF DEMO ===================================================
+
+type ConfigSchemer interface {
+	ValidateTags()
+	Shema()
+	JsonSchema()
+}
+
 // Takes a type and checks that a schema can be made from its tags.
 // Should be run at the start of the program to check all config schemas have valid tags.
 func CheckConfigTags(t reflect.Type) error {
@@ -123,13 +128,9 @@ func CheckConfigTags(t reflect.Type) error {
 	return nil
 }
 
-// Creates a JSON schema for a given type
-func CreateJsonSchema(t reflect.Type) ([]byte, error) {
-	schema, err := CreateSchema(t)
-	if err != nil {
-		log.Fatal(err)
-	}
-	jsonSchema, err := json.MarshalIndent(schema, "", "\t")
+// Creates a JSON schema from a map schema
+func CreateJsonSchema(s map[string]interface{}) ([]byte, error) {
+	jsonSchema, err := json.MarshalIndent(s, "", "\t")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -152,15 +153,6 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 		jsonKey, _ := f.Tag.Lookup("json")       // this is the json "name"
 		req := strings.Contains(val, "required") // this is the "required" field
 		dataType := f.Type.String()
-
-		// fmt.Print("-----------\n")
-		// fmt.Printf("Field: %s\t Tag: %s\n", f.Name, f.Tag)
-		// fmt.Printf("Title: %s\n", ToTitle(f.Name))
-		// fmt.Printf("JSON key: %s\n", jsonKey)
-		// fmt.Printf("Validation tag: %s\n", val)
-		// fmt.Printf("Required: %t\tDefault: %s\n", req, def)
-		// fmt.Printf("Description: %s\n", desc)
-		// fmt.Printf("Type: %s\n", dataType)
 
 		schemaEntry := make(map[string]interface{})
 		schemaEntry["title"] = ToTitle(f.Name)

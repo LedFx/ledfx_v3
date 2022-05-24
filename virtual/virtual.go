@@ -11,6 +11,10 @@ import (
 	"time"
 )
 
+// All virtuals map pixels to devices
+type PixelMapper interface {
+}
+
 var (
 	devMap map[string]*device.UDPDevice
 )
@@ -21,6 +25,28 @@ func init() {
 
 type Virtual interface {
 	// PlayVirtual() error // is this correct? does it make sence?
+}
+
+type Virtual struct {
+	Name         string          `mapstructure:"name" json:"name"`
+	Id           string          `mapstructure:"id" json:"id"`
+	IconName     string          `mapstructure:"icon_name" json:"icon_name"`
+	Span         bool            `mapstructure:"span" json:"span"`
+	FrequencyMax int             `mapstructure:"frequency_max" json:"frequency_max"`
+	FrequencyMin int             `mapstructure:"frequency_min" json:"frequency_min"`
+	Outputs      []VirtualOutput `mapstructure:"outputs" json:"outputs"`
+	// Config       VirtualConfig   `mapstructure:"config" json:"config"` // Virtuals are all the same "type" so don't need a config
+	// MaxBrightness int    `mapstructure:"max_brightness" json:"max_brightness"`
+	// PreviewOnly   bool   `mapstructure:"preview_only" json:"preview_only"`
+	// CenterOffset  int    `mapstructure:"center_offset" json:"center_offset"`
+}
+
+// Points to a device, where this virtual will send its pixels to
+type VirtualOutput struct {
+	Id    string
+	Start int
+	Close int
+	// Active bool
 }
 
 func RepeatN(virtualID string, playState bool, clr string, n int) error {

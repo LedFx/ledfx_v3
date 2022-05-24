@@ -20,6 +20,12 @@ Example of config schema utilities which can:
  - Support embedded structs
 */
 
+type ConfigSchemer interface {
+	ValidateTags()
+	Shema()
+	JsonSchema()
+}
+
 type Student struct {
 	Person
 	Subject string  `json:"subject" description:"What they study" validate:"required"`

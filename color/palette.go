@@ -6,10 +6,6 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"github.com/mazznoer/colorgrad"
-	"github.com/muesli/gamut/palette"
-	"github.com/ojrac/opensimplex-go"
-	"github.com/ritchie46/GOPHY/img2gif"
 	"image"
 	"image/color"
 	"image/gif"
@@ -20,28 +16,34 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/mazznoer/colorgrad"
+	"github.com/muesli/gamut/palette"
+	"github.com/ojrac/opensimplex-go"
+	"github.com/ritchie46/GOPHY/img2gif"
 	"tailscale.com/net/interfaces"
 
 	// Side effects
+	_ "image/draw"
+	_ "image/jpeg"
+
 	_ "golang.org/x/image/riff"
 	_ "golang.org/x/image/tiff"
 	_ "golang.org/x/image/vector"
 	_ "golang.org/x/image/vp8"
 	_ "golang.org/x/image/vp8l"
 	_ "golang.org/x/image/webp"
-	_ "image/draw"
-	_ "image/jpeg"
 )
 
 /*func init() {
 	go func() {
-		log.Logger.Fatalf("Error listening and serving gradient handler: %v", http.ListenAndServe(":8740", nil))
+		log.Logger.Fatalf("Error listening and serving palette handler: %v", http.ListenAndServe(":8740", nil))
 	}()
 }*/
 
-var errInvalidGradient = errors.New("invalid gradient")
+var errInvalidPalette = errors.New("invalid palette")
 
-type Gradient struct {
+type Palette struct {
 	mode      string
 	angle     int64
 	colors    []Color
@@ -49,11 +51,11 @@ type Gradient struct {
 	rawCSS    string
 }
 
-func (g *Gradient) String() string {
+func (g *Palette) String() string {
 	return g.rawCSS
 }
 
-func (g *Gradient) WebServe() (link *url.URL, err error) {
+func (g *Palette) WebServe() (link *url.URL, err error) {
 	hasher := sha256.New()
 	hasher.Write([]byte(g.rawCSS))
 
@@ -62,13 +64,13 @@ func (g *Gradient) WebServe() (link *url.URL, err error) {
 		return nil, errors.New("could not get default outbound IP address")
 	}
 
-	path := fmt.Sprintf("/gradients/%x", hasher.Sum(nil))
+	path := fmt.Sprintf("/palettes/%x", hasher.Sum(nil))
 
 	if link, err = url.Parse(fmt.Sprintf("http://%s:8740%s", myIP.String(), path)); err != nil {
 		return nil, err
 	}
 
-	body := gradientBodyBuilder(g.rawCSS)
+	body := paletteBodyBuilder(g.rawCSS)
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("content-type", "text/html")
 		w.Header().Set("content-length", strconv.Itoa(len(body)))
@@ -78,10 +80,10 @@ func (g *Gradient) WebServe() (link *url.URL, err error) {
 	return
 }
 
-func (g *Gradient) Raw(width, height int) ([]byte, error) {
-	grad, err := colorgrad.NewGradient().Colors(NormalizeColorList(g.colors)...).Build()
+func (g *Palette) Raw(width, height int) ([]byte, error) {
+	grad, err := colorgrad.NewPalette().Colors(NormalizeColorList(g.colors)...).Build()
 	if err != nil {
-		return nil, fmt.Errorf("error building gradient: %w", err)
+		return nil, fmt.Errorf("error building palette: %w", err)
 	}
 
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
@@ -100,10 +102,10 @@ func (g *Gradient) Raw(width, height int) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (g *Gradient) RawNoise(width, height int, seed int64, evalFactor float64) ([]byte, error) {
-	grad, err := colorgrad.NewGradient().Colors(NormalizeColorList(g.colors)...).Build()
+func (g *Palette) RawNoise(width, height int, seed int64, evalFactor float64) ([]byte, error) {
+	grad, err := colorgrad.NewPalette().Colors(NormalizeColorList(g.colors)...).Build()
 	if err != nil {
-		return nil, fmt.Errorf("error building gradient: %w", err)
+		return nil, fmt.Errorf("error building palette: %w", err)
 	}
 
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
@@ -122,9 +124,9 @@ func (g *Gradient) RawNoise(width, height int, seed int64, evalFactor float64) (
 }
 
 func AnimateAlbumArt(data []byte, width, height, numFrames int) ([]byte, error) {
-	gr1, err := GradientFromPNG(data, 2, 90)
+	gr1, err := PaletteFromPNG(data, 2, 90)
 	if err != nil {
-		return nil, fmt.Errorf("error generating gradient from PNG: %w", err)
+		return nil, fmt.Errorf("error generating palette from PNG: %w", err)
 	}
 
 	imgs := make([]image.Image, numFrames)
@@ -163,10 +165,10 @@ func AnimateAlbumArt(data []byte, width, height, numFrames int) ([]byte, error) 
 	return buf.Bytes(), nil
 }
 
-func (g *Gradient) RawNoiseWithPalette(width, height int, seed int64, pal []color.Color) (*image.Paletted, error) {
-	grad, err := colorgrad.NewGradient().Colors(NormalizeColorList(g.colors)...).Build()
+func (g *Palette) RawNoiseWithPalette(width, height int, seed int64, pal []color.Color) (*image.Paletted, error) {
+	grad, err := colorgrad.NewPalette().Colors(NormalizeColorList(g.colors)...).Build()
 	if err != nil {
-		return nil, fmt.Errorf("error building gradient: %w", err)
+		return nil, fmt.Errorf("error building palette: %w", err)
 	}
 
 	img := image.NewPaletted(image.Rect(0, 0, width, height), pal)
@@ -180,21 +182,21 @@ func (g *Gradient) RawNoiseWithPalette(width, height int, seed int64, pal []colo
 	return img, nil
 }
 
-func NewGradient(gs string) (g *Gradient, err error) {
-	predef, isPredef := LedFxGradients[gs]
+func NewPalette(gs string) (g *Palette, err error) {
+	predef, isPredef := LedFxPalettes[gs]
 	if isPredef {
-		return parseGradient(predef)
+		return parsePalette(predef)
 	}
-	return parseGradient(gs)
+	return parsePalette(gs)
 }
 
-func GradientFromPNG(data []byte, resolution int, angle int) (g *Gradient, err error) {
+func PaletteFromPNG(data []byte, resolution int, angle int) (g *Palette, err error) {
 	model, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
 
-	gString := bytes.NewBuffer([]byte(fmt.Sprintf("linear-gradient(%ddeg,", angle)))
+	gString := bytes.NewBuffer([]byte(fmt.Sprintf("linear-palette(%ddeg,", angle)))
 	size := model.Bounds().Dx() + model.Bounds().Dy()
 
 	for curX := 0; curX < model.Bounds().Dx(); curX += resolution {
@@ -207,17 +209,17 @@ func GradientFromPNG(data []byte, resolution int, angle int) (g *Gradient, err e
 
 	gString.Truncate(gString.Len() - 1)
 	gString.WriteByte(')')
-	return parseGradient(gString.String())
+	return parsePalette(gString.String())
 }
 
 /*
-Parses gradient from string of format eg.
-"linear-gradient(90deg, rgb(100, 0, 255) 0%, #800000 50%, #ec77ab 100%)"
-where each color is associated with a % value for its position in the gradient
-each color can be hex or rgb format
+Parses palette from string of format eg.
+"linear-palette(90deg, rgb(100, 0, 255) 0%, #800000 50%, #ec77ab 100%)"
+Each color is associated with a % value for its position in the palette.
+Each color can be hex or rgb format
 */
-func parseGradient(gs string) (g *Gradient, err error) {
-	g = &Gradient{
+func parsePalette(gs string) (g *Palette, err error) {
+	g = &Palette{
 		rawCSS: gs,
 	}
 
@@ -226,12 +228,12 @@ func parseGradient(gs string) (g *Gradient, err error) {
 	gs = strings.ReplaceAll(gs, " ", "")
 	splits = strings.SplitN(gs, "(", 2)
 	mode := splits[0]
-	g.mode = strings.TrimSuffix(mode, "-gradient")
+	g.mode = strings.TrimSuffix(mode, "-palette")
 	angleColorPos := splits[1]
 	angleColorPos = strings.TrimRight(angleColorPos, ")")
 	splits = strings.SplitN(angleColorPos, ",", 2)
 	if (len(splits) != 2) || !strings.HasSuffix(splits[0], "deg") {
-		return nil, errInvalidGradient
+		return nil, errInvalidPalette
 	}
 	angleStr := splits[0]
 	angleStr = strings.TrimSuffix(angleStr, "deg")
@@ -264,7 +266,7 @@ func parseGradient(gs string) (g *Gradient, err error) {
 			}
 			p, err = strconv.ParseFloat(cp[7:], 64)
 		default:
-			err = errInvalidGradient
+			err = errInvalidPalette
 		}
 		if err != nil {
 			break
@@ -273,7 +275,7 @@ func parseGradient(gs string) (g *Gradient, err error) {
 		g.positions[i] = p
 	}
 	if err != nil {
-		err = errInvalidGradient
+		err = errInvalidPalette
 		return nil, err
 	}
 	return g, err

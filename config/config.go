@@ -1,8 +1,9 @@
 package config
 
 import (
-	"ledfx/color"
 	"ledfx/constants"
+	"ledfx/effect"
+	"ledfx/virtual"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,74 +11,6 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
-
-// Settings applied to all effects
-type GlobalEffectsConfig struct {
-	Brightness     float64 `mapstructure:"center_offset" json:"center_offset"`
-	Hue            float64 `mapstructure:"hue" json:"hue"`
-	Saturation     float64 `mapstructure:"saturation" json:"saturation"`
-	TransitionMode string  `mapstructure:"transition_mode" json:"transition_mode"`
-	TransitionTime float32 `mapstructure:"transition_time" json:"transition_time"`
-}
-
-type Effect struct {
-	Name    string         `mapstructure:"name" json:"name"`
-	Type    string         `mapstructure:"type" json:"type"`
-	Config  EffectConfig   `mapstructure:"config" json:"config"`
-	Outputs []EffectOutput `mapstructure:"outputs" json:"outputs"`
-}
-
-// Points to a virtual, where this effect will send its pixels to
-type EffectOutput struct {
-	Id     string `mapstructure:"id" json:"id"`         // Virtual ID
-	Active string `mapstructure:"active" json:"active"` // Is this output active
-}
-
-type EffectBaseConfig struct {
-	Intensity     float64        `mapstructure:"intensity" json:"intensity"`
-	Brightness    float64        `mapstructure:"brightness" json:"brightness"`
-	Palette       color.Gradient `mapstructure:"palette" json:"palette"`
-	Blur          float64        `mapstructure:"blur" json:"blur"`
-	Flip          bool           `mapstructure:"flip" json:"flip"`
-	Mirror        bool           `mapstructure:"mirror" json:"mirror"`
-	BkgBrightness float64        `mapstructure:"bkg_brightness" json:"bkg_brightness"`
-	BkgColor      string         `mapstructure:"bkg_color" json:"bkg_color"`
-	// GradientName  string  `mapstructure:"gradient_name" json:"gradient_name"`
-	// Color         string  `mapstructure:"color" json:"color"`
-}
-
-type EffectConfig interface {
-	EffectBaseConfig
-}
-
-type EnergyConfig struct {
-	EffectBaseConfig
-	ColLows color.Color
-	ColMids color.Color
-	ColHigh color.Color
-}
-
-type Virtual struct {
-	Name         string          `mapstructure:"name" json:"name"`
-	Id           string          `mapstructure:"id" json:"id"`
-	IconName     string          `mapstructure:"icon_name" json:"icon_name"`
-	Span         bool            `mapstructure:"span" json:"span"`
-	FrequencyMax int             `mapstructure:"frequency_max" json:"frequency_max"`
-	FrequencyMin int             `mapstructure:"frequency_min" json:"frequency_min"`
-	Outputs      []VirtualOutput `mapstructure:"outputs" json:"outputs"`
-	// Config       VirtualConfig   `mapstructure:"config" json:"config"` // Virtuals are all the same "type" so don't need a config
-	// MaxBrightness int    `mapstructure:"max_brightness" json:"max_brightness"`
-	// PreviewOnly   bool   `mapstructure:"preview_only" json:"preview_only"`
-	// CenterOffset  int    `mapstructure:"center_offset" json:"center_offset"`
-}
-
-// Points to a device, where this virtual will send its pixels to
-type VirtualOutput struct {
-	Id    string
-	Start int
-	Close int
-	// Active bool
-}
 
 type Device struct {
 	Name   string       `mapstructure:"name" json:"name"`
@@ -88,9 +21,10 @@ type Device struct {
 }
 
 type DeviceConfig struct {
-	PixelCount  int   `mapstructure:"pixel_count" json:"pixel_count"`
-	RefreshRate int   `mapstructure:"refresh_rate" json:"refresh_rate"`
-	Mapping     []int `mapstructure:"mapping" json:"mapping"`
+	PixelCount  int     `mapstructure:"pixel_count" json:"pixel_count"`
+	Density     float64 `mapstructure:"density" json:"density"`
+	RefreshRate int     `mapstructure:"refresh_rate" json:"refresh_rate"`
+	Mapping     []int   `mapstructure:"mapping" json:"mapping"`
 	// CenterOffset  int    `mapstructure:"center_offset" json:"center_offset"`
 	// Timeout       int    `mapstructure:"timeout" json:"timeout"`
 	// UdpPacketType string `mapstructure:"udp_packet_type" json:"udp_packet_type"`
@@ -127,16 +61,16 @@ type AudioConfig struct {
 }
 
 type Config struct {
-	Version  string      `mapstructure:"version" json:"version"`
-	Host     string      `mapstructure:"host" json:"host"`
-	Port     int         `mapstructure:"port" json:"port"`
-	OpenUi   bool        `mapstructure:"open_ui" json:"open_ui"`
-	LogLevel int         `mapstructure:"log_level" json:"log_level"`
-	NoSentry bool        `mapstructure:"no_sentry" json:"no_sentry"`
-	Effects  []Effect    `mapstructure:"effects" json:"effects"`
-	Virtuals []Virtual   `mapstructure:"virtuals" json:"virtuals"`
-	Devices  []Device    `mapstructure:"devices" json:"devices"`
-	Audio    AudioConfig `mapstructure:"audio" json:"audio"`
+	Version  string                  `mapstructure:"version" json:"version"`
+	Host     string                  `mapstructure:"host" json:"host"`
+	Port     int                     `mapstructure:"port" json:"port"`
+	OpenUi   bool                    `mapstructure:"open_ui" json:"open_ui"`
+	LogLevel int                     `mapstructure:"log_level" json:"log_level"`
+	NoSentry bool                    `mapstructure:"no_sentry" json:"no_sentry"`
+	Effects  []effect.PixelGenerator `mapstructure:"effects" json:"effects"`
+	Virtuals []virtual.PixelMapper   `mapstructure:"virtuals" json:"virtuals"`
+	Devices  []Device                `mapstructure:"devices" json:"devices"`
+	Audio    AudioConfig             `mapstructure:"audio" json:"audio"`
 	// Config    string      `mapstructure:"config" json:"config"`
 	// SentryCrash bool        `mapstructure:"sentry-crash-test" json:"sentry-crash-test"`
 	// VeryVerbose bool        `mapstructure:"very-verbose" json:"very-verbose"`

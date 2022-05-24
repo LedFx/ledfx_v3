@@ -15,6 +15,7 @@ are sent to the device, are they multiplied up to 256.
 */
 
 type Color [3]float64
+type Pixels []Color
 
 var errInvalidColor = errors.New("invalid color")
 
@@ -32,7 +33,10 @@ func NewColor(c string) (col Color, err error) {
 	default:
 		return col, errInvalidColor
 	}
-	return col, nil
+	if err != nil {
+		return Color{}, err
+	}
+	return col, err
 }
 
 func parseRGB(c string) (col Color, err error) {

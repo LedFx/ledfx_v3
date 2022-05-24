@@ -31,19 +31,19 @@ func TestNewColor(t *testing.T) {
 	}
 }
 
-func TestNewGradient(t *testing.T) {
+func TestNewPalette(t *testing.T) {
 	cases := []struct {
 		q string
-		a Gradient
+		a Palette
 		e bool
 	}{
-		{"linear-gradient(#ffFf00 10%, )", Gradient{}, true},
-		{"linear-gradient(180deg, #ffgh00 10%)", Gradient{}, true},
-		{"linear-gradient(180deg, rgb(299,0,299) 10%)", Gradient{}, true},
-		{"linear-gradient(180deg, useless color 10%)", Gradient{}, true},
+		{"linear-gradient(#ffFf00 10%, )", Palette{}, true},
+		{"linear-gradient(180deg, #ffgh00 10%)", Palette{}, true},
+		{"linear-gradient(180deg, rgb(299,0,299) 10%)", Palette{}, true},
+		{"linear-gradient(180deg, useless color 10%)", Palette{}, true},
 		{
 			"linear-gradient(90deg, #ffFf00 10%, rgb(255, 0, 255) 30%)",
-			Gradient{
+			Palette{
 				mode:  "linear",
 				angle: 90,
 			},
@@ -51,7 +51,7 @@ func TestNewGradient(t *testing.T) {
 		},
 		{
 			"Dancefloor",
-			Gradient{
+			Palette{
 				mode:      "linear",
 				angle:     90,
 				colors:    []Color{{1, 0, 0}, {1, 0, 0.6980392156862745}, {0, 0, 1}},
@@ -61,7 +61,7 @@ func TestNewGradient(t *testing.T) {
 		},
 	}
 	for _, c := range cases {
-		guess, err := NewGradient(c.q)
+		guess, err := NewPalette(c.q)
 		if (c.a.mode != guess.mode) || (c.a.angle != guess.angle) || (err == nil == c.e) { // if the answer is wrong, or the error value is unexpected
 			t.Errorf("Failed to parse %s: expected (%v, %v) but got (%v, %v)", c.q, c.a, c.e, guess, err)
 		}

@@ -1,6 +1,6 @@
 module ledfx
 
-go 1.17
+go 1.18
 
 require (
 	github.com/LedFx/aubio-go v0.0.0-20220511175620-cb4e37bfc8fe
@@ -15,6 +15,7 @@ require (
 	github.com/grandcat/zeroconf v1.0.0
 	github.com/grantmd/go-airplay v0.0.0-20150101054745-99b46766924c
 	github.com/mazznoer/colorgrad v0.8.1
+	github.com/mitchellh/mapstructure v1.4.3
 	github.com/muesli/gamut v0.3.0
 	github.com/nathan-fiscaletti/consolesize-go v0.0.0-20210105204122-a87d9f614b9d
 	github.com/ojrac/opensimplex-go v1.0.2
@@ -41,10 +42,13 @@ require (
 	github.com/getlantern/hex v0.0.0-20190417191902-c6586a6fe0b7 // indirect
 	github.com/getlantern/hidden v0.0.0-20190325191715-f02dbb02be55 // indirect
 	github.com/getlantern/ops v0.0.0-20190325191751-d70cb0d6f85f // indirect
+	github.com/go-playground/locales v0.14.0 // indirect
+	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
@@ -53,7 +57,6 @@ require (
 	github.com/mazznoer/csscolorparser v0.1.0 // indirect
 	github.com/miekg/dns v1.1.43 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
-	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/muesli/clusters v0.0.0-20200529215643-2700303c1762 // indirect
 	github.com/muesli/kmeans v0.3.0 // indirect
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c // indirect
@@ -85,6 +88,8 @@ require (
 )
 
 require (
+	github.com/creasty/defaults v1.6.0
+	github.com/go-playground/validator/v10 v10.11.0
 	github.com/maghul/alac v0.0.0-20161106215514-129591bceef4
 	github.com/maghul/go.alac v0.0.0-20161106215514-129591bceef4 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect

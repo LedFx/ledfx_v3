@@ -15,12 +15,6 @@ import (
 )
 
 /*
-example usage
-pixelgenerator = ledfx.effects.New("energy", config)
-ledfx.virtuals.get("virtual_id").SetEffect(pixelgenerator)
-*/
-
-/*
 NEW EFFECTS MUST BE REGISTERED IN THESE TWO FUNCTIONS =====================
 */
 
@@ -52,7 +46,7 @@ func New(effect_type string, config interface{}) (effect PixelGenerator, err err
 		}
 	}
 	// initialise the new effect with its id and config
-	err = effect.Initialize()
+	err = effect.Initialize(id, 100) // TODO this comes from the virtual
 	if err != nil {
 		return effect, nil
 	}

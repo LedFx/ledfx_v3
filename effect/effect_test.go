@@ -2,6 +2,7 @@ package effect
 
 import (
 	"ledfx/color"
+	"strings"
 	"testing"
 
 	"github.com/u2takey/go-utils/json"
@@ -16,13 +17,13 @@ func TestSchema(t *testing.T) {
 
 func TestJsonSchema(t *testing.T) {
 	schema, err := JsonSchema()
-	t.Log(string(schema))
+	// t.Log(string(schema))
 	if err != nil {
 		t.Errorf("%v, %v", schema, err)
 	}
 }
 
-func TestEffect(t *testing.T) {
+func TestEffectBaseFunctions(t *testing.T) {
 	// Make a new effect
 	c := map[string]interface{}{
 		"brightness": 0.3,
@@ -52,11 +53,17 @@ func TestEffect(t *testing.T) {
 		t.Error("Invalid config should return an error")
 	}
 
-	// Get IDs and retrieve the effect
+	// Get IDs to retrieve the effect
 	id := GetIDs()[0]
 	effect, err := Get(id)
 	if err != nil {
 		t.Error(err)
+	}
+
+	// Try to get the ID from the effect
+	id = effect.GetID()
+	if !strings.HasPrefix(id, "energy") {
+		t.Errorf("Got wrong id: %s", id)
 	}
 
 	// Try get an invalid ID
@@ -67,7 +74,7 @@ func TestEffect(t *testing.T) {
 
 	// Run the effect on some pixels
 	p := make(color.Pixels, 100)
-	effect.AssembleFrame(&p)
+	effect.AssembleFrame(p)
 
 	// Try to update with an invalid json
 	c["nonsense"] = "data" // unknown keys are discarded

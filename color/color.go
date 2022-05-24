@@ -1,4 +1,10 @@
-// Package color provides basic tools for interpreting colors for LedFX
+/*
+Package color provides basic tools for interpreting colors for LedFX.
+LedFx colors internally are all [3]float64 with values 0-1.
+These can represent HSL or RGB color space.
+Only at the final step of effect processing, before pixels
+are sent to the device, are they multiplied up to 256.
+*/
 package color
 
 import (
@@ -7,12 +13,6 @@ import (
 	"strconv"
 	"strings"
 )
-
-/*
-LedFx colors internally are all [3]float64 with values 0-1.
-Only at the final step of effect processing, before pixels
-are sent to the device, are they multiplied up to 256.
-*/
 
 type Color [3]float64
 type Pixels []Color

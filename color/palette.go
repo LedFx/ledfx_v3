@@ -2,26 +2,14 @@
 package color
 
 import (
-	"bytes"
-	"crypto/sha256"
 	"errors"
 	"fmt"
-	"image"
 	"image/color"
-	"image/gif"
-	"image/png"
-	log "ledfx/logger"
 	"math"
-	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 
-	"github.com/mazznoer/colorgrad"
 	"github.com/muesli/gamut/palette"
-	"github.com/ojrac/opensimplex-go"
-	"github.com/ritchie46/GOPHY/img2gif"
-	"tailscale.com/net/interfaces"
 
 	// Side effects
 	_ "image/draw"
@@ -35,181 +23,40 @@ import (
 	_ "golang.org/x/image/webp"
 )
 
-/*func init() {
-	go func() {
-		log.Logger.Fatalf("Error listening and serving palette handler: %v", http.ListenAndServe(":8740", nil))
-	}()
-}*/
-
 var errInvalidPalette = errors.New("invalid palette")
+
+// palettes are generated at a fixed size from the palette string.
+const PaletteSize int = 300
+const paletteSizeFloat float64 = float64(PaletteSize)
 
 type Palette struct {
 	mode      string
 	angle     int64
 	colors    []Color
 	positions []float64
+	rgb       [PaletteSize]Color // maps the hue value to an RGB color
 	rawCSS    string
 }
 
-func (g *Palette) String() string {
-	return g.rawCSS
+func (p *Palette) Get(pos float64) Color {
+	// this makes pos wrap smoothly above 1 and below 0
+	// giving the impression of a cyclic color palette
+	// see: https://www.desmos.com/calculator/1dhc2nhann
+	pos = 1 - math.Abs(math.Mod(math.Abs(pos), 2)-1)
+	idx := int(pos*paletteSizeFloat - 1)
+	return p.rgb[idx]
 }
 
-func (g *Palette) WebServe() (link *url.URL, err error) {
-	hasher := sha256.New()
-	hasher.Write([]byte(g.rawCSS))
-
-	_, myIP, ok := interfaces.LikelyHomeRouterIP()
-	if !ok {
-		return nil, errors.New("could not get default outbound IP address")
-	}
-
-	path := fmt.Sprintf("/palettes/%x", hasher.Sum(nil))
-
-	if link, err = url.Parse(fmt.Sprintf("http://%s:8740%s", myIP.String(), path)); err != nil {
-		return nil, err
-	}
-
-	body := gradientBodyBuilder(g.rawCSS)
-	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("content-type", "text/html")
-		w.Header().Set("content-length", strconv.Itoa(len(body)))
-		_, _ = w.Write(body)
-	})
-
-	return
-}
-
-func (g *Palette) Raw(width, height int) ([]byte, error) {
-	grad, err := colorgrad.NewGradient().Colors(NormalizeColorList(g.colors)...).Build()
-	if err != nil {
-		return nil, fmt.Errorf("error building palette: %w", err)
-	}
-
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
-
-	fw := float64(width) // We don't want to do a ton of type conversions in the loop
-	for x := 0; x < width; x++ {
-		col := grad.At(float64(x) / fw)
-		for y := 0; y < height; y++ {
-			img.Set(x, y, col)
-		}
-	}
-	buf := new(bytes.Buffer)
-	if err := png.Encode(buf, img); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
-
-func (g *Palette) RawNoise(width, height int, seed int64, evalFactor float64) ([]byte, error) {
-	grad, err := colorgrad.NewGradient().Colors(NormalizeColorList(g.colors)...).Build()
-	if err != nil {
-		return nil, fmt.Errorf("error building palette: %w", err)
-	}
-
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
-	noise := opensimplex.NewNormalized(seed)
-
-	for x := 0; x < width; x++ {
-		for y := 0; y < height; y++ {
-			img.Set(x, y, grad.At(noise.Eval2(float64(x)*evalFactor, float64(y)*evalFactor)))
-		}
-	}
-	buf := new(bytes.Buffer)
-	if err := png.Encode(buf, img); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
-}
-
-func AnimateAlbumArt(data []byte, width, height, numFrames int) ([]byte, error) {
-	gr1, err := PaletteFromPNG(data, 2, 90)
-	if err != nil {
-		return nil, fmt.Errorf("error generating palette from PNG: %w", err)
-	}
-
-	imgs := make([]image.Image, numFrames)
-	for i := 0; i < numFrames; i++ {
-		log.Logger.WithField("category", "Cover Animator").Infof("Computing frame %d", i)
-		noisy, err := gr1.RawNoise(width, height, 996, 0.02)
-		if err != nil {
-			return nil, fmt.Errorf("error generating raw noisy PNG: %w", err)
-		}
-		if imgs[i], _, err = image.Decode(bytes.NewReader(noisy)); err != nil {
-			return nil, fmt.Errorf("error decoding noisy PNG: %w", err)
-		}
-	}
-	imgsP := img2gif.EncodeImgPaletted(&imgs)
-
-	g := &gif.GIF{
-		Image:     make([]*image.Paletted, 0),
-		Delay:     make([]int, 0),
-		LoopCount: 0,
-		Config: image.Config{
-			Width:  width,
-			Height: height,
-		},
-	}
-	for _, i := range imgsP {
-		g.Image = append(g.Image, i)
-		g.Delay = append(g.Delay, 0)
-	}
-
-	buf := bytes.NewBuffer(make([]byte, 0))
-
-	if err := gif.EncodeAll(buf, g); err != nil {
-		return nil, fmt.Errorf("error encoding GIF: %w", err)
-	}
-
-	return buf.Bytes(), nil
-}
-
-func (g *Palette) RawNoiseWithPalette(width, height int, seed int64, pal []color.Color) (*image.Paletted, error) {
-	grad, err := colorgrad.NewGradient().Colors(NormalizeColorList(g.colors)...).Build()
-	if err != nil {
-		return nil, fmt.Errorf("error building palette: %w", err)
-	}
-
-	img := image.NewPaletted(image.Rect(0, 0, width, height), pal)
-	noise := opensimplex.NewNormalized(seed)
-
-	for x := 0; x < width; x++ {
-		for y := 0; y < height; y++ {
-			img.Set(x, y, grad.At(noise.Eval2(float64(x)*0.02, float64(y)*0.02)))
-		}
-	}
-	return img, nil
+func (p *Palette) String() string {
+	return p.rawCSS
 }
 
 func NewPalette(gs string) (g *Palette, err error) {
 	predef, isPredef := LedFxPalettes[gs]
 	if isPredef {
-		return parsePalette(predef)
+		return ParsePalette(predef)
 	}
-	return parsePalette(gs)
-}
-
-func PaletteFromPNG(data []byte, resolution int, angle int) (g *Palette, err error) {
-	model, _, err := image.Decode(bytes.NewReader(data))
-	if err != nil {
-		return nil, err
-	}
-
-	gString := bytes.NewBuffer([]byte(fmt.Sprintf("linear-palette(%ddeg,", angle)))
-	size := model.Bounds().Dx() + model.Bounds().Dy()
-
-	for curX := 0; curX < model.Bounds().Dx(); curX += resolution {
-		for curY := 0; curY < model.Bounds().Dy(); curY += resolution {
-			// Get the RGB of the current pixel in the image
-			R, G, B, _ := model.At(curX, curY).RGBA()
-			gString.WriteString(fmt.Sprintf(" rgb(%d, %d, %d) %d%%,", uint8(R>>8), uint8(G>>8), uint8(B>>8), int(math.Round(float64(curX+curY)/float64(size)*float64(100)))))
-		}
-	}
-
-	gString.Truncate(gString.Len() - 1)
-	gString.WriteByte(')')
-	return parsePalette(gString.String())
+	return ParsePalette(gs)
 }
 
 /*
@@ -218,7 +65,7 @@ Parses palette from string of format eg.
 Each color is associated with a % value for its position in the palette.
 Each color can be hex or rgb format
 */
-func parsePalette(gs string) (g *Palette, err error) {
+func ParsePalette(gs string) (g *Palette, err error) {
 	g = &Palette{
 		rawCSS: gs,
 	}
@@ -275,10 +122,42 @@ func parsePalette(gs string) (g *Palette, err error) {
 		g.positions[i] = p
 	}
 	if err != nil {
-		err = errInvalidPalette
-		return nil, err
+		return nil, errInvalidPalette
 	}
+	if (g.positions[0] != 0) || (g.positions[len(g.positions)-1] != 1) {
+		return nil, errors.New("palette color positions must start at 0% and end at 100%")
+	}
+
+	// Create the RGB color array
+
 	return g, err
+}
+
+// Creates smooth color changes.
+// See: https://www.desmos.com/calculator/uh2s7dhmkw
+func ease(chunk_len int, start_val, end_val, slope float64) []float64 {
+	xs, _ := linspace(0, 1, chunk_len)
+	diff := end_val - start_val
+	for i, x := range xs {
+		xs[i] = diff*math.Pow(x, slope)/(math.Pow(x, slope)+math.Pow(1-x, slope)) + start_val
+	}
+	return xs
+}
+
+// Return evenly spaced numbers over a specified interval
+func linspace(start, stop float64, num int) (ls []float64, err error) {
+	if start >= stop {
+		return ls, fmt.Errorf("linspace start must not be greater than stop: %v, %v", start, stop)
+	}
+	if num <= 0 {
+		return ls, fmt.Errorf("num must be greater than 0: %v, %v", start, stop)
+	}
+	ls = make([]float64, num)
+	delta := stop / float64(num)
+	for i, x := 0, start; x < stop; i, x = i+1, x+delta {
+		ls[i] = x
+	}
+	return ls, nil
 }
 
 func minMax(a, b int) (min, max int) {

@@ -231,6 +231,10 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 					log.Fatal(err)
 				}
 				validation["max"] = x
+			case "color":
+				validation["special"] = "color"
+			case "palette":
+				validation["special"] = "palette"
 			default:
 				log.Fatalf("unimplemented validation tag: %s", tag)
 			}

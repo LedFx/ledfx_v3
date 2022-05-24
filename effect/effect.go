@@ -8,7 +8,7 @@ import (
 // PixelGenerator is the interface for effect types.
 // All effects generate pixels
 type PixelGenerator interface {
-	Initialize(id string)
+	Initialize()
 	UpdateConfig(c interface{}) (err error)
 	AssembleFrame(colors *color.Pixels)
 }
@@ -26,29 +26,21 @@ type Effect struct {
 }
 
 type EffectConfig struct {
-	Intensity     float64       `mapstructure:"intensity" json:"intensity"`
-	Brightness    float64       `mapstructure:"brightness" json:"brightness"`
-	Palette       color.Palette `mapstructure:"palette" json:"palette"`
-	Blur          float64       `mapstructure:"blur" json:"blur"`
-	Flip          bool          `mapstructure:"flip" json:"flip"`
-	Mirror        bool          `mapstructure:"mirror" json:"mirror"`
-	BkgBrightness float64       `mapstructure:"bkg_brightness" json:"bkg_brightness"`
-	BkgColor      string        `mapstructure:"bkg_color" json:"bkg_color"`
-	// GradientName  string  `mapstructure:"gradient_name" json:"gradient_name"`
-	// Color         string  `mapstructure:"color" json:"color"`
-}
-
-// Points to a virtual, where this effect will send its pixels to
-type EffectOutput struct {
-	Id     string `mapstructure:"id" json:"id"`         // Virtual ID
-	Active string `mapstructure:"active" json:"active"` // Is this output active
+	Intensity     float64 `mapstructure:"intensity" json:"intensity" description:"Visual intensity eg. speed, reactivity" default:"0.5" validate:"gte=0,lte=1"`
+	Brightness    float64 `mapstructure:"brightness" json:"brightness" description:"Brightness modifier applied to this effect" default:"1" validate:"gte=0,lte=1"`
+	Palette       string  `mapstructure:"palette" json:"palette" description:"Color scheme" default:"RGB" validate:"palette"`
+	Blur          float64 `mapstructure:"blur" json:"blur"  description:"Gaussian blur to smoothly blend colors" default:"0.5" validate:"gte=0,lte=1"`
+	Flip          bool    `mapstructure:"flip" json:"flip" description:"Reverse the pixels" default:"false" validate:""`
+	Mirror        bool    `mapstructure:"mirror" json:"mirror" description:"Mirror the pixels across the center" default:"false" validate:""`
+	BkgBrightness float64 `mapstructure:"bkg_brightness" json:"bkg_brightness" description:"Brightness modifier applied to the background color" default:"0.2" validate:"gte=0,lte=1"`
+	BkgColor      string  `mapstructure:"bkg_color" json:"bkg_color" description:"Apply a background color" default:"#000000" validate:"color"`
 }
 
 // Apply mirrors, blur, filters, etc to effect. Should be applied to fresh effect frames.
 func (e *Effect) Postprocess(p *color.Pixels) {
 	e.applyBkg(p)
-	e.applyMirror(p)
 	e.applyFlip(p)
+	e.applyMirror(p)
 	e.applyBlur(p)
 	e.applyBrightness(p)
 	e.applyGlobals(p)

@@ -3,6 +3,7 @@ package effect
 import (
 	"encoding/json"
 	"fmt"
+	"ledfx/color"
 	"log"
 	"strconv"
 
@@ -21,30 +22,34 @@ type GlobalEffectsConfig struct {
 	Brightness     float64 `json:"brightness" description:"Global brightness modifier" default:"1" validate:"gte=0,lte=1"`
 	Hue            float64 `json:"hue" description:"Global hue modifier" default:"0" validate:"gte=0,lte=1"`
 	Saturation     float64 `json:"saturation" description:"Global saturation modifier" default:"1" validate:"gte=0,lte=1"`
-	TransitionMode string  `json:"transition_time" description:"Transition animation" default:"fade" validate:"oneof=fade wipe dissolve"` // TODO maybe get this dynamically?
-	TransitionTime float64 `json:"transition_mode" description:"Duration of transitions (seconds)" default:"1" validate:"gte=0,lte=10"`
+	TransitionMode string  `json:"transition_time" description:"Transition animation" default:"fade" validate:"oneof=fade wipe dissolve"` // TODO get this dynamically
+	TransitionTime float64 `json:"transition_mode" description:"Duration of transitions (seconds)" default:"1" validate:"gte=0,lte=5"`
 }
 
 var globalConfig = new(GlobalEffectsConfig)
 var validate *validator.Validate = validator.New()
 
 func init() {
-	defaultGlobals()
-	validateGlobals()
-}
-
-// validate global effect settings
-func validateGlobals() {
+	validate.RegisterValidation("palette", validatePalette)
+	validate.RegisterValidation("color", validateColor)
+	// set global effect settings to default values
+	if err := defaults.Set(&globalConfig); err != nil {
+		panic(err)
+	}
+	// validate global effect settings
 	if err := validate.Struct(&globalConfig); err != nil {
 		log.Fatal(err)
 	}
 }
 
-// set global effect settings to default values
-func defaultGlobals() {
-	if err := defaults.Set(&globalConfig); err != nil {
-		panic(err)
-	}
+func validatePalette(fl validator.FieldLevel) bool {
+	_, err := color.NewPalette(fl.Field().String())
+	return err == nil
+}
+
+func validateColor(fl validator.FieldLevel) bool {
+	_, err := color.NewColor(fl.Field().String())
+	return err == nil
 }
 
 /*
@@ -93,7 +98,7 @@ func New(effect_type string, config interface{}) (effect PixelGenerator, err err
 		}
 	}
 	// initialise the new effect with its id and config
-	effect.Initialize(id)
+	effect.Initialize()
 	effect.UpdateConfig(config)
 	return effect, nil
 }

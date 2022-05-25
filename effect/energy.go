@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"ledfx/color"
+	"time"
 
 	"github.com/creasty/defaults"
 	"github.com/mitchellh/mapstructure"
@@ -11,18 +12,22 @@ import (
 
 type Energy struct {
 	Effect
-	Name   string
-	Config EnergyConfig
+	Name         string
+	GlobalConfig GlobalEffectConfig
+	ExtraConfig  EnergyConfig
 }
 
-type EnergyConfig struct {
+// you can redefine defaults of base effect config to better suit the effect
+// eg. here, i'm setting mirror to default to true
+type EnergyGlobalConfig struct {
 	EffectConfig `mapstructure:",squash"`
+	Mirror       bool `mapstructure:"mirror" json:"mirror" description:"Mirror the pixels across the center" default:"true" validate:""`
 }
 
-func (e *Energy) AssembleFrame(p color.Pixels) {
+// Apply new pixels to an existing pixel array.
+func (e *Energy) assembleFrame(p color.Pixels) {
 	bkgb := e.Config.BkgBrightness //eg.
 	p[0][0] = bkgb
-	e.Postprocess(p)
 }
 
 func (e *Energy) AudioUpdated() {}
@@ -31,6 +36,8 @@ func (e *Energy) AudioUpdated() {}
 func (e *Energy) Initialize(id string, npx int) error {
 	e.ID = id
 	e.pixelCount = npx
+	e.startTime = time.Now()
+	e.prevFrame = make(color.Pixels, npx)
 	e.mirror = make(color.Pixels, npx)
 	return defaults.Set(&e.Config)
 }

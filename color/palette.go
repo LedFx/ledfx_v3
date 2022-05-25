@@ -44,7 +44,7 @@ func (p *Palette) Get(pos float64) Color {
 	// giving the impression of a cyclic color palette
 	// see: https://www.desmos.com/calculator/1dhc2nhann
 	pos = 1 - math.Abs(math.Mod(math.Abs(pos), 2)-1)
-	idx := int(pos*paletteSizeFloat - 1)
+	idx := int(pos * (paletteSizeFloat - 1))
 	return p.rgb[idx]
 }
 

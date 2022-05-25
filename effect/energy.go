@@ -12,16 +12,15 @@ import (
 
 type Energy struct {
 	Effect
-	Name         string
-	GlobalConfig GlobalEffectConfig
-	ExtraConfig  EnergyConfig
+	Name   string
+	Config EnergyConfig
 }
 
 // you can redefine defaults of base effect config to better suit the effect
 // eg. here, i'm setting mirror to default to true
-type EnergyGlobalConfig struct {
-	EffectConfig `mapstructure:",squash"`
-	Mirror       bool `mapstructure:"mirror" json:"mirror" description:"Mirror the pixels across the center" default:"true" validate:""`
+type EnergyConfig struct {
+	BaseEffectConfig `mapstructure:",squash"`
+	Mirror           bool `mapstructure:"mirror" json:"mirror" description:"Mirror the pixels across the center" default:"true" validate:""`
 }
 
 // Apply new pixels to an existing pixel array.
@@ -71,7 +70,7 @@ func (e *Energy) UpdateConfig(c interface{}) (err error) {
 	// READ ME
 	// here you can update any stored properties that are based on the config
 	// creating a new palette is expensive, should only be done if changed
-	if e.Config.Palette != newConfig.Palette {
+	if e.palette == nil || e.Config.Palette != newConfig.Palette {
 		e.palette, _ = color.NewPalette(newConfig.Palette)
 	}
 	// parsing a color is cheap, just do it every time

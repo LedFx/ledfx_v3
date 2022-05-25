@@ -59,7 +59,7 @@ Nothing to modify below here =====================
 */
 
 var effectInstances = make(map[string]PixelGenerator)
-var globalConfig = GlobalEffectsConfig{}
+var globalConfig = BaseEffectConfig{}
 var validate *validator.Validate = validator.New()
 
 func init() {
@@ -75,11 +75,7 @@ func init() {
 	}
 }
 
-// Settings applied to all effects
-type GlobalEffectsConfig struct {
-	Brightness     float64 `mapstructure:"brightness" json:"brightness" description:"Global brightness modifier" default:"1" validate:"gte=0,lte=1"`
-	Hue            float64 `mapstructure:"hue" json:"hue" description:"Global hue modifier" default:"0" validate:"gte=0,lte=1"`
-	Saturation     float64 `mapstructure:"saturation" json:"saturation" description:"Global saturation modifier" default:"1" validate:"gte=0,lte=1"`
+type TransitionConfig struct {
 	TransitionMode string  `mapstructure:"transition_time" json:"transition_time" description:"Transition animation" default:"fade" validate:"oneof=fade wipe dissolve"` // TODO get this dynamically
 	TransitionTime float64 `mapstructure:"transition_mode" json:"transition_mode" description:"Duration of transitions (seconds)" default:"1" validate:"gte=0,lte=5"`
 }
@@ -96,7 +92,7 @@ func validateColor(fl validator.FieldLevel) bool {
 
 /*
 Updates the global effect settings. Config can be given
-as GlobalEffectsConfig, map[string]interface{}, or raw json
+as BaseEffectConfig, map[string]interface{}, or raw json
 For incremental config updates, you must use map or json.
 */
 func SetGlobalSettings(c interface{}) (err error) {
@@ -104,8 +100,8 @@ func SetGlobalSettings(c interface{}) (err error) {
 	newConfig := globalConfig
 	// update values
 	switch t := c.(type) {
-	case GlobalEffectsConfig:
-		newConfig = c.(GlobalEffectsConfig)
+	case BaseEffectConfig:
+		newConfig = c.(BaseEffectConfig)
 	case map[string]interface{}:
 		err = mapstructure.Decode(t, &newConfig)
 	case []byte:
@@ -121,7 +117,15 @@ func SetGlobalSettings(c interface{}) (err error) {
 	if err != nil {
 		return err
 	}
-	// assign it ready for use
+	// knowing that it's valid, pass it on to all the effects
+	for _, e := range effectInstances {
+		err = e.UpdateConfig(c)
+	}
+	if err != nil {
+		return err
+	}
+
+	// assign it
 	globalConfig = newConfig
 	return nil
 }

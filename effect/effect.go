@@ -34,10 +34,10 @@ type Effect struct {
 	prevFrame     color.Pixels
 	bkgColor      color.Color  // parsed background color
 	mirror        color.Pixels // scratch array used by mirror function
-	Config        GlobalEffectConfig
+	Config        BaseEffectConfig
 }
 
-type GlobalEffectConfig struct {
+type BaseEffectConfig struct {
 	Intensity     float64 `mapstructure:"intensity" json:"intensity" description:"Visual intensity eg. speed, reactivity" default:"0.5" validate:"gte=0,lte=1"`
 	Brightness    float64 `mapstructure:"brightness" json:"brightness" description:"Brightness modifier applied to this effect" default:"1" validate:"gte=0,lte=1"`
 	Saturation    float64 `mapstructure:"saturation" json:"saturation" description:"Saturation modifier applied to this effect" default:"1" validate:"gte=0,lte=1"`

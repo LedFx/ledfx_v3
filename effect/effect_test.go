@@ -94,12 +94,18 @@ func TestEffectBaseFunctions(t *testing.T) {
 
 func TestGlobalEffectSettings(t *testing.T) {
 	// test with complete GlobalEffectsConfig
-	g := GlobalEffectsConfig{
-		Brightness:     0.5,
-		Hue:            0.5,
-		Saturation:     1,
-		TransitionMode: "wipe",
-		TransitionTime: 4,
+	g := BaseEffectConfig{
+		Intensity:     0,
+		Brightness:    0.5,
+		Saturation:    1,
+		Palette:       "RGB",
+		Blur:          0,
+		Flip:          false,
+		Mirror:        false,
+		Decay:         0,
+		HueShift:      0,
+		BkgBrightness: 0,
+		BkgColor:      "Black",
 	}
 	err := SetGlobalSettings(g)
 	if err != nil {

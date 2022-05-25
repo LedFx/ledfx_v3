@@ -66,11 +66,11 @@ type Config struct {
 	Port     int                     `mapstructure:"port" json:"port"`
 	OpenUi   bool                    `mapstructure:"open_ui" json:"open_ui"`
 	LogLevel int                     `mapstructure:"log_level" json:"log_level"`
-	NoSentry bool                    `mapstructure:"no_sentry" json:"no_sentry"`
 	Effects  []effect.PixelGenerator `mapstructure:"effects" json:"effects"`
 	Virtuals []virtual.PixelMapper   `mapstructure:"virtuals" json:"virtuals"`
 	Devices  []Device                `mapstructure:"devices" json:"devices"`
 	Audio    AudioConfig             `mapstructure:"audio" json:"audio"`
+	// NoSentry bool                    `mapstructure:"no_sentry" json:"no_sentry"`
 	// Config    string      `mapstructure:"config" json:"config"`
 	// SentryCrash bool        `mapstructure:"sentry-crash-test" json:"sentry-crash-test"`
 	// VeryVerbose bool        `mapstructure:"very-verbose" json:"very-verbose"`
@@ -101,7 +101,7 @@ func InitConfig() error {
 	}
 
 	// Load config
-	err = loadConfig("go_config")
+	err = loadConfig("config")
 	if err != nil {
 		return err
 	}

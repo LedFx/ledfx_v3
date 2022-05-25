@@ -32,12 +32,12 @@ func (e *Energy) assembleFrame(p color.Pixels) {
 func (e *Energy) AudioUpdated() {}
 
 // BOILERPLATE CODE BELOW. COPYPASTE & REPLACE CONFIG TYPE WITH THIS EFFECT'S CONFIG
-func (e *Energy) Initialize(id string, npx int) error {
+func (e *Energy) Initialize(id string, pixelCount int) error {
 	e.ID = id
-	e.pixelCount = npx
+	e.pixelCount = pixelCount
 	e.startTime = time.Now()
-	e.prevFrame = make(color.Pixels, npx)
-	e.mirror = make(color.Pixels, npx)
+	e.prevFrame = make(color.Pixels, pixelCount)
+	e.mirror = make(color.Pixels, pixelCount)
 	return defaults.Set(&e.Config)
 }
 

@@ -1,6 +1,7 @@
 package color
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -61,5 +62,23 @@ func TestNewPalette(t *testing.T) {
 		if err == nil != c.pass { // if the answer is wrong, or the error value is unexpected
 			t.Errorf("Failed test case %s, expected error to be %t", c.test, err == nil)
 		}
+	}
+}
+
+var pixelSizes = []Pixels{
+	make(Pixels, 50),
+	make(Pixels, 100),
+	make(Pixels, 500),
+	make(Pixels, 1000),
+}
+
+func BenchmarkBlur(t *testing.B) {
+	for _, v := range pixelSizes {
+		b := NewBlurrer(len(v), 1) // use largest kernel, most demanding
+		t.Run(fmt.Sprintf("%d pixels", len(v)), func(t *testing.B) {
+			for i := 0; i < t.N; i++ {
+				b.Blur(v)
+			}
+		})
 	}
 }

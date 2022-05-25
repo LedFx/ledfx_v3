@@ -137,16 +137,16 @@ func TestGlobalEffectSettings(t *testing.T) {
 	}
 	err = SetGlobalSettings(m)
 	if err == nil {
-		t.Error("Invalid config should return an error")
+		t.Error("Invalid config values should return an error")
 	}
 
 	// test with invalid config key
 	m = map[string]interface{}{
-		"brightness": 1.3,
+		"floopydoop": 1.3,
 	}
 	err = SetGlobalSettings(m)
-	if err == nil {
-		t.Error("Invalid config should return an error")
+	if err != nil {
+		t.Error("Invalid config keys should be ignored")
 	}
 
 	// test with invalid config type

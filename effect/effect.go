@@ -13,7 +13,7 @@ Effects must be computed in HSL space. The color is abstracted and handled outsi
 using the effect's palette. Post processing will handle conversion to RGB but requires HSV space
 */
 type PixelGenerator interface {
-	Initialize(string, int) error
+	Initialize(id string, pixelCount int) error
 	UpdateConfig(c interface{}) (err error)
 	Render(color.Pixels)
 	assembleFrame(colors color.Pixels)
@@ -58,7 +58,7 @@ func (e *Effect) GetID() string {
 // Effect implementation should override this method
 func (e *Effect) assembleFrame(p color.Pixels) {}
 
-// Render a new frame of pixels.
+// Render a new frame of pixels. Give the previous frame as argument.
 // This handles assembling a new frame, then applying mirrors, blur, filters, etc
 func (e *Effect) Render(p color.Pixels) {
 	// These timing variables ensure that temporal effects and filters run at constant
@@ -70,8 +70,9 @@ func (e *Effect) Render(p color.Pixels) {
 
 	// Overwrite the incoming frame (RGB) with the last frame (HSL) while applying temporal decay
 	// for formula explanation, see: https://www.desmos.com/calculator/5qk6xql8bn
+	decay := math.Pow(-math.Log((e.Config.Decay*math.E-e.Config.Decay+1)/math.E), 10*deltaPrevFrame.Seconds())
 	for i := 0; i < e.pixelCount; i++ {
-		e.prevFrame[i][2] *= math.Pow(-math.Log((e.Config.Decay*math.E-e.Config.Decay+1)/math.E), 10*deltaPrevFrame.Seconds())
+		e.prevFrame[i][2] *= decay
 		p[i] = e.prevFrame[i]
 	}
 	// Assemble new pixels onto the frame

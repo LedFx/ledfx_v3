@@ -3,6 +3,8 @@ package effect
 import (
 	"fmt"
 	"ledfx/color"
+	"math"
+	"time"
 )
 
 /*
@@ -13,7 +15,8 @@ using the effect's palette. Post processing will handle conversion to RGB but re
 type PixelGenerator interface {
 	Initialize(string, int) error
 	UpdateConfig(c interface{}) (err error)
-	AssembleFrame(colors color.Pixels)
+	Render(color.Pixels)
+	assembleFrame(colors color.Pixels)
 	GetID() string
 }
 
@@ -23,21 +26,27 @@ type AudioPixelGenerator interface {
 }
 
 type Effect struct {
-	ID         string
-	pixelCount int
-	palette    [color.PaletteSize]color.Color // the actual palette object, created from the config string
-	bkgColor   color.Color                    // parsed background color
-	mirror     color.Pixels                   // scratch array used by mirror function
-	Config     EffectConfig
+	ID            string
+	pixelCount    int
+	startTime     time.Time
+	prevFrameTime time.Time
+	palette       *color.Palette
+	prevFrame     color.Pixels
+	bkgColor      color.Color  // parsed background color
+	mirror        color.Pixels // scratch array used by mirror function
+	Config        GlobalEffectConfig
 }
 
-type EffectConfig struct {
+type GlobalEffectConfig struct {
 	Intensity     float64 `mapstructure:"intensity" json:"intensity" description:"Visual intensity eg. speed, reactivity" default:"0.5" validate:"gte=0,lte=1"`
 	Brightness    float64 `mapstructure:"brightness" json:"brightness" description:"Brightness modifier applied to this effect" default:"1" validate:"gte=0,lte=1"`
+	Saturation    float64 `mapstructure:"saturation" json:"saturation" description:"Saturation modifier applied to this effect" default:"1" validate:"gte=0,lte=1"`
 	Palette       string  `mapstructure:"palette" json:"palette" description:"Color scheme" default:"RGB" validate:"palette"`
 	Blur          float64 `mapstructure:"blur" json:"blur"  description:"Gaussian blur to smoothly blend colors" default:"0.5" validate:"gte=0,lte=1"`
 	Flip          bool    `mapstructure:"flip" json:"flip" description:"Reverse the pixels" default:"false" validate:""`
 	Mirror        bool    `mapstructure:"mirror" json:"mirror" description:"Mirror the pixels across the center" default:"false" validate:""`
+	Decay         float64 `mapstructure:"decay" json:"decay" description:"Apply temporal filtering" default:"0" validate:"gte=0,lte=1"`
+	HueShift      float64 `mapstructure:"hue_shift" json:"hue_shift" description:"Cycle the colors through time" default:"1" validate:"gte=0,lte=1"`
 	BkgBrightness float64 `mapstructure:"bkg_brightness" json:"bkg_brightness" description:"Brightness modifier applied to the background color" default:"0.2" validate:"gte=0,lte=1"`
 	BkgColor      string  `mapstructure:"bkg_color" json:"bkg_color" description:"Apply a background color" default:"#000000" validate:"color"`
 }
@@ -46,30 +55,60 @@ func (e *Effect) GetID() string {
 	return e.ID
 }
 
-// Apply mirrors, blur, filters, etc to effect. Should be applied to fresh effect frames.
-func (e *Effect) Postprocess(p color.Pixels) {
+// Effect implementation should override this method
+func (e *Effect) assembleFrame(p color.Pixels) {}
+
+// Render a new frame of pixels.
+// This handles assembling a new frame, then applying mirrors, blur, filters, etc
+func (e *Effect) Render(p color.Pixels) {
+	// These timing variables ensure that temporal effects and filters run at constant
+	// speed, irrespective of the effect framerate.
+	now := time.Now()
+	deltaPrevFrame := now.Sub(e.prevFrameTime)
+	deltaStart := now.Sub(e.startTime)
+	e.prevFrameTime = now
+
+	// Overwrite the incoming frame (RGB) with the last frame (HSL) while applying temporal decay
+	// for formula explanation, see: https://www.desmos.com/calculator/5qk6xql8bn
+	for i := 0; i < e.pixelCount; i++ {
+		e.prevFrame[i][2] *= math.Pow(-math.Log((e.Config.Decay*math.E-e.Config.Decay+1)/math.E), 10*deltaPrevFrame.Seconds())
+		p[i] = e.prevFrame[i]
+	}
+	// Assemble new pixels onto the frame
+	e.assembleFrame(p)
+
 	// HSL processes
 	e.applyFlip(p)
 	e.applyMirror(p)
-	color.DarkenPixels(p, e.Config.Brightness)
-	e.applyGlobals(p)
-	color.ToRGB(p)
+	color.HueShiftPixels(p, e.Config.HueShift*deltaStart.Seconds())
+
+	// convert p from HSL to RGB using the palette
+	for i := 0; i < e.pixelCount; i++ {
+		p[i] = e.palette.Get(p[i][0])
+	}
+
 	// RGB processes
 	e.applyBkg(p)
+	color.DesaturatePixels(p, e.Config.Saturation)
+	color.DarkenPixels(p, e.Config.Brightness)
 	e.applyBlur(p)
+	e.clamp(p)
+
+	// save the frame to prevFrame
+	for i := 0; i < e.pixelCount; i++ {
+		e.prevFrame[i] = p[i]
+	}
 }
 
-func (e *Effect) applyGlobals(p color.Pixels) {
-	color.HueShiftPixels(p, globalConfig.Hue)
-	color.DesaturatePixels(p, globalConfig.Saturation)
-	color.DarkenPixels(p, globalConfig.Brightness)
-}
-
+// TODO pseudo-gaussian blur
 func (e *Effect) applyBlur(p color.Pixels) {
 	if e.Config.Blur == 0 {
 		return
 	}
+
 }
+
+// Reverses the pixels
 func (e *Effect) applyFlip(p color.Pixels) {
 	if !e.Config.Mirror {
 		return
@@ -80,6 +119,7 @@ func (e *Effect) applyFlip(p color.Pixels) {
 	}
 }
 
+// Mirrors pixels down the centre
 func (e *Effect) applyMirror(p color.Pixels) {
 	if !e.Config.Mirror {
 		return
@@ -103,5 +143,25 @@ func (e *Effect) applyMirror(p color.Pixels) {
 	}
 }
 
+// mixes a background colour
 func (e *Effect) applyBkg(p color.Pixels) {
+	for i := 0; i < e.pixelCount; i++ {
+		p[i][0] += e.bkgColor[0] * e.Config.BkgBrightness
+		p[i][1] += e.bkgColor[1] * e.Config.BkgBrightness
+		p[i][2] += e.bkgColor[2] * e.Config.BkgBrightness
+	}
+}
+
+// makes sure all pixel values are between 0-1
+func (e *Effect) clamp(p color.Pixels) {
+	for i := 0; i < e.pixelCount; i++ {
+		for k := 0; k < 3; k++ {
+			if p[i][k] > 1 {
+				p[i][k] = 1
+			}
+			if p[i][k] < 0 {
+				p[i][k] = 0
+			}
+		}
+	}
 }

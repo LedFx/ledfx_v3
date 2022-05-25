@@ -26,6 +26,7 @@ import (
 var errInvalidPalette = errors.New("invalid palette")
 
 // palettes are generated at a fixed size from the palette string.
+// must be at least 100.
 const PaletteSize int = 300
 const paletteSizeFloat float64 = float64(PaletteSize)
 
@@ -51,6 +52,7 @@ func (p *Palette) String() string {
 	return p.rawCSS
 }
 
+// TODO: check the return type. Pointer or struct?
 func NewPalette(gs string) (g *Palette, err error) {
 	predef, isPredef := LedFxPalettes[gs]
 	if isPredef {
@@ -124,12 +126,33 @@ func ParsePalette(gs string) (g *Palette, err error) {
 	if err != nil {
 		return nil, errInvalidPalette
 	}
+	// validate first and last positions
 	if (g.positions[0] != 0) || (g.positions[len(g.positions)-1] != 1) {
 		return nil, errors.New("palette color positions must start at 0% and end at 100%")
 	}
 
-	// Create the RGB color array
+	// validate positions are in order
+	for i, j := 0, 1; j < len(g.positions); i, j = i+1, j+1 {
+		if g.positions[j]-g.positions[i] <= 0.01 {
+			return nil, errors.New("consecutive palette colors must ascend with a position difference of at least 1%")
+		}
+	}
 
+	// Create the RGB color array
+	start, stop := 0, 0
+	for i, j := 0, 1; j < len(g.positions); i, j = i+1, j+1 {
+		col_0, col_1 := g.colors[i], g.colors[j]
+		_, pos_1 := g.positions[i], g.positions[j]
+		stop = int(paletteSizeFloat * pos_1)
+
+		for k := 0; k < 3; k++ {
+			blend := ease(stop-start, col_0[k], col_1[k], 1.5)
+			for l := start; l < stop; l++ {
+				g.rgb[l][k] = blend[l-start]
+			}
+		}
+		start = stop
+	}
 	return g, err
 }
 
@@ -142,29 +165,6 @@ func ease(chunk_len int, start_val, end_val, slope float64) []float64 {
 		xs[i] = diff*math.Pow(x, slope)/(math.Pow(x, slope)+math.Pow(1-x, slope)) + start_val
 	}
 	return xs
-}
-
-// Return evenly spaced numbers over a specified interval
-func linspace(start, stop float64, num int) (ls []float64, err error) {
-	if start >= stop {
-		return ls, fmt.Errorf("linspace start must not be greater than stop: %v, %v", start, stop)
-	}
-	if num <= 0 {
-		return ls, fmt.Errorf("num must be greater than 0: %v, %v", start, stop)
-	}
-	ls = make([]float64, num)
-	delta := stop / float64(num)
-	for i, x := 0, start; x < stop; i, x = i+1, x+delta {
-		ls[i] = x
-	}
-	return ls, nil
-}
-
-func minMax(a, b int) (min, max int) {
-	if a > b {
-		return b, a
-	}
-	return a, b
 }
 
 // GeneratePalette generates palette with the given number of colors

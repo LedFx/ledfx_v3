@@ -74,7 +74,7 @@ func TestEffectBaseFunctions(t *testing.T) {
 
 	// Run the effect on some pixels
 	p := make(color.Pixels, 100)
-	effect.AssembleFrame(p)
+	effect.Render(p)
 
 	// Try to update with an invalid json
 	c["nonsense"] = "data" // unknown keys are discarded

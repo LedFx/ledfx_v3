@@ -15,7 +15,7 @@ func TestEnergy(t *testing.T) {
 
 	// Run the effect on some pixels
 	p := make(color.Pixels, 100)
-	effect.AssembleFrame(p)
+	effect.Render(p)
 
 	// Test some different configs, try to get min and max allowed values
 	testConfigs := []map[string]interface{}{
@@ -42,7 +42,7 @@ func TestEnergy(t *testing.T) {
 	}
 	for i, c := range testConfigs {
 		err = effect.UpdateConfig(c) // Assign the config
-		effect.AssembleFrame(p)      // Run it on some pixels
+		effect.Render(p)             // Run it on some pixels
 		if err != nil {
 			t.Errorf("failed on test config #%d", i)
 		}

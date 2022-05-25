@@ -33,37 +33,33 @@ func TestNewColor(t *testing.T) {
 
 func TestNewPalette(t *testing.T) {
 	cases := []struct {
-		q string
-		a Palette
-		e bool
+		test string
+		pass bool
 	}{
-		{"linear-gradient(#ffFf00 10%, )", Palette{}, true},
-		{"linear-gradient(180deg, #ffgh00 10%)", Palette{}, true},
-		{"linear-gradient(180deg, rgb(299,0,299) 10%)", Palette{}, true},
-		{"linear-gradient(180deg, useless color 10%)", Palette{}, true},
-		{
-			"linear-gradient(90deg, #ffFf00 10%, rgb(255, 0, 255) 30%)",
-			Palette{
-				mode:  "linear",
-				angle: 90,
-			},
-			false,
-		},
-		{
-			"Dancefloor",
-			Palette{
-				mode:      "linear",
-				angle:     90,
-				colors:    []Color{{1, 0, 0}, {1, 0, 0.6980392156862745}, {0, 0, 1}},
-				positions: []float64{0, 0.5, 1},
-			},
-			false,
-		},
+		{"linear-gradient(#ffFf00 10%, )", false},
+		{"linear-gradient(180deg, #ffgh00 10%)", false},
+		{"linear-gradient(180deg, rgb(299,0,299) 10%)", false},
+		{"linear-gradient(180deg, useless color 10%)", false},
+		{"linear-gradient(90deg, #ffFf00 0%, rgb(255, 0, 255) 30%, rgb(255, 255, 255) 100%)", true},
+		{"RGB", true},
+		{"Rainbow", true},
+		{"Dancefloor", true},
+		{"Plasma", true},
+		{"Ocean", true},
+		{"Viridis", true},
+		{"Jungle", true},
+		{"Spring", true},
+		{"Winter", true},
+		{"Frost", true},
+		{"Sunset", true},
+		{"Borealis", true},
+		{"Rust", true},
+		{"Winamp", true},
 	}
 	for _, c := range cases {
-		guess, err := NewPalette(c.q)
-		if (c.a.mode != guess.mode) || (c.a.angle != guess.angle) || (err == nil == c.e) { // if the answer is wrong, or the error value is unexpected
-			t.Errorf("Failed to parse %s: expected (%v, %v) but got (%v, %v)", c.q, c.a, c.e, guess, err)
+		_, err := NewPalette(c.test)
+		if err == nil != c.pass { // if the answer is wrong, or the error value is unexpected
+			t.Errorf("Failed test case %s, expected error to be %t", c.test, err == nil)
 		}
 	}
 }

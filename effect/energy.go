@@ -4,24 +4,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"ledfx/color"
-	"time"
 
-	"github.com/creasty/defaults"
 	"github.com/mitchellh/mapstructure"
 )
 
 type Energy struct {
 	Effect
-	Name   string
-	Config EnergyConfig
+	ExtraConfig EnergyConfig
 }
 
-// you can redefine defaults of base effect config to better suit the effect
-// eg. here, i'm setting mirror to default to true
-type EnergyConfig struct {
-	BaseEffectConfig `mapstructure:",squash"`
-	Mirror           bool `mapstructure:"mirror" json:"mirror" description:"Mirror the pixels across the center" default:"true" validate:""`
-}
+/*
+You can define extra config specific for this effect here.
+Try to keep these to a minimum and use the base config as much as possible.
+*/
+type EnergyConfig struct{}
 
 // Apply new pixels to an existing pixel array.
 func (e *Energy) assembleFrame(p color.Pixels) {
@@ -32,21 +28,13 @@ func (e *Energy) assembleFrame(p color.Pixels) {
 func (e *Energy) AudioUpdated() {}
 
 // BOILERPLATE CODE BELOW. COPYPASTE & REPLACE CONFIG TYPE WITH THIS EFFECT'S CONFIG
-func (e *Energy) Initialize(id string, pixelCount int) error {
-	e.ID = id
-	e.pixelCount = pixelCount
-	e.startTime = time.Now()
-	e.prevFrame = make(color.Pixels, pixelCount)
-	e.mirror = make(color.Pixels, pixelCount)
-	return defaults.Set(&e.Config)
-}
 
 /*
 Updates the config of the effect. Config can be given
 as EnergyConfig, map[string]interface{}, or raw json
 */
-func (e *Energy) UpdateConfig(c interface{}) (err error) {
-	newConfig := e.Config
+func (e *Energy) UpdateExtraConfig(c interface{}) (err error) {
+	newConfig := e.ExtraConfig
 	switch t := c.(type) {
 	case EnergyConfig: // No conversion necessary
 		newConfig = c.(EnergyConfig)
@@ -69,15 +57,9 @@ func (e *Energy) UpdateConfig(c interface{}) (err error) {
 
 	// READ ME
 	// here you can update any stored properties that are based on the config
-	// creating a new palette is expensive, should only be done if changed
-	if e.palette == nil || e.Config.Palette != newConfig.Palette {
-		e.palette, _ = color.NewPalette(newConfig.Palette)
-	}
-	// parsing a color is cheap, just do it every time
-	e.bkgColor, _ = color.NewColor(e.Config.BkgColor)
 	// put any of your generated effect properties below:
 
 	// apply config to effect
-	e.Config = newConfig
+	e.ExtraConfig = newConfig
 	return nil
 }

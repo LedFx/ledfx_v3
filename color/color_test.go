@@ -70,14 +70,27 @@ var pixelSizes = []Pixels{
 	make(Pixels, 100),
 	make(Pixels, 500),
 	make(Pixels, 1000),
+	make(Pixels, 5000),
+	make(Pixels, 10000),
 }
 
-func BenchmarkBlur(t *testing.B) {
+func BenchmarkKernelBlur(t *testing.B) {
 	for _, v := range pixelSizes {
 		b := NewBlurrer(len(v), 1) // use largest kernel, most demanding
 		t.Run(fmt.Sprintf("%d pixels", len(v)), func(t *testing.B) {
 			for i := 0; i < t.N; i++ {
-				b.Blur(v)
+				b.KernelBlur(v)
+			}
+		})
+	}
+}
+
+func BenchmarkBoxBlur(t *testing.B) {
+	for _, v := range pixelSizes {
+		b := NewBlurrer(len(v), 1) // use largest kernel, most demanding
+		t.Run(fmt.Sprintf("%d pixels", len(v)), func(t *testing.B) {
+			for i := 0; i < t.N; i++ {
+				b.BoxBlur(v)
 			}
 		})
 	}

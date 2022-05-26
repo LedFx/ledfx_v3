@@ -28,27 +28,27 @@ func TestEffectBaseFunctions(t *testing.T) {
 	c := map[string]interface{}{
 		"brightness": 0.3,
 	}
-	_, err := New("energy", c)
+	_, err := New("energy", 100, c)
 	if err != nil {
 		t.Error(err)
 	}
 
 	// Try to make an effect of unknown type
-	_, err = New("doesnt_exist", c)
+	_, err = New("doesnt_exist", 100, c)
 	if err == nil {
 		t.Error("Invalid effect type should return an error")
 	}
 
 	// Try to make an effect with invalid config value
 	c["brightness"] = 5000
-	_, err = New("energy", c)
+	_, err = New("energy", 100, c)
 	if err == nil {
 		t.Error("Invalid config should return an error")
 	}
 
 	// try to make an effect with invalid config type
 	n := "this is clearly not a config"
-	_, err = New("energy", n)
+	_, err = New("energy", 100, n)
 	if err == nil {
 		t.Error("Invalid config should return an error")
 	}

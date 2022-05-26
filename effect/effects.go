@@ -27,7 +27,7 @@ func Schema() (schema map[string]interface{}, err error) {
 }
 
 // Creates a new effect and returns its unique id
-func New(effect_type string, config interface{}) (effect PixelGenerator, err error) {
+func New(effect_type string, pixelCount int, config interface{}) (effect PixelGenerator, err error) {
 	switch effect_type {
 	case "energy":
 		effect = new(Energy)
@@ -46,7 +46,7 @@ func New(effect_type string, config interface{}) (effect PixelGenerator, err err
 		}
 	}
 	// initialise the new effect with its id and config
-	err = effect.Initialize(id, 100) // TODO this comes from the virtual
+	err = effect.Initialize(id, pixelCount)
 	if err != nil {
 		return effect, nil
 	}

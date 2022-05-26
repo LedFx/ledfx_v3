@@ -1,20 +1,25 @@
 package effect
 
 import (
+	"encoding/json"
 	"fmt"
 	"ledfx/color"
 	"math"
 	"time"
+
+	"github.com/creasty/defaults"
+	"github.com/mitchellh/mapstructure"
 )
 
 /*
 PixelGenerator is the interface for effect types: all effects generate pixels.
 Effects must be computed in HSL space. The color is abstracted and handled outside of the effect
-using the effect's palette. Post processing will handle conversion to RGB but requires HSV space
+using the effect's palette. Post processing will handle conversion to RGB but requires HSL space
 */
 type PixelGenerator interface {
 	Initialize(id string, pixelCount int) error
 	UpdateConfig(c interface{}) (err error)
+	UpdateExtraConfig(c interface{}) (err error)
 	Render(color.Pixels)
 	assembleFrame(colors color.Pixels)
 	GetID() string
@@ -31,6 +36,7 @@ type Effect struct {
 	startTime     time.Time
 	prevFrameTime time.Time
 	palette       *color.Palette
+	blurrer       *color.Blurrer
 	prevFrame     color.Pixels
 	bkgColor      color.Color  // parsed background color
 	mirror        color.Pixels // scratch array used by mirror function
@@ -55,8 +61,69 @@ func (e *Effect) GetID() string {
 	return e.ID
 }
 
-// Effect implementation should override this method
+func (e *Effect) Initialize(id string, pixelCount int) error {
+	e.ID = id
+	e.startTime = time.Now()
+	e.pixelCount = pixelCount
+	e.prevFrame = make(color.Pixels, pixelCount)
+	e.mirror = make(color.Pixels, pixelCount)
+	e.palette = nil
+	e.blurrer = nil
+	err := defaults.Set(&e.Config)
+	if err != nil {
+		return err
+	}
+	return e.UpdateConfig(e.Config)
+}
+
+/*
+Updates the config of the effect. Config can be given
+as EnergyConfig, map[string]interface{}, or raw json
+*/
+func (e *Effect) UpdateConfig(c interface{}) (err error) {
+	newConfig := e.Config
+	switch t := c.(type) {
+	case BaseEffectConfig: // No conversion necessary
+		newConfig = c.(BaseEffectConfig)
+	case map[string]interface{}: // Decode a map structure
+		err = mapstructure.Decode(t, &newConfig)
+	case []byte: // Unmarshal a json byte slice
+		err = json.Unmarshal(t, &newConfig)
+	default:
+		err = fmt.Errorf("invalid config type: %s", t)
+	}
+	if err != nil {
+		return err
+	}
+
+	// validate all values
+	err = validate.Struct(&newConfig)
+	if err != nil {
+		return err
+	}
+
+	// update any stored properties that are based on the config
+	// creating a new palette is expensive, should only be done if changed
+	if e.palette == nil || e.Config.Palette != newConfig.Palette {
+		e.palette, _ = color.NewPalette(newConfig.Palette)
+	}
+	// parsing a color is cheap, just do it every time
+	e.bkgColor, _ = color.NewColor(e.Config.BkgColor)
+	// blur needs new blurrer if changed
+	if e.blurrer == nil || e.Config.Blur != newConfig.Blur {
+		e.blurrer = color.NewBlurrer(e.pixelCount, newConfig.Blur)
+	}
+
+	// apply config to effect
+	e.Config = newConfig
+	return nil
+}
+
+// Effect implementation must override this method
 func (e *Effect) assembleFrame(p color.Pixels) {}
+
+// Effect implementation may override this method
+func (e *Effect) UpdateExtraConfig(c interface{}) (err error) { return nil }
 
 // Render a new frame of pixels. Give the previous frame as argument.
 // This handles assembling a new frame, then applying mirrors, blur, filters, etc
@@ -106,7 +173,7 @@ func (e *Effect) applyBlur(p color.Pixels) {
 	if e.Config.Blur == 0 {
 		return
 	}
-
+	e.blurrer.BoxBlur(p)
 }
 
 // Reverses the pixels

@@ -56,11 +56,6 @@ type BaseEffectConfig struct {
 	BkgColor      string  `mapstructure:"bkg_color" json:"bkg_color" description:"Apply a background color" default:"#000000" validate:"color"`
 }
 
-type GenericEffectConfig struct {
-	Base  interface{} `mapstructure:"base" json:"base"`
-	Extra interface{} `mapstructure:"extra" json:"extra"`
-}
-
 func (e *Effect) GetID() string {
 	return e.ID
 }

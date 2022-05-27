@@ -23,6 +23,7 @@ require (
 	github.com/rs/cors v1.8.2
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.10.1
+	github.com/u2takey/go-utils v0.0.0-20200713025200-4704d09fc2c7
 	go.uber.org/atomic v1.9.0
 	golang.org/x/image v0.0.0-20200927104501-e162460cd6b5
 	golang.org/x/text v0.3.7
@@ -66,7 +67,6 @@ require (
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/subosito/gotenv v1.2.0 // indirect
-	github.com/u2takey/go-utils v0.0.0-20200713025200-4704d09fc2c7 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go4.org/intern v0.0.0-20211027215823-ae77deb06f29 // indirect
 	go4.org/mem v0.0.0-20210711025021-927187094b94 // indirect

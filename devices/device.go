@@ -10,9 +10,8 @@ type PixelPusher interface {
 }
 
 type Device struct {
-	ID          string
-	Pusher      PixelPusher
-	Dimensioner PixelDimensioner
+	ID     string
+	Pusher PixelPusher
 	// BaseConfig  BaseDeviceConfig
 }
 

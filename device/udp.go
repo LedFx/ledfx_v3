@@ -15,12 +15,13 @@ type UDP struct {
 
 type UDPConfig struct {
 	NetworkerConfig
-	protocol UDPProtocol
-	timeout  int
+	Protocol UDPProtocol
+	Timeout  int
 }
 
-func (d *UDP) initialize(base *Device) (err error) {
-	d.pb, err = NewPacketBuilder(base.Config.PixelCount, d.Config.protocol, byte(d.Config.timeout))
+func (d *UDP) initialize(base *Device, config interface{}) (err error) {
+	d.Config = config.(UDPConfig)
+	d.pb, err = NewPacketBuilder(base.Config.PixelCount, d.Config.Protocol, byte(d.Config.Timeout))
 	return err
 }
 

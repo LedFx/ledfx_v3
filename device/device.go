@@ -7,7 +7,7 @@ import (
 
 // All devices take pixels and send them somewhere
 type PixelPusher interface {
-	initialize(*Device) error
+	initialize(base *Device, config interface{}) error
 	send(p color.Pixels) error
 	connect() error
 	disconnect() error
@@ -22,12 +22,13 @@ type Device struct {
 
 type BaseDeviceConfig struct {
 	PixelCount int
-	Name       int
+	Name       string
 }
 
-func (d *Device) Initialize(id string) (err error) {
+func (d *Device) Initialize(id string, baseConfig BaseDeviceConfig, implConfig interface{}) (err error) {
 	d.ID = id
-	return d.pixelPusher.initialize(d)
+	d.Config = baseConfig
+	return d.pixelPusher.initialize(d, implConfig)
 }
 
 func (d *Device) Connect() (err error) {

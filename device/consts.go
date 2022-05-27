@@ -3,10 +3,10 @@ package device
 type State int
 
 const (
-	Connected State = iota
-	Disconnected
-	Connecting
+	Disconnected State = iota // default
+	Connected
 	Disconnecting
+	Connecting
 )
 
 func (s State) String() string {

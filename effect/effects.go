@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"ledfx/color"
-	"ledfx/utils"
+	"ledfx/util"
 	"log"
 	"reflect"
 	"strconv"
@@ -21,13 +21,13 @@ NEW EFFECTS MUST BE REGISTERED IN THESE TWO FUNCTIONS =====================
 // Generate a map schema for all effects
 func Schema() (schema map[string]interface{}, err error) {
 	schema = make(map[string]interface{})
-	schema["base"], err = utils.CreateSchema(reflect.TypeOf((*BaseEffectConfig)(nil)).Elem())
+	schema["base"], err = util.CreateSchema(reflect.TypeOf((*BaseEffectConfig)(nil)).Elem())
 	if err != nil {
 		return schema, err
 	}
 	extraSchema := make(map[string]interface{})
 	// Copypaste for new effect types
-	extraSchema["energy"], err = utils.CreateSchema(reflect.TypeOf((*EnergyConfig)(nil)).Elem())
+	extraSchema["energy"], err = util.CreateSchema(reflect.TypeOf((*EnergyConfig)(nil)).Elem())
 	if err != nil {
 		return schema, err
 	}
@@ -167,6 +167,6 @@ func JsonSchema() (jsonSchema []byte, err error) {
 	if err != nil {
 		return jsonSchema, err
 	}
-	jsonSchema, err = utils.CreateJsonSchema(schema)
+	jsonSchema, err = util.CreateJsonSchema(schema)
 	return jsonSchema, err
 }

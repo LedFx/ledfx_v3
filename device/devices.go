@@ -27,7 +27,7 @@ NEW DEVICES MUST BE REGISTERED IN THESE TWO FUNCTIONS =====================
 // }
 
 // Creates a new device and returns its unique id
-func New(device_type string, config interface{}) (device *Device, id string, err error) {
+func New(device_type string, baseConfig BaseDeviceConfig, implConfig interface{}) (device *Device, id string, err error) {
 	switch device_type {
 	case "udp":
 		device = &Device{
@@ -48,7 +48,7 @@ func New(device_type string, config interface{}) (device *Device, id string, err
 		}
 	}
 	// initialise the new device with its id and config
-	if err = device.Initialize(id); err != nil {
+	if err = device.Initialize(id, baseConfig, implConfig); err != nil {
 		return device, id, nil
 	}
 	// err = device.UpdateBaseConfig(config)

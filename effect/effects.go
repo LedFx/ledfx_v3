@@ -8,7 +8,6 @@ import (
 	"log"
 	"reflect"
 	"strconv"
-	"sync"
 
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
@@ -37,10 +36,10 @@ func Schema() (schema map[string]interface{}, err error) {
 }
 
 // Creates a new effect and returns its unique id
-func New(effect_type string, pixelCount int, config interface{}) (effect Effect, id string, err error) {
+func New(effect_type string, pixelCount int, config interface{}) (effect *Effect, id string, err error) {
 	switch effect_type {
 	case "energy":
-		effect = Effect{
+		effect = &Effect{
 			pixelGenerator: &Energy{},
 		}
 	default:
@@ -53,7 +52,7 @@ func New(effect_type string, pixelCount int, config interface{}) (effect Effect,
 		id = effect_type + strconv.Itoa(i)
 		_, exists := effectInstances[id]
 		if !exists {
-			effectInstances[id] = &effect
+			effectInstances[id] = effect
 			break
 		}
 	}
@@ -61,7 +60,7 @@ func New(effect_type string, pixelCount int, config interface{}) (effect Effect,
 	if err = effect.initialize(id, pixelCount); err != nil {
 		return effect, id, nil
 	}
-	err = effect.UpdateConfig(config)
+	err = effect.UpdateBaseConfig(config)
 	return effect, id, err
 }
 
@@ -72,7 +71,6 @@ Nothing to modify below here =====================
 var effectInstances = make(map[string]*Effect)
 var globalConfig = BaseEffectConfig{}
 var validate *validator.Validate = validator.New()
-var mu sync.Mutex = sync.Mutex{}
 
 func init() {
 	validate.RegisterValidation("palette", validatePalette)
@@ -131,7 +129,7 @@ func SetGlobalSettings(c interface{}) (err error) {
 	}
 	// knowing that it's valid, pass it on to all the effects
 	for _, e := range effectInstances {
-		err = e.UpdateConfig(c)
+		err = e.UpdateBaseConfig(c)
 	}
 	if err != nil {
 		return err

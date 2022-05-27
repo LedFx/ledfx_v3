@@ -69,8 +69,8 @@ func TestEnergy(t *testing.T) {
 		},
 	}
 	for i, c := range testConfigs {
-		err = effect.UpdateConfig(c) // Assign the config
-		effect.Render(p)             // Run it on some pixels
+		err = effect.UpdateBaseConfig(c) // Assign the config
+		effect.Render(p)                 // Run it on some pixels
 		if err != nil {
 			t.Errorf("failed on test config #%d", i)
 		}

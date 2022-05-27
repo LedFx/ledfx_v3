@@ -18,10 +18,7 @@ Effects must be computed in HSL space. The color is abstracted and handled outsi
 using the effect's palette. Post processing will handle conversion to RGB but requires HSL space
 */
 type PixelGenerator interface {
-	// initialize(id string, pixelCount int) error
-	// UpdateConfig(c interface{}) (err error)
 	UpdateExtraConfig(c interface{}) (err error)
-	// Render(color.Pixels)
 	assembleFrame(base *Effect, colors color.Pixels)
 }
 
@@ -59,6 +56,11 @@ type BaseEffectConfig struct {
 	BkgColor      string  `mapstructure:"bkg_color" json:"bkg_color" description:"Apply a background color" default:"#000000" validate:"color"`
 }
 
+type GenericEffectConfig struct {
+	Base  interface{} `mapstructure:"base" json:"base"`
+	Extra interface{} `mapstructure:"extra" json:"extra"`
+}
+
 func (e *Effect) GetID() string {
 	return e.ID
 }
@@ -75,15 +77,15 @@ func (e *Effect) initialize(id string, pixelCount int) error {
 	if err := defaults.Set(&e.Config); err != nil {
 		return err
 	}
-	return e.UpdateConfig(e.Config)
+	return e.UpdateBaseConfig(e.Config)
 }
 
 /*
-Updates the config of the effect. Config can be given
+Updates the base config of the effect. Config can be given
 as EnergyConfig, map[string]interface{}, or raw json.
 You can also use a nil to set config to defaults
 */
-func (e *Effect) UpdateConfig(c interface{}) (err error) {
+func (e *Effect) UpdateBaseConfig(c interface{}) (err error) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 	newConfig := e.Config
@@ -126,11 +128,12 @@ func (e *Effect) UpdateConfig(c interface{}) (err error) {
 	return nil
 }
 
-// Effect implementation must override this method
-//func (e *Effect) assembleFrame(p color.Pixels) {}
-
-// Effect implementation may override this method
-func (e *Effect) UpdateExtraConfig(c interface{}) (err error) { return nil }
+// Effect implementation can implement this method
+func (e *Effect) UpdateExtraConfig(c interface{}) error {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	return e.pixelGenerator.UpdateExtraConfig(c)
+}
 
 // Render a new frame of pixels. Give the previous frame as argument.
 // This handles assembling a new frame, then applying mirrors, blur, filters, etc

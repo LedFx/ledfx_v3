@@ -8,6 +8,7 @@ import (
 	"log"
 	"reflect"
 	"strconv"
+	"sync"
 
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
@@ -21,46 +22,57 @@ NEW EFFECTS MUST BE REGISTERED IN THESE TWO FUNCTIONS =====================
 // Generate a map schema for all effects
 func Schema() (schema map[string]interface{}, err error) {
 	schema = make(map[string]interface{})
+	schema["base"], err = utils.CreateSchema(reflect.TypeOf((*BaseEffectConfig)(nil)).Elem())
+	if err != nil {
+		return schema, err
+	}
+	extraSchema := make(map[string]interface{})
 	// Copypaste for new effect types
-	schema["energy"], err = utils.CreateSchema(reflect.TypeOf((*EnergyConfig)(nil)).Elem())
+	extraSchema["energy"], err = utils.CreateSchema(reflect.TypeOf((*EnergyConfig)(nil)).Elem())
+	if err != nil {
+		return schema, err
+	}
+	schema["extra"] = extraSchema
 	return schema, err
 }
 
 // Creates a new effect and returns its unique id
-func New(effect_type string, pixelCount int, config interface{}) (effect PixelGenerator, err error) {
+func New(effect_type string, pixelCount int, config interface{}) (effect Effect, id string, err error) {
 	switch effect_type {
 	case "energy":
-		effect = new(Energy)
+		effect = Effect{
+			pixelGenerator: &Energy{},
+		}
 	default:
-		return effect, fmt.Errorf("%s is not a known effect type", effect_type)
+		return effect, id, fmt.Errorf("%s is not a known effect type", effect_type)
 	}
 
 	// create an id and add it to the internal list of instances
-	id := effect_type
+	id = effect_type
 	for i := 0; ; i++ {
 		id = effect_type + strconv.Itoa(i)
 		_, exists := effectInstances[id]
 		if !exists {
-			effectInstances[id] = effect
+			effectInstances[id] = &effect
 			break
 		}
 	}
 	// initialise the new effect with its id and config
-	err = effect.Initialize(id, pixelCount)
-	if err != nil {
-		return effect, nil
+	if err = effect.initialize(id, pixelCount); err != nil {
+		return effect, id, nil
 	}
 	err = effect.UpdateConfig(config)
-	return effect, err
+	return effect, id, err
 }
 
 /*
 Nothing to modify below here =====================
 */
 
-var effectInstances = make(map[string]PixelGenerator)
+var effectInstances = make(map[string]*Effect)
 var globalConfig = BaseEffectConfig{}
 var validate *validator.Validate = validator.New()
+var mu sync.Mutex = sync.Mutex{}
 
 func init() {
 	validate.RegisterValidation("palette", validatePalette)
@@ -131,7 +143,7 @@ func SetGlobalSettings(c interface{}) (err error) {
 }
 
 // Get an existing pixel generator instance by its unique id
-func Get(id string) (PixelGenerator, error) {
+func Get(id string) (*Effect, error) {
 	if inst, exists := effectInstances[id]; exists {
 		return inst, nil
 	} else {

@@ -71,7 +71,9 @@ func ParsePalette(gs string) (g *Palette, err error) {
 	g = &Palette{
 		rawCSS: gs,
 	}
-
+	if gs == "" {
+		return g, errInvalidPalette
+	}
 	var splits []string
 	gs = strings.ToLower(gs)
 	gs = strings.ReplaceAll(gs, " ", "")

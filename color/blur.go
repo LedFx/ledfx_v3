@@ -9,16 +9,6 @@ type Blurrer struct {
 	working      Pixels
 }
 
-/*
-kernel blurring with this naive implementation is on^2 complexity (i think)
-might be worth writing a faster moving average blur
-*/
-
-/*
-could try this kernel
-https://dsp.stackexchange.com/questions/54375/how-to-approximate-gaussian-kernel-for-image-blur
-*/
-
 // Create new Blurrer
 // For kernel info, see: https://www.desmos.com/calculator/pjepmbj16v
 func NewBlurrer(pixelCount int, blur float64) (b *Blurrer) {
@@ -50,6 +40,7 @@ func NewBlurrer(pixelCount int, blur float64) (b *Blurrer) {
 
 // Faster blur algorithm, linear complexity
 // https://medium.com/mobile-app-development-publication/blurring-image-algorithm-example-in-android-cec81911cd5e
+// https://blog.ivank.net/fastest-gaussian-blur.html
 func (b *Blurrer) BoxBlur(p Pixels) {
 	// copy pixels to working array
 	for i, px := range p {
@@ -98,6 +89,10 @@ func (b *Blurrer) BoxBlur(p Pixels) {
 }
 
 func (b *Blurrer) KernelBlur(p Pixels) {
+	/*
+	   could try this kernel
+	   https://dsp.stackexchange.com/questions/54375/how-to-approximate-gaussian-kernel-for-image-blur
+	*/
 	// copy pixels to working array
 	for i, px := range p {
 		b.working[i+b.kernelRadius] = px

@@ -18,13 +18,8 @@ var pixelSizes = []color.Pixels{
 func BenchmarkEnergy(t *testing.B) {
 	// Make a new effect
 	c := map[string]interface{}{}
-	effect, err := New("energy", 100, c)
-	if err != nil {
-		t.Error(err)
-	}
-	id := effect.GetID()
 	for _, v := range pixelSizes {
-		err = effect.Initialize(id, len(v))
+		effect, _, err := New("energy", len(v), c)
 		if err != nil {
 			t.Error(err)
 		}
@@ -34,13 +29,14 @@ func BenchmarkEnergy(t *testing.B) {
 				effect.Render(v)
 			}
 		})
+		Destroy(effect.GetID())
 	}
 }
 
 func TestEnergy(t *testing.T) {
 	// Make a new effect
 	c := map[string]interface{}{}
-	effect, err := New("energy", 100, c)
+	effect, _, err := New("energy", 100, c)
 	if err != nil {
 		t.Error(err)
 	}

@@ -9,7 +9,6 @@ import (
 )
 
 type Energy struct {
-	Effect
 	ExtraConfig EnergyConfig
 }
 
@@ -20,8 +19,8 @@ Try to keep these to a minimum and use the base config as much as possible.
 type EnergyConfig struct{}
 
 // Apply new pixels to an existing pixel array.
-func (e *Energy) assembleFrame(p color.Pixels) {
-	bkgb := e.Config.BkgBrightness //eg.
+func (e *Energy) assembleFrame(base *Effect, p color.Pixels) {
+	bkgb := base.Config.BkgBrightness //eg.
 	p[0][0] = bkgb
 }
 

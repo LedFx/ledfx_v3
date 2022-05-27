@@ -28,49 +28,55 @@ func TestEffectBaseFunctions(t *testing.T) {
 	c := map[string]interface{}{
 		"brightness": 0.3,
 	}
-	_, err := New("energy", 100, c)
+	_, id, err := New("energy", 100, c)
 	if err != nil {
 		t.Error(err)
 	}
+	// Send it to the shadow realm
+	Destroy(id)
+	// Make sure it's dead
+	_, err = Get(id)
+	if err == nil {
+		t.Error("Get effect with invalid ID should error")
+	}
 
 	// Try to make an effect of unknown type
-	_, err = New("doesnt_exist", 100, c)
+	_, _, err = New("doesnt_exist", 100, c)
 	if err == nil {
 		t.Error("Invalid effect type should return an error")
 	}
 
 	// Try to make an effect with invalid config value
 	c["brightness"] = 5000
-	_, err = New("energy", 100, c)
+	_, _, err = New("energy", 100, c)
 	if err == nil {
 		t.Error("Invalid config should return an error")
 	}
 
 	// try to make an effect with invalid config type
 	n := "this is clearly not a config"
-	_, err = New("energy", 100, n)
+	_, _, err = New("energy", 100, n)
 	if err == nil {
 		t.Error("Invalid config should return an error")
 	}
 
-	// Get IDs to retrieve the effect
-	id := GetIDs()[0]
-	effect, err := Get(id)
+	// Make a new effect
+	effect, _, err := New("energy", 100, nil)
 	if err != nil {
 		t.Error(err)
 	}
-
-	// Try to get the ID from the effect
+	// Test if we can get the ID from the effect
 	id = effect.GetID()
 	if !strings.HasPrefix(id, "energy") {
 		t.Errorf("Got wrong id: %s", id)
 	}
-
-	// Try get an invalid ID
-	_, err = Get("doesnt_exist")
-	if err == nil {
-		t.Error("Invalid id should return an error")
+	// Test if we can get the effect by its ID
+	_, err = Get(id)
+	if err != nil {
+		t.Error(err)
 	}
+	// Test if we can get all effect IDs (this literally cannot go tits up)
+	_ = GetIDs()
 
 	// Run the effect on some pixels
 	p := make(color.Pixels, 100)
@@ -146,7 +152,7 @@ func TestGlobalEffectSettings(t *testing.T) {
 	}
 	err = SetGlobalSettings(m)
 	if err != nil {
-		t.Error("Invalid config keys should be ignored")
+		t.Error(err)
 	}
 
 	// test with invalid config type

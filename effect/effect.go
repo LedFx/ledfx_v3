@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"ledfx/color"
 	"math"
+	"sync"
 	"time"
 
 	"github.com/creasty/defaults"
@@ -17,12 +18,11 @@ Effects must be computed in HSL space. The color is abstracted and handled outsi
 using the effect's palette. Post processing will handle conversion to RGB but requires HSL space
 */
 type PixelGenerator interface {
-	Initialize(id string, pixelCount int) error
-	UpdateConfig(c interface{}) (err error)
+	// initialize(id string, pixelCount int) error
+	// UpdateConfig(c interface{}) (err error)
 	UpdateExtraConfig(c interface{}) (err error)
-	Render(color.Pixels)
-	assembleFrame(colors color.Pixels)
-	GetID() string
+	// Render(color.Pixels)
+	assembleFrame(base *Effect, colors color.Pixels)
 }
 
 type AudioPixelGenerator interface {
@@ -31,16 +31,18 @@ type AudioPixelGenerator interface {
 }
 
 type Effect struct {
-	ID            string
-	pixelCount    int
-	startTime     time.Time
-	prevFrameTime time.Time
-	palette       *color.Palette
-	blurrer       *color.Blurrer
-	prevFrame     color.Pixels
-	bkgColor      color.Color  // parsed background color
-	mirror        color.Pixels // scratch array used by mirror function
-	Config        BaseEffectConfig
+	ID             string
+	pixelCount     int
+	Config         BaseEffectConfig
+	pixelGenerator PixelGenerator
+	startTime      time.Time
+	prevFrameTime  time.Time
+	palette        *color.Palette
+	blurrer        *color.Blurrer
+	prevFrame      color.Pixels
+	bkgColor       color.Color  // parsed background color
+	mirror         color.Pixels // scratch array used by mirror function
+	mu             sync.Mutex
 }
 
 type BaseEffectConfig struct {
@@ -61,7 +63,7 @@ func (e *Effect) GetID() string {
 	return e.ID
 }
 
-func (e *Effect) Initialize(id string, pixelCount int) error {
+func (e *Effect) initialize(id string, pixelCount int) error {
 	e.ID = id
 	e.startTime = time.Now()
 	e.pixelCount = pixelCount
@@ -69,8 +71,8 @@ func (e *Effect) Initialize(id string, pixelCount int) error {
 	e.mirror = make(color.Pixels, pixelCount)
 	e.palette = nil
 	e.blurrer = nil
-	err := defaults.Set(&e.Config)
-	if err != nil {
+	// Set config to defaults
+	if err := defaults.Set(&e.Config); err != nil {
 		return err
 	}
 	return e.UpdateConfig(e.Config)
@@ -78,9 +80,12 @@ func (e *Effect) Initialize(id string, pixelCount int) error {
 
 /*
 Updates the config of the effect. Config can be given
-as EnergyConfig, map[string]interface{}, or raw json
+as EnergyConfig, map[string]interface{}, or raw json.
+You can also use a nil to set config to defaults
 */
 func (e *Effect) UpdateConfig(c interface{}) (err error) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
 	newConfig := e.Config
 	switch t := c.(type) {
 	case BaseEffectConfig: // No conversion necessary
@@ -89,8 +94,10 @@ func (e *Effect) UpdateConfig(c interface{}) (err error) {
 		err = mapstructure.Decode(t, &newConfig)
 	case []byte: // Unmarshal a json byte slice
 		err = json.Unmarshal(t, &newConfig)
+	case nil:
+		err = defaults.Set(&newConfig)
 	default:
-		err = fmt.Errorf("invalid config type: %s", t)
+		err = fmt.Errorf("invalid config type: %T %s", t, t)
 	}
 	if err != nil {
 		return err
@@ -120,7 +127,7 @@ func (e *Effect) UpdateConfig(c interface{}) (err error) {
 }
 
 // Effect implementation must override this method
-func (e *Effect) assembleFrame(p color.Pixels) {}
+//func (e *Effect) assembleFrame(p color.Pixels) {}
 
 // Effect implementation may override this method
 func (e *Effect) UpdateExtraConfig(c interface{}) (err error) { return nil }
@@ -143,7 +150,7 @@ func (e *Effect) Render(p color.Pixels) {
 		p[i] = e.prevFrame[i]
 	}
 	// Assemble new pixels onto the frame
-	e.assembleFrame(p)
+	e.pixelGenerator.assembleFrame(e, p)
 
 	// HSL processes
 	e.applyFlip(p)
@@ -195,7 +202,6 @@ func (e *Effect) applyMirror(p color.Pixels) {
 	// assign indices from end in reverse direction
 	// eg [_,1,_,3,_,5,_,7,_] -> [_,_,_,_,_,7,5,3,1]
 	for i, j := len(p)-1, len(p)/2; i >= 0; i, j = i-2, j+1 {
-		fmt.Println(j, i)
 		e.mirror[j] = p[i]
 	}
 

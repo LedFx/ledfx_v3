@@ -1,4 +1,4 @@
-package device
+package device_old
 
 type PacketBuilder struct {
 	*UDPDevice

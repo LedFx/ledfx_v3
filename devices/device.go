@@ -1,39 +1,56 @@
 package device
 
-import "ledfx/color"
+import (
+	"errors"
+	"ledfx/color"
+)
 
 // All devices take pixels and send them somewhere
 type PixelPusher interface {
-	Send(p *color.Pixels)
-	Connect()
-	Disconnect()
+	initialize(*Device) error
+	send(p color.Pixels) error
+	connect() error
+	disconnect() error
 }
 
 type Device struct {
-	ID     string
-	Pusher PixelPusher
-	// BaseConfig  BaseDeviceConfig
+	ID          string
+	pixelPusher PixelPusher
+	State       State
+	Config      BaseDeviceConfig
 }
 
-type State int
+type BaseDeviceConfig struct {
+	PixelCount int
+	Name       int
+}
 
-const (
-	Offline State = iota
-	Connecting
-	Disconnecting
-	Connected
-)
+func (d *Device) Initialize(id string) (err error) {
+	d.ID = id
+	return d.pixelPusher.initialize(d)
+}
 
-func (s State) String() string {
-	switch s {
-	case Offline:
-		return "offline"
-	case Connecting:
-		return "connecting"
-	case Disconnecting:
-		return "disconnecting"
-	case Connected:
-		return "connected"
+func (d *Device) Connect() (err error) {
+	d.State = Connecting
+	err = d.pixelPusher.connect()
+	if err == nil {
+		d.State = Connected
 	}
-	return "unknown"
+	return err
+}
+
+func (d *Device) Disconnect() (err error) {
+	d.State = Disconnecting
+	err = d.pixelPusher.disconnect()
+	if err == nil {
+		d.State = Disconnected
+	}
+	return err
+}
+
+func (d *Device) Send(p color.Pixels) (err error) {
+	if d.State != Connected {
+		return errors.New("device isn't connected")
+	}
+	return d.pixelPusher.send(p)
 }

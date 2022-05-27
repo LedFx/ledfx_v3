@@ -3,6 +3,7 @@ package color
 import (
 	"fmt"
 	"image/color"
+	"math"
 )
 
 // Apply desaturation to pixels (RGB)
@@ -39,6 +40,32 @@ func DarkenPixels(p Pixels, ds float64) {
 		p[i][1] *= ds
 		p[i][2] *= ds
 	}
+}
+
+// This doesn't take into account white channel temperature or relative brightness, but it'll do for now.
+// Pixels should be RGB.
+func (p Pixels) ToRGBW(out PixelsRGBW) {
+	for i := 0; i < len(p); i++ {
+		r, g, b := p[i][0], p[i][1], p[i][2]
+		if r+g+b == 0 {
+			out[i] = ColorRGBW{0, 0, 0, 0}
+		}
+
+		// calculate luminance
+		lum := math.Min(r, math.Min(g, b))
+		out[i][0] = r - lum
+		out[i][1] = g - lum
+		out[i][2] = b - lum
+		out[i][3] = lum
+	}
+}
+
+func MaxOfThree(a, b, c float64) float64 {
+	return math.Max(a, math.Max(b, c))
+}
+
+func MinOfThree(a, b, c float64) float64 {
+	return math.Min(a, math.Min(b, c))
 }
 
 func (col Color) NRGBA() color.NRGBA {

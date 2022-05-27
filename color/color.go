@@ -14,7 +14,9 @@ import (
 )
 
 type Color [3]float64
+type ColorRGBW [4]float64
 type Pixels []Color
+type PixelsRGBW []ColorRGBW
 
 var errInvalidColor = errors.New("invalid color")
 

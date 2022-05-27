@@ -95,3 +95,17 @@ func BenchmarkBoxBlur(t *testing.B) {
 		})
 	}
 }
+
+func BenchmarkToRGBW(t *testing.B) {
+	for _, v := range pixelSizes {
+		out := make(PixelsRGBW, len(v))
+		for i := range v {
+			v[i][0] = 1
+		}
+		t.Run(fmt.Sprintf("%d pixels", len(v)), func(t *testing.B) {
+			for i := 0; i < t.N; i++ {
+				v.ToRGBW(out)
+			}
+		})
+	}
+}

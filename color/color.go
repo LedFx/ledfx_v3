@@ -1,7 +1,7 @@
 /*
 Package color provides basic tools for interpreting colors for LedFX.
 LedFx colors internally are all [3]float64 with values 0-1.
-These can represent HSL or RGB color space.
+These can represent HSV or RGB color space.
 Only at the final step of effect processing, before pixels
 are sent to the device, are they multiplied up to 256.
 */
@@ -17,6 +17,8 @@ type Color [3]float64
 type ColorRGBW [4]float64
 type Pixels []Color
 type PixelsRGBW []ColorRGBW
+
+var Full Color = Color{1, 1, 1}
 
 var errInvalidColor = errors.New("invalid color")
 

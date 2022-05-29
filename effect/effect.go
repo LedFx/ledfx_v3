@@ -14,8 +14,8 @@ import (
 
 /*
 PixelGenerator is the interface for effect types: all effects generate pixels.
-Effects must be computed in HSL space. The color is abstracted and handled outside of the effect
-using the effect's palette. Post processing will handle conversion to RGB but requires HSL space
+Effects must be computed in HSV space. The color is abstracted and handled outside of the effect
+using the effect's palette. Post processing will handle conversion to RGB but requires HSV space
 */
 type PixelGenerator interface {
 	UpdateExtraConfig(c interface{}) (err error)
@@ -30,15 +30,18 @@ type AudioPixelGenerator interface {
 type Effect struct {
 	ID             string
 	pixelCount     int
-	Config         BaseEffectConfig
-	pixelGenerator PixelGenerator
-	startTime      time.Time
-	prevFrameTime  time.Time
-	palette        *color.Palette
-	blurrer        *color.Blurrer
-	prevFrame      color.Pixels
-	bkgColor       color.Color  // parsed background color
-	mirror         color.Pixels // scratch array used by mirror function
+	pixelScaler    float64          // use this to multiply 0-1 float indexes to real integer indexes
+	Config         BaseEffectConfig // base config. try to make the effect using only keys from this
+	pixelGenerator PixelGenerator   // the effect implementation which produces raw frames
+	startTime      time.Time        // time the effect started
+	prevFrameTime  time.Time        // time of the previous frams
+	deltaStart     time.Duration    // time since effect started
+	deltaPrevFrame time.Duration    // time delta since prev frame, so effects can run at constant speed
+	palette        *color.Palette   // color palette for the effect. derive single colors from the palette
+	blurrer        *color.Blurrer   // blurs the effect
+	prevFrame      color.Pixels     // the previous frame, in hsv
+	bkgColor       color.Color      // parsed background color
+	mirror         color.Pixels     // scratch array used by mirror function
 	mu             sync.Mutex
 }
 
@@ -51,7 +54,7 @@ type BaseEffectConfig struct {
 	Flip          bool    `mapstructure:"flip" json:"flip" description:"Reverse the pixels" default:"false" validate:""`
 	Mirror        bool    `mapstructure:"mirror" json:"mirror" description:"Mirror the pixels across the center" default:"false" validate:""`
 	Decay         float64 `mapstructure:"decay" json:"decay" description:"Apply temporal filtering" default:"0" validate:"gte=0,lte=1"`
-	HueShift      float64 `mapstructure:"hue_shift" json:"hue_shift" description:"Cycle the colors through time" default:"1" validate:"gte=0,lte=1"`
+	HueShift      float64 `mapstructure:"hue_shift" json:"hue_shift" description:"Cycle the colors through time" default:"0" validate:"gte=0,lte=1"`
 	BkgBrightness float64 `mapstructure:"bkg_brightness" json:"bkg_brightness" description:"Brightness modifier applied to the background color" default:"0.2" validate:"gte=0,lte=1"`
 	BkgColor      string  `mapstructure:"bkg_color" json:"bkg_color" description:"Apply a background color" default:"#000000" validate:"color"`
 }
@@ -66,6 +69,7 @@ func (e *Effect) initialize(id string, pixelCount int) error {
 	e.pixelCount = pixelCount
 	e.prevFrame = make(color.Pixels, pixelCount)
 	e.mirror = make(color.Pixels, pixelCount)
+	e.pixelScaler = float64(pixelCount - 1)
 	e.palette = nil
 	e.blurrer = nil
 	// Set config to defaults
@@ -136,13 +140,13 @@ func (e *Effect) Render(p color.Pixels) {
 	// These timing variables ensure that temporal effects and filters run at constant
 	// speed, irrespective of the effect framerate.
 	now := time.Now()
-	deltaPrevFrame := now.Sub(e.prevFrameTime)
-	deltaStart := now.Sub(e.startTime)
+	e.deltaPrevFrame = now.Sub(e.prevFrameTime)
+	e.deltaStart = now.Sub(e.startTime)
 	e.prevFrameTime = now
 
-	// Overwrite the incoming frame (RGB) with the last frame (HSL) while applying temporal decay
+	// Overwrite the incoming frame (RGB) with the last frame (HSV) while applying temporal decay
 	// for formula explanation, see: https://www.desmos.com/calculator/5qk6xql8bn
-	decay := math.Pow(-math.Log((e.Config.Decay*math.E-e.Config.Decay+1)/math.E), 10*deltaPrevFrame.Seconds())
+	decay := math.Pow(-math.Log((e.Config.Decay*math.E-e.Config.Decay+1)/math.E), 10*e.deltaPrevFrame.Seconds())
 	for i := 0; i < e.pixelCount; i++ {
 		e.prevFrame[i][2] *= decay
 		p[i] = e.prevFrame[i]
@@ -150,30 +154,35 @@ func (e *Effect) Render(p color.Pixels) {
 	// Assemble new pixels onto the frame
 	e.pixelGenerator.assembleFrame(e, p)
 
-	// HSL processes
+	// HSV processes
 	e.applyFlip(p)
 	e.applyMirror(p)
-	color.HueShiftPixels(p, e.Config.HueShift*deltaStart.Seconds())
-
-	// convert p from HSL to RGB using the palette
-	for i := 0; i < e.pixelCount; i++ {
-		p[i] = e.palette.Get(p[i][0])
-	}
-
-	// RGB processes
-	e.applyBkg(p)
-	color.DesaturatePixels(p, e.Config.Saturation)
-	color.DarkenPixels(p, e.Config.Brightness)
-	e.applyBlur(p)
-	e.clamp(p)
+	color.HueShiftPixels(p, e.Config.HueShift*e.deltaStart.Seconds())
 
 	// save the frame to prevFrame
 	for i := 0; i < e.pixelCount; i++ {
 		e.prevFrame[i] = p[i]
 	}
+
+	// convert p from HSV to RGB using the palette
+	for i := 0; i < e.pixelCount; i++ {
+		s := p[i][1]
+		v := p[i][2]
+		p[i] = e.palette.Get(p[i][0])
+		p[i] = color.Saturation(p[i], s)
+		p[i] = color.Value(p[i], v)
+	}
+
+	// RGB processes
+	e.applyBkg(p)
+	for i := range p {
+		p[i] = color.Saturation(p[i], e.Config.Saturation)
+		p[i] = color.Value(p[i], e.Config.Brightness)
+	}
+	e.applyBlur(p)
+	e.clamp(p)
 }
 
-// TODO pseudo-gaussian blur
 func (e *Effect) applyBlur(p color.Pixels) {
 	if e.Config.Blur == 0 {
 		return

@@ -10,6 +10,7 @@ type VirtualConfig struct {
 	Id           string          `mapstructure:"id" json:"id"`
 	IconName     string          `mapstructure:"icon_name" json:"icon_name"`
 	Span         bool            `mapstructure:"span" json:"span"`
+	FrameRate    int             `mapstructure:"framerate" json:"framerate"`
 	FrequencyMax int             `mapstructure:"frequency_max" json:"frequency_max"`
 	FrequencyMin int             `mapstructure:"frequency_min" json:"frequency_min"`
 	Outputs      []VirtualOutput `mapstructure:"outputs" json:"outputs"`

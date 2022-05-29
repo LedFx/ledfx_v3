@@ -26,7 +26,7 @@ func Schema() (schema map[string]interface{}, err error) {
 		return schema, err
 	}
 	extraSchema := make(map[string]interface{})
-	// Copypaste for new effect types
+	// Copypaste for new effect types, if your effect has extra schema
 	extraSchema["energy"], err = util.CreateSchema(reflect.TypeOf((*EnergyConfig)(nil)).Elem())
 	if err != nil {
 		return schema, err
@@ -41,6 +41,22 @@ func New(effect_type string, pixelCount int, config interface{}) (effect *Effect
 	case "energy":
 		effect = &Effect{
 			pixelGenerator: &Energy{},
+		}
+	case "palette":
+		effect = &Effect{
+			pixelGenerator: &Palette{},
+		}
+	case "fade":
+		effect = &Effect{
+			pixelGenerator: &Fade{},
+		}
+	case "weave":
+		effect = &Effect{
+			pixelGenerator: &Weave{},
+		}
+	case "pulse":
+		effect = &Effect{
+			pixelGenerator: &Pulse{},
 		}
 	default:
 		return effect, id, fmt.Errorf("%s is not a known effect type", effect_type)

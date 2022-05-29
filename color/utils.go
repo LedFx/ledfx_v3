@@ -6,39 +6,38 @@ import (
 	"math"
 )
 
-// Apply desaturation to pixels (RGB)
+// Apply HSV saturation to an RGB color
 // 1: color remains unchanged, 0: color is fully desaturated
-func DesaturatePixels(p Pixels, s float64) {
-	var max float64
-
-	for i := range p {
-		// find brightest channel of color
-		max = 0
-		for _, val := range p[i] {
-			if max < val {
-				max = val
-			}
-		}
-		// scale each channel accordingly
-		p[i][0] += (max - p[i][0]) * s
-		p[i][1] += (max - p[i][1]) * s
-		p[i][2] += (max - p[i][2]) * s
+func Saturation(c Color, s float64) Color {
+	if s == 1 {
+		return c
 	}
+	// find brightest channel of color
+	var max float64 = math.Max(c[0], math.Max(c[1], c[2]))
+	// scale each channel accordingly
+	c[0] += (max - c[0]) * (1 - s)
+	c[1] += (max - c[1]) * (1 - s)
+	c[2] += (max - c[2]) * (1 - s)
+
+	return c
 }
 
-// Shift the hue of pixels (HSL)
+// Apply HSV lightness to an RGB color
+// 1: color remains unchanged, 0: color is fully darkened
+func Value(c Color, ds float64) Color {
+	if ds == 1 {
+		return c
+	}
+	c[0] *= ds
+	c[1] *= ds
+	c[2] *= ds
+	return c
+}
+
+// Shift the hue of pixels (HSV)
 func HueShiftPixels(p Pixels, hs float64) {
-	for _, color := range p {
-		color[0] += hs
-	}
-}
-
-// Darken pixels (RGB) (they're full brightness by default)
-func DarkenPixels(p Pixels, ds float64) {
 	for i := range p {
-		p[i][0] *= ds
-		p[i][1] *= ds
-		p[i][2] *= ds
+		p[i][0] += hs
 	}
 }
 
@@ -60,12 +59,19 @@ func (p Pixels) ToRGBW(out PixelsRGBW) {
 	}
 }
 
-func MaxOfThree(a, b, c float64) float64 {
-	return math.Max(a, math.Max(b, c))
-}
-
-func MinOfThree(a, b, c float64) float64 {
-	return math.Min(a, math.Min(b, c))
+// fils a colour between two indexes. use base.pixelScaler to convert 0-1 floats to integer index
+func FillBetween(p Pixels, start, stop int, col Color) {
+	if stop == start {
+		p[start] = col
+		return
+	}
+	// make sure ascending indexes
+	if start > stop {
+		start, stop = stop, start
+	}
+	for i := start; i <= stop; i++ {
+		p[i] = col
+	}
 }
 
 func (col Color) NRGBA() color.NRGBA {

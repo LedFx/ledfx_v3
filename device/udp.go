@@ -26,7 +26,10 @@ func (d *UDP) initialize(base *Device, config interface{}) (err error) {
 }
 
 func (d *UDP) send(p color.Pixels) (err error) {
-	_, err = d.connection.Write(d.pb.Build(p))
+	d.pb.Build(p)
+	for i := range d.pb.packets {
+		_, err = d.connection.Write(d.pb.packets[i])
+	}
 	return err
 }
 

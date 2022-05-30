@@ -12,38 +12,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Device struct {
-	Name   string       `mapstructure:"name" json:"name"`
-	Id     string       `mapstructure:"id" json:"id"`
-	Type   string       `mapstructure:"type" json:"type"`
-	Config DeviceConfig `mapstructure:"config" json:"config"`
-	// Effect Effect       `mapstructure:"effect" json:"effect"` // not in old api when devicetype UDP
-}
-
-type DeviceConfig struct {
-	PixelCount  int     `mapstructure:"pixel_count" json:"pixel_count"`
-	Density     float64 `mapstructure:"density" json:"density"`
-	RefreshRate int     `mapstructure:"refresh_rate" json:"refresh_rate"`
-	Mapping     []int   `mapstructure:"mapping" json:"mapping"`
-	// CenterOffset  int    `mapstructure:"center_offset" json:"center_offset"`
-	// Timeout       int    `mapstructure:"timeout" json:"timeout"`
-	// UdpPacketType string `mapstructure:"udp_packet_type" json:"udp_packet_type"`
-	// IpAddress     string `mapstructure:"ip_address" json:"ip_address"`
-	// Port          int    `mapstructure:"port" json:"port"`
-	// ForceRefresh    bool   `mapstructure:"force_refresh" json:"force_refresh"`     // not in old api when devicetype UDP
-	// IconName        string `mapstructure:"icon_name" json:"icon_name"`             // not needed since its on virtual
-	// IncludeIndexes  bool   `mapstructure:"include_indexes" json:"include_indexes"` // not in old api when devicetype UDP
-	// MinimiseTraffic bool   `mapstructure:"minimise_traffic" json:"minimise_traffic"` // not in old api when devicetype UDP
-	// MaxBrightness   int    `mapstructure:"max_brightness" json:"max_brightness"`     // not in old api when devicetype UDP
-	// PreviewOnly     bool   `mapstructure:"preview_only" json:"preview_only"` // not needed since its on virtual
-	// Type            string `mapstructure:"type" json:"type"` // not in old api when devicetype UDP
-}
-
-// func (r *Segment) AsJSON() ([]byte, error) {
-// 	arr := []interface{}{r.Id, r.Start, r.Close, r.Active}
-// 	return json.Marshal(arr)
-// }
-
 type PortAudioDevice struct {
 	Id         string  `mapstructure:"id" json:"id"`
 	HostApi    string  `mapstructure:"hostapi" json:"hostapi"`

@@ -6,46 +6,31 @@ import (
 	"testing"
 )
 
-var pixelSizes = []color.Pixels{
-	make(color.Pixels, 50),
-	make(color.Pixels, 100),
-	make(color.Pixels, 500),
-	make(color.Pixels, 1000),
-	make(color.Pixels, 5000),
-	make(color.Pixels, 10000),
-}
-
-func BenchmarkEnergy(t *testing.B) {
-	// Make a new effect
+func BenchmarkEffects(t *testing.B) {
+	// Default config
 	c := map[string]interface{}{}
-	for _, v := range pixelSizes {
-		effect, _, err := New("energy", len(v), c)
-		if err != nil {
-			t.Error(err)
-		}
-		// Run the effect on some pixels
-		t.Run(fmt.Sprintf("%d pixels", len(v)), func(t *testing.B) {
-			for i := 0; i < t.N; i++ {
-				effect.Render(v)
+	for _, eType := range effectTypes {
+		for _, p := range color.TestPixels {
+			// Make a new effect
+			effect, _, err := New(eType, len(p), c)
+			if err != nil {
+				t.Error(err)
 			}
-		})
-		Destroy(effect.GetID())
+			// Run the effect on some pixels
+			t.Run(fmt.Sprintf("%s %d pixels", eType, len(p)), func(t *testing.B) {
+				for i := 0; i < t.N; i++ {
+					effect.Render(p)
+				}
+			})
+			Destroy(effect.GetID())
+		}
 	}
 }
 
-func TestEnergy(t *testing.T) {
-	// Make a new effect
-	c := map[string]interface{}{}
-	effect, _, err := New("energy", 100, c)
-	if err != nil {
-		t.Error(err)
-	}
+func TestEffects(t *testing.T) {
+	// Default config
+	blank_c := map[string]interface{}{}
 
-	// Run the effect on some pixels
-	p := make(color.Pixels, 100)
-	effect.Render(p)
-
-	// Test some different configs, try to get min and max allowed values
 	testConfigs := []map[string]interface{}{
 		{
 			"intensity":      0,
@@ -68,11 +53,22 @@ func TestEnergy(t *testing.T) {
 			"bkg_color":      "#FFFFFF",
 		},
 	}
-	for i, c := range testConfigs {
-		err = effect.UpdateBaseConfig(c) // Assign the config
-		effect.Render(p)                 // Run it on some pixels
-		if err != nil {
-			t.Errorf("failed on test config #%d", i)
+
+	for _, eType := range effectTypes {
+		for _, p := range color.TestPixels {
+			// Make a new effect
+			effect, _, err := New(eType, len(p), blank_c)
+			if err != nil {
+				t.Error(err)
+			}
+			for _, c := range testConfigs {
+				err = effect.UpdateBaseConfig(c) // Assign the config
+				effect.Render(p)                 // Run it on some pixels
+				if err != nil {
+					t.Errorf("Failed on test config: %v", c)
+				}
+			}
+			Destroy(effect.GetID())
 		}
 	}
 }

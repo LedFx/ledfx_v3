@@ -15,8 +15,16 @@ import (
 )
 
 /*
-NEW EFFECTS MUST BE REGISTERED IN THESE TWO FUNCTIONS =====================
+NEW EFFECTS MUST BE REGISTERED IN THIS SLICE AND THESE TWO FUNCTIONS =====================
 */
+
+var effectTypes = []string{
+	"energy",
+	"palette",
+	"fade",
+	"weave",
+	"pulse",
+}
 
 // Generate a map schema for all effects
 func Schema() (schema map[string]interface{}, err error) {

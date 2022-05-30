@@ -65,17 +65,8 @@ func TestNewPalette(t *testing.T) {
 	}
 }
 
-var pixelSizes = []Pixels{
-	make(Pixels, 50),
-	make(Pixels, 100),
-	make(Pixels, 500),
-	make(Pixels, 1000),
-	make(Pixels, 5000),
-	make(Pixels, 10000),
-}
-
 func BenchmarkKernelBlur(t *testing.B) {
-	for _, v := range pixelSizes {
+	for _, v := range TestPixels {
 		b := NewBlurrer(len(v), 1) // use largest kernel, most demanding
 		t.Run(fmt.Sprintf("%d pixels", len(v)), func(t *testing.B) {
 			for i := 0; i < t.N; i++ {
@@ -86,7 +77,7 @@ func BenchmarkKernelBlur(t *testing.B) {
 }
 
 func BenchmarkBoxBlur(t *testing.B) {
-	for _, v := range pixelSizes {
+	for _, v := range TestPixels {
 		b := NewBlurrer(len(v), 1) // use largest kernel, most demanding
 		t.Run(fmt.Sprintf("%d pixels", len(v)), func(t *testing.B) {
 			for i := 0; i < t.N; i++ {
@@ -97,7 +88,7 @@ func BenchmarkBoxBlur(t *testing.B) {
 }
 
 func BenchmarkToRGBW(t *testing.B) {
-	for _, v := range pixelSizes {
+	for _, v := range TestPixels {
 		out := make(PixelsRGBW, len(v))
 		for i := range v {
 			v[i][0] = 1

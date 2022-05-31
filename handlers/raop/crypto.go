@@ -87,7 +87,7 @@ func generateChallengeResponse(challenge string, macAddr net.HardwareAddr, ipAdd
 		return "", err
 	}
 	if len(decodedChallenge) != 16 {
-		return "", fmt.Errorf("Incorrect challenge received")
+		return "", fmt.Errorf("incorrect challenge received")
 	}
 
 	b := net.ParseIP(ipAddr)

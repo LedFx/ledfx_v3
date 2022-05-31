@@ -29,8 +29,8 @@ func ScanZeroconf() error {
 		for entry := range results {
 			fmt.Print("WLED found: ")
 
-			exists := device.DetectWled(entry.AddrIPv4[0], entry.ServiceRecord.Instance)
-			if Ws != nil && !exists {
+			err := device.DetectWled(entry.AddrIPv4[0], entry.ServiceRecord.Instance)
+			if Ws != nil && err != nil {
 				SendWs(Ws, "info", "New WLED found: "+entry.ServiceRecord.Instance)
 				fmt.Print("\n")
 			} else {

@@ -1,7 +1,6 @@
 package raop
 
 import (
-	"fmt"
 	"testing"
 
 	"ledfx/handlers/sdp"
@@ -28,6 +27,7 @@ func (fp *FakePlayer) SetTrack(album string, artist string, title string) {
 }
 func (*FakePlayer) SetAlbumArt(artwork []byte) {}
 func (*FakePlayer) GetTrack() player.Track     { return player.Track{} }
+func (*FakePlayer) GetAlbumArt() (b []byte)    { return b }
 
 func TestHandleOptions(t *testing.T) {
 	req := rtsp.NewRequest()
@@ -37,16 +37,16 @@ func TestHandleOptions(t *testing.T) {
 	remoteAddress := "10.0.0.0"
 	handleOptions(req, resp, localAddress, remoteAddress)
 	if resp.Status != rtsp.Ok {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String()))
+		t.Errorf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String())
 	}
 	_, ok := resp.Headers["Public"]
 	if !ok {
-		t.Error(fmt.Sprintf("Expected to have Public header"))
+		t.Errorf("Expected to have Public header")
 	}
 	// we don't actually care about the generated value (that is tested in another test)
 	_, ok = resp.Headers["Apple-Response"]
 	if !ok {
-		t.Error(fmt.Sprintf("Expected to have Apple-Response header"))
+		t.Errorf("Expected to have Apple-Response header")
 	}
 }
 
@@ -62,35 +62,35 @@ func TestHandleSetup(t *testing.T) {
 	a.sessions.addSession(remoteAddress, as)
 	a.handleSetup(req, resp, localAddress, remoteAddress)
 	if resp.Status != rtsp.Ok {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String()))
+		t.Errorf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String())
 	}
 	retrievedSession := a.sessions.getSession(remoteAddress).session
 	if retrievedSession.RemotePorts.Address != remoteAddress {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", remoteAddress, retrievedSession.RemotePorts.Address))
+		t.Errorf("Expected: %s\r\n Got: %s", remoteAddress, retrievedSession.RemotePorts.Address)
 	}
 	if retrievedSession.RemotePorts.Control != 8888 {
-		t.Error(fmt.Sprintf("Expected: %d\r\n Got: %d", 8888, retrievedSession.RemotePorts.Control))
+		t.Errorf("Expected: %d\r\n Got: %d", 8888, retrievedSession.RemotePorts.Control)
 	}
 	if retrievedSession.RemotePorts.Timing != 8889 {
-		t.Error(fmt.Sprintf("Expected: %d\r\n Got: %d", 8889, retrievedSession.RemotePorts.Timing))
+		t.Errorf("Expected: %d\r\n Got: %d", 8889, retrievedSession.RemotePorts.Timing)
 	}
 	_, ok := resp.Headers["Transport"]
 	if !ok {
-		t.Error(fmt.Sprintf("Expected to have Transport header"))
+		t.Errorf("Expected to have Transport header")
 	}
 	val, ok := resp.Headers["Session"]
 	if !ok {
-		t.Error(fmt.Sprintf("Expected to have Session header"))
+		t.Errorf("Expected to have Session header")
 	}
 	if val != "1" {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", "1", val))
+		t.Errorf("Expected: %s\r\n Got: %s", "1", val)
 	}
 	val, ok = resp.Headers["Audio-Jack-Status"]
 	if !ok {
-		t.Error(fmt.Sprintf("Expected to have Transport header"))
+		t.Errorf("Expected to have Transport header")
 	}
 	if val != "connected" {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", "connected", val))
+		t.Errorf("Expected: %s\r\n Got: %s", "connected", val)
 	}
 }
 
@@ -113,21 +113,21 @@ func TestChangeNameFailOnEmpty(t *testing.T) {
 func TestMuteCalculated(t *testing.T) {
 	normalized := normalizeVolume(-144)
 	if normalized != 0 {
-		t.Error(fmt.Sprintf("Expected: %d\r\n Got: %f", 0, normalized))
+		t.Errorf("Expected: %d\r\n Got: %f", 0, normalized)
 	}
 }
 
 func TestFullVolumeCalculated(t *testing.T) {
 	normalized := normalizeVolume(0)
 	if normalized != 1 {
-		t.Error(fmt.Sprintf("Expected: %d\r\n Got: %f", 1, normalized))
+		t.Errorf("Expected: %d\r\n Got: %f", 1, normalized)
 	}
 }
 
 func TestIncomingMinValue(t *testing.T) {
 	normalized := normalizeVolume(-30)
 	if normalized != 0 {
-		t.Error(fmt.Sprintf("Expected: %d\r\n Got: %f", 0, normalized))
+		t.Errorf("Expected: %d\r\n Got: %f", 0, normalized)
 	}
 }
 
@@ -136,7 +136,7 @@ func TestIncomingValues(t *testing.T) {
 	for i := float64(0); i >= -30; i = i - 0.1 {
 		normalized := normalizeVolume(i)
 		if normalized < 0 || normalized > 1 {
-			t.Error(fmt.Sprintf("Outputted value not in expected range: %f", normalized))
+			t.Errorf("Outputted value not in expected range: %f", normalized)
 		}
 	}
 }
@@ -153,7 +153,7 @@ func TestNotMuteNoHeader(t *testing.T) {
 	remoteAddress := "10.0.0.0"
 	a.handleSetParameter(req, resp, localAddress, remoteAddress)
 	if resp.Status != rtsp.Ok {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String()))
+		t.Errorf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String())
 	}
 	if fp.muted {
 		t.Error("Expected player to not be muted, but was muted")
@@ -174,7 +174,7 @@ func TestMuteWithHeader(t *testing.T) {
 	remoteAddress := "10.0.0.0"
 	a.handleSetParameter(req, resp, localAddress, remoteAddress)
 	if resp.Status != rtsp.Ok {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String()))
+		t.Errorf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String())
 	}
 	if !fp.muted {
 		t.Error("Expected player to be muted, but was not muted")
@@ -195,7 +195,7 @@ func TestUnMuteWithHeader(t *testing.T) {
 	remoteAddress := "10.0.0.0"
 	a.handleSetParameter(req, resp, localAddress, remoteAddress)
 	if resp.Status != rtsp.Ok {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String()))
+		t.Errorf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String())
 	}
 	if fp.muted {
 		t.Error("Expected player to not be muted, but was muted")
@@ -215,7 +215,7 @@ func TestChangeVolumeDoesntUnmute(t *testing.T) {
 	remoteAddress := "10.0.0.0"
 	a.handleSetParameter(req, resp, localAddress, remoteAddress)
 	if resp.Status != rtsp.Ok {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String()))
+		t.Errorf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String())
 	}
 	if !fp.muted {
 		t.Error("Expected player to be muted, but was not muted")
@@ -235,16 +235,16 @@ func TestSetMetadata(t *testing.T) {
 	remoteAddress := "10.0.0.0"
 	a.handleSetParameter(req, resp, localAddress, remoteAddress)
 	if resp.Status != rtsp.Ok {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String()))
+		t.Errorf("Expected: %s\r\n Got: %s", rtsp.Ok.String(), resp.Status.String())
 	}
 	if fp.artist != "The Tragically Hip" {
-		t.Error(fmt.Sprintf("Expected: The Tragically Hip\r\n Got: %s", fp.artist))
+		t.Errorf("Expected: The Tragically Hip\r\n Got: %s", fp.artist)
 	}
 	if fp.album != "Phantom Power" {
-		t.Error(fmt.Sprintf("Expected: Phantom Power\r\n Got: %s", fp.album))
+		t.Errorf("Expected: Phantom Power\r\n Got: %s", fp.album)
 	}
 	if fp.title != "Bobcaygeon" {
-		t.Error(fmt.Sprintf("Expected: Bobcaygeon\r\n Got: %s", fp.title))
+		t.Errorf("Expected: Bobcaygeon\r\n Got: %s", fp.title)
 	}
 
 }

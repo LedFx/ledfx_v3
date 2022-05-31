@@ -7,7 +7,7 @@ import (
 )
 
 const CONFIG_DIR = ".ledfx"
-const VERSION = "v0.0.1"
+const VERSION = "v2.1.0"
 
 func GetOsConfigDir() string {
 	if runtime.GOOS == "windows" {

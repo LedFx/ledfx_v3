@@ -5,10 +5,12 @@ import (
 	"ledfx/api"
 	"ledfx/audio"
 	"ledfx/bridgeapi"
-	"log"
+	log "ledfx/logger"
 	"net/http"
 	"path/filepath"
 	"runtime"
+
+	pretty "github.com/fatih/color"
 
 	"github.com/rs/cors"
 )

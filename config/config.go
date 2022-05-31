@@ -2,8 +2,6 @@ package config
 
 import (
 	"ledfx/constants"
-	"ledfx/effect"
-	"ledfx/virtual"
 	"log"
 	"os"
 	"path/filepath"
@@ -12,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-type PortAudioDevice struct {
+type AudioDevice struct {
 	Id         string  `mapstructure:"id" json:"id"`
 	HostApi    string  `mapstructure:"hostapi" json:"hostapi"`
 	SampleRate float64 `mapstructure:"sample_rate" json:"sample_rate"`
@@ -23,33 +21,51 @@ type PortAudioDevice struct {
 }
 
 type AudioConfig struct {
-	Device    PortAudioDevice `mapstructure:"device" json:"device"`
-	FftSize   int             `mapstructure:"fft_size" json:"fft_size"`
-	FrameRate int             `mapstructure:"frame_rate" json:"frame_rate"`
+	Device    AudioDevice `mapstructure:"device" json:"device"`
+	FftSize   int         `mapstructure:"fft_size" json:"fft_size"`
+	FrameRate int         `mapstructure:"frame_rate" json:"frame_rate"`
 }
 
 type Config struct {
-	Version  string                  `mapstructure:"version" json:"version"`
-	Host     string                  `mapstructure:"host" json:"host"`
-	Port     int                     `mapstructure:"port" json:"port"`
-	OpenUi   bool                    `mapstructure:"open_ui" json:"open_ui"`
-	LogLevel int                     `mapstructure:"log_level" json:"log_level"`
-	Effects  []effect.PixelGenerator `mapstructure:"effects" json:"effects"`
-	Virtuals []virtual.PixelMapper   `mapstructure:"virtuals" json:"virtuals"`
-	Devices  []Device                `mapstructure:"devices" json:"devices"`
-	Audio    AudioConfig             `mapstructure:"audio" json:"audio"`
-	// NoSentry bool                    `mapstructure:"no_sentry" json:"no_sentry"`
-	// Config    string      `mapstructure:"config" json:"config"`
-	// SentryCrash bool        `mapstructure:"sentry-crash-test" json:"sentry-crash-test"`
-	// VeryVerbose bool        `mapstructure:"very-verbose" json:"very-verbose"`
+	Version  string `mapstructure:"version" json:"version"`
+	Host     string `mapstructure:"host" json:"host"`
+	Port     int    `mapstructure:"port" json:"port"`
+	OpenUi   bool   `mapstructure:"open_ui" json:"open_ui"`
+	LogLevel int    `mapstructure:"log_level" json:"log_level"`
+	// Effects  []effect.PixelGenerator `mapstructure:"effects" json:"effects"`
+	// Virtuals []virtual.PixelMapper   `mapstructure:"virtuals" json:"virtuals"`
+	// Devices  []Device                `mapstructure:"devices" json:"devices"`
+	// Audio    AudioConfig             `mapstructure:"audio" json:"audio"`
 }
+
+// func AddDeviceToConfig(device config.Device) (err error) {
+// 	if device.Id == "" {
+// 		err = errors.New("device id is empty. Please provide Id to add device to config")
+// 		return
+// 	}
+
+// 	if config.GlobalConfig.Devices == nil {
+// 		config.GlobalConfig.Devices = make([]config.Device, 0)
+// 	}
+
+// 	for index, dev := range config.GlobalConfig.Devices {
+// 		if dev.Id == device.Id {
+// 			config.GlobalConfig.Devices[index] = device
+// 			return config.GlobalViper.WriteConfig()
+// 		}
+// 	}
+
+// 	config.GlobalConfig.Devices = append(config.GlobalConfig.Devices, device)
+// 	config.GlobalViper.Set("devices", config.GlobalConfig.Devices)
+// 	return config.GlobalViper.WriteConfig()
+// }
 
 var configPath string
 var GlobalConfig *Config
 
 var GlobalViper *viper.Viper
 
-func InitConfig() error {
+func Initialise() error {
 	GlobalViper = viper.New()
 
 	pflag.StringVarP(&configPath, "config", "c", "", "Directory that contains the configuration files")

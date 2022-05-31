@@ -2,7 +2,6 @@ package raop
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -45,10 +44,10 @@ func TestPlay(t *testing.T) {
 	expectedURL := "http://1.1.1.1:333/ctrl-int/1/play"
 	expectedRemote := "testActiveRemote"
 	if url != expectedURL {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Received: %s\r\n", expectedURL, url))
+		t.Errorf("Expected: %s\r\n Received: %s\r\n", expectedURL, url)
 	}
 	if header != expectedRemote {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Received: %s\r\n", expectedRemote, header))
+		t.Errorf("Expected: %s\r\n Received: %s\r\n", expectedRemote, header)
 	}
 }
 
@@ -72,10 +71,10 @@ func TestPause(t *testing.T) {
 	expectedURL := "http://1.1.1.1:333/ctrl-int/1/pause"
 	expectedRemote := "testActiveRemote"
 	if url != expectedURL {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Received: %s\r\n", expectedURL, url))
+		t.Errorf("Expected: %s\r\n Received: %s\r\n", expectedURL, url)
 	}
 	if header != expectedRemote {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Received: %s\r\n", expectedRemote, header))
+		t.Errorf("Expected: %s\r\n Received: %s\r\n", expectedRemote, header)
 	}
 }
 
@@ -99,10 +98,10 @@ func TestPlayPause(t *testing.T) {
 	expectedURL := "http://1.1.1.1:333/ctrl-int/1/playpause"
 	expectedRemote := "testActiveRemote"
 	if url != expectedURL {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Received: %s\r\n", expectedURL, url))
+		t.Errorf("Expected: %s\r\n Received: %s\r\n", expectedURL, url)
 	}
 	if header != expectedRemote {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Received: %s\r\n", expectedRemote, header))
+		t.Errorf("Expected: %s\r\n Received: %s\r\n", expectedRemote, header)
 	}
 }
 
@@ -126,10 +125,10 @@ func TestStop(t *testing.T) {
 	expectedURL := "http://1.1.1.1:333/ctrl-int/1/stop"
 	expectedRemote := "testActiveRemote"
 	if url != expectedURL {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Received: %s\r\n", expectedURL, url))
+		t.Errorf("Expected: %s\r\n Received: %s\r\n", expectedURL, url)
 	}
 	if header != expectedRemote {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Received: %s\r\n", expectedRemote, header))
+		t.Errorf("Expected: %s\r\n Received: %s\r\n", expectedRemote, header)
 	}
 }
 
@@ -153,9 +152,9 @@ func TestNext(t *testing.T) {
 	expectedURL := "http://1.1.1.1:333/ctrl-int/1/nextitem"
 	expectedRemote := "testActiveRemote"
 	if url != expectedURL {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Received: %s\r\n", expectedURL, url))
+		t.Errorf("Expected: %s\r\n Received: %s\r\n", expectedURL, url)
 	}
 	if header != expectedRemote {
-		t.Error(fmt.Sprintf("Expected: %s\r\n Received: %s\r\n", expectedRemote, header))
+		t.Errorf("Expected: %s\r\n Received: %s\r\n", expectedRemote, header)
 	}
 }

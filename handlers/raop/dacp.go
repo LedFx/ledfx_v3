@@ -45,6 +45,9 @@ func (d *DacpClient) Next() error {
 
 func (d *DacpClient) executeMethod(method string) error {
 	req, err := http.NewRequest("GET", fmt.Sprintf("http://%s:%d/ctrl-int/1/%s", d.ipAddress, d.port, method), nil)
+	if err != nil {
+		return err
+	}
 	req.Header.Add("Active-Remote", d.activeRemote)
 	_, err = d.httpClient.Do(req)
 	return err

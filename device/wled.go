@@ -1,10 +1,9 @@
-package device_old
+package device
 
 import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"ledfx/config"
 	"ledfx/logger"
 	"log"
 	"net"
@@ -58,7 +57,7 @@ type WledInfo struct {
 	IP       string `json:"ip"`
 }
 
-func DetectWled(ip net.IP, id string) bool {
+func DetectWled(ip net.IP, id string) error {
 	// Resolve additional WLED-info
 	url := "http://" + ip.String() + "/json/info"
 	spaceClient := http.Client{
@@ -92,49 +91,6 @@ func DetectWled(ip net.IP, id string) bool {
 	logger.Logger.Debug("New WLED found: ")
 
 	// Adding Device
-	err = AddDeviceToConfig(config.Device{
-		// TODO: fill in details
-		Config: config.DeviceConfig{
-			Name:       wledInfo1.Name,
-			PixelCount: wledInfo1.Leds.Count,
-			IpAddress:  wledInfo1.IP,
-		},
-		Type: "wled",
-		Id:   id,
-	})
-	if err != nil {
-		logger.Logger.Warn(err)
-	}
-
-	// Adding Virtual
-	var exists bool
-	exists, err = AddDeviceAsVirtualToConfig(config.Virtual{
-		Config: config.VirtualConfig{
-			CenterOffset:   0,
-			FrequencyMax:   15000,
-			FrequencyMin:   20,
-			IconName:       "wled",
-			Mapping:        "span",
-			MaxBrightness:  1,
-			Name:           wledInfo1.Name,
-			PreviewOnly:    false,
-			TransitionMode: "Add",
-			TransitionTime: 0.4,
-		},
-		Effect: config.Effect{
-			Config: config.EffectConfig{
-				BackgroundColor: "#000000",
-				Color:           "#eee000",
-			},
-			Name: "Single Color",
-			Type: "singleColor",
-		},
-		Id:       id,
-		IsDevice: id,
-		Segments: [][]interface{}{{id, 0, wledInfo1.Leds.Count - 1, false}},
-	})
-	if err != nil {
-		logger.Logger.Warn(err)
-	}
-	return exists
+	// Create virtual
+	return nil // return err if it exists already
 }

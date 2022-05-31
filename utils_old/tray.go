@@ -5,7 +5,7 @@ import (
 	_ "embed"
 	log "ledfx/logger"
 
-	"github.com/getlantern/systray"
+	"fyne.io/systray"
 )
 
 //go:embed assets/logo.ico

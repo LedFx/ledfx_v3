@@ -1,6 +1,8 @@
 package virtual
 
-import "ledfx/color"
+import (
+	"ledfx/color"
+)
 
 // Defines the number of pixels required for a dimension
 // Applies a transformation to map the pixels to that dimension
@@ -18,7 +20,8 @@ type OneDimensioner struct {
 }
 
 type TwoDimensioner struct {
-	Config TwoDimensionerConfig
+	Config  TwoDimensionerConfig
+	mapping []int // pixel index transformations
 }
 
 type ZeroDimensionerConfig struct{}
@@ -34,7 +37,7 @@ type TwoDimensionerConfig struct {
 	StartCorner    string `mapstructure:"start_corner" json:"start_corner" description:"Corner the LEDs start in" default:"top_left" validate:"oneof=top_left top_right bottom_left bottom_right"`
 	StartDirection string `mapstructure:"start_direction" json:"start_direction" description:"Direction the LEDs first go in" default:"horizontal" validate:"oneof=horizontal vertical"`
 	Arrangement    string `mapstructure:"arrangement" json:"arrangement" description:"How the LEDs are linked between rows/cols" default:"snake" validate:"oneof=snake zigzag"`
-	Mapping        string `mapstructure:"mapping" json:"mapping" description:"How 1D effects are mapped onto the matrix" default:"circle" validate:"oneof=circle spiral 1D_multiply 1D_horizontal 1D_vertical none"`
+	Mapping        string `mapstructure:"mapping" json:"mapping" description:"How 1D effects are mapped onto the matrix" default:"radial" validate:"oneof=radial spiral 1D_multiply 1D_horizontal 1D_vertical none"`
 }
 
 func (d *ZeroDimensioner) NumPixels() int { return 1 }
@@ -58,6 +61,41 @@ func (d *TwoDimensioner) NumPixels() int {
 	}
 }
 
+func (d *ZeroDimensioner) UpdateConfig(c ZeroDimensionerConfig) {}
+func (d *OneDimensioner) UpdateConfig(c OneDimensionerConfig)   {}
+func (d *TwoDimensioner) UpdateConfig(c TwoDimensionerConfig) {
+	switch c.Mapping {
+	case "radial":
+		// d.mapping = make([]int, d.NumPixels())
+		// ordering := make(map[int]float64)
+		// midX := float64(d.Config.ColCount) / 2
+		// midY := float64(d.Config.RowCount) / 2
+		// for i := range d.mapping { // add start corner logic etc here
+		// 	x := float64(i % d.Config.ColCount)
+		// 	y := float64(i / d.Config.RowCount)
+		// 	// calculate this pixel's distance from centre
+		// 	distance := math.Sqrt(math.Pow(math.Abs(midX-x), 2) + math.Pow(math.Abs(midY-y), 2))
+		// 	// iterate ordering to find where this index's distance fits
+		// 	// this is very inefficient method but this happens very infrequently
+		// 	for j, v := range ordering {
+		// 		if v <= distance {
+		// 			d.mapping[i] = j
+		// 		}
+		// 	}
+		// }
+		// keys := make([]string, 0, len(m))
+		// for _, v := range distances {
+		// 	keys = append(keys, v)
+		// }
+		// sort.Strings(keys)
+
+		// for _, k := range keys {
+		// 	fmt.Println(k, m[k])
+		// }
+
+	}
+}
+
 func (d *ZeroDimensioner) Transform(p color.Pixels) color.Pixels { return p }
 
 func (d *OneDimensioner) Transform(p color.Pixels) color.Pixels { return p }
@@ -74,7 +112,10 @@ func (d *TwoDimensioner) Transform(p color.Pixels) color.Pixels {
 		return p
 	case "1D_vertical":
 		return p
+	case "radial":
+
 	default:
 		return p
 	}
+	return p
 }

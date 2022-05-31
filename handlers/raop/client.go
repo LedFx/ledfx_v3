@@ -78,7 +78,7 @@ func initial(client *rtsp.Client, session *rtsp.Session, codec CodecType) (state
 		return nil, err
 	}
 	if resp.Status != rtsp.Ok {
-		return nil, fmt.Errorf("Non-ok status returned: %s", resp.Status.String())
+		return nil, fmt.Errorf("non-ok status returned: %s", resp.Status.String())
 	}
 	return announce, nil
 }
@@ -153,7 +153,7 @@ func setup(client *rtsp.Client, session *rtsp.Session, codec CodecType) (stateFn
 		return nil, err
 	}
 	if resp.Status != rtsp.Ok {
-		return nil, fmt.Errorf("Non-ok status returned: %s", resp.Status.String())
+		return nil, fmt.Errorf("non-ok status returned: %s", resp.Status.String())
 	}
 	transport := resp.Headers["Transport"]
 	transportParts := strings.Split(transport, ";")
@@ -190,7 +190,7 @@ func record(client *rtsp.Client, session *rtsp.Session, codecType CodecType) (st
 		return nil, err
 	}
 	if resp.Status != rtsp.Ok {
-		return nil, fmt.Errorf("Non-ok status returned: %s", resp.Status.String())
+		return nil, fmt.Errorf("non-ok status returned: %s", resp.Status.String())
 	}
 	return nil, nil
 }

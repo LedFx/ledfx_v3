@@ -7,15 +7,12 @@ import (
 	"ledfx/config"
 	"ledfx/constants"
 	"ledfx/logger"
-	"ledfx/profiler"
-	"ledfx/utils"
-	"ledfx/virtual"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/getlantern/systray"
+	"fyne.io/systray"
 )
 
 func init() {
@@ -32,7 +29,7 @@ func init() {
 	}()
 
 	// Initialize Config
-	err := config.InitConfig()
+	err := config.Initialise()
 	if err != nil {
 		log.Println(err)
 	}
@@ -45,19 +42,18 @@ var (
 )
 
 func main() {
-	profiler.Start()
 
 	// Just print version and return if flag is set
-	if config.GlobalConfig.Version {
-		fmt.Println("LedFx " + constants.VERSION)
-		return
-	}
+	// if config.GlobalConfig.Version {
+	// 	fmt.Println("LedFx " + constants.VERSION)
+	// 	return
+	// }
 
 	// Print the cli logo
-	err := utils.PrintLogo()
-	if err != nil {
-		logger.Logger.Fatal(err)
-	}
+	// err := utils.PrintLogo()
+	// if err != nil {
+	// 	logger.Logger.Fatal(err)
+	// }
 	fmt.Println("Welcome to LedFx " + constants.VERSION)
 	fmt.Println()
 
@@ -70,33 +66,21 @@ func main() {
 	  Host
 	  Offline
 	  SentryCrash
+	  profiler
 	*/
+	// profiler.Start()
 
 	audio.LogAudioDevices()
 	//go audio.CaptureDemo()
 
-	go func() {
-		utils.SetupRoutes()
-	}()
+	// Set up API routes
+	// Initialise frontend
+	// Scan for WLED
+	// Run systray
+	// load effects, devices, virtuals
 
-	go func() {
-		utils.InitFrontend(ip, port)
-	}()
-
-	go func() {
-		err = utils.ScanZeroconf()
-		if err != nil {
-			logger.Logger.Fatal(err)
-		}
-	}()
-
-	systray.Run(utils.OnReady, utils.OnExit)
-	os.TempDir()
-
-	err = virtual.LoadVirtuals()
-	if err != nil {
-		logger.Logger.Warn(err)
-	}
+	// run systray
+	// systray.Run(utils.OnReady, utils.OnExit)
 }
 
 func shutdown() {

@@ -62,7 +62,7 @@ jobs:
           go-version: '^1.18'
       - name: Get Build Matrix Info and Set Variables
         run: |
-
+          CGO_ENABLED=1
           GOOSARCH=${{matrix.goosarch}}
           GOOS=${GOOSARCH%/*}
           GOARCH=${GOOSARCH#*/}

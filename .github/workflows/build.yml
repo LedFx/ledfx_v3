@@ -59,7 +59,7 @@ jobs:
         uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
-          go-version: 'go.mod'
+          go-version: 'ledfx_rewrite/go.mod'
       - name: Get Build Matrix Info and Set Variables
         run: |
 

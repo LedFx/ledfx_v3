@@ -79,7 +79,7 @@ jobs:
         run: |
           echo "Installing dependencies"
           sudo apt-get install gcc libasound-dev portaudio19-dev libportaudio2 libportaudiocpp0 aubio-tools libaubio-dev libaubio-doc
-      - name: Build for Windows
+      - name: Build
         run: |
           if [ ${{ env.GOOS }} = "windows" ]; then
             go build -o "$BINARY_NAME" -v -ldflags "-H=windowsgui"

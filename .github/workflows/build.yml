@@ -47,9 +47,17 @@ jobs:
       - name: Install Required Dependencies
         run: |
           echo "Installing dependencies"
-          sudo apt-get install gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+          sudo apt install gcc-aarch64-linux-gnu libc6-dev-arm64-cross
           dpkg --add-architecture $GOARCH
-          sudo apt-get install libasound-dev:$GOARCH portaudio19-dev:$GOARCH libportaudio2:$GOARCH libportaudiocpp0:$GOARCH aubio-tools:$GOARCH libaubio-dev:$GOARCH libaubio-doc:$GOARCH
+          sudo apt update
+          sudo apt install \
+            libasound-dev:$GOARCH \
+            portaudio19-dev:$GOARCH \
+            libportaudio2:$GOARCH \
+            libportaudiocpp0:$GOARCH \
+            aubio-tools:$GOARCH \
+            libaubio-dev:$GOARCH \
+            libaubio-doc:$GOARCH \
       - name: Build
         run: |
           if [ $env.GOOs = "windows" ]; then

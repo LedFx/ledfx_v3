@@ -11,7 +11,7 @@ defaults:
 
 jobs:
   build:
-    name: Build Binary
+    name: Build Binaries
     runs-on: 'ubuntu-latest'
     strategy:
       fail-fast: false
@@ -45,7 +45,7 @@ jobs:
             BINARY_NAME+='.exe'
           fi
 
-      - name: Install Required Dependencies
+      - name: Install Dependencies
         run: |
           echo "Installing dependencies"
           sudo apt install gcc-aarch64-linux-gnu libc6-dev-arm64-cross
@@ -62,9 +62,9 @@ jobs:
       - name: Build
         run: |
           if [ $env.GOOs = "windows" ]; then
-            go build -o "$BINARY_NAME" -v -ldflags "-H=windowsgui"
+            GOARCH=$GOARCH go build -o "$BINARY_NAME" -v -ldflags "-H=windowsgui"
           else
-            go build -o "$BINARY_NAME" -v
+            GOARCH=$GOARCH go build -o "$BINARY_NAME" -v
           fi
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2

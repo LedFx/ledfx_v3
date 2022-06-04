@@ -36,6 +36,9 @@ jobs:
           GOOSARCH=${{matrix.goosarch}}
           GOOS=${GOOSARCH%/*}
           GOARCH=${GOOSARCH#*/}
+          CC=aarch64-linux-gnu-gcc
+          PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig
+          PATH="/go/bin/${GOOS}_${GOARCH}:${PATH}"
           BINARY_NAME=ledfx-$GOOS-$GOARCH
           echo "BINARY_NAME=$BINARY_NAME" >> $GITHUB_ENV
           echo "GOOS=$GOOS" >> $GITHUB_ENV
@@ -56,15 +59,17 @@ jobs:
             portaudio19-dev:$GOARCH \
             libportaudio2:$GOARCH \
             libportaudiocpp0:$GOARCH \
+            libsamplerate0:$GOARCH \
+            libsamplerate0-dev:$GOARCH \
             aubio-tools:$GOARCH \
             libaubio-dev:$GOARCH \
             libaubio-doc:$GOARCH \
       - name: Build
         run: |
           if [ $env.GOOs = "windows" ]; then
-            GOARCH=$GOARCH go build -o "$BINARY_NAME" -v -ldflags "-H=windowsgui"
+            go build -o "$BINARY_NAME" -v -ldflags "-H=windowsgui"
           else
-            GOARCH=$GOARCH go build -o "$BINARY_NAME" -v
+            go build -o "$BINARY_NAME" -v
           fi
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2

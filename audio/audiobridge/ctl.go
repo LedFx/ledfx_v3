@@ -129,10 +129,8 @@ func (lc *LocalController) SetVerbose(enabled bool) error {
 }
 func (lc *LocalController) QuitPlayback() error {
 	if lc.handler != nil {
-		if lc.handler.playback != nil {
-			lc.handler.playback.Quit()
-			return nil
-		}
+		lc.handler.playback.Quit()
+		return nil
 	}
 	return fmt.Errorf("local playback is not active")
 }
@@ -147,9 +145,7 @@ func (lc *LocalController) QuitCapture() error {
 }
 func (lc *LocalController) PlaybackIdentifier() (string, error) {
 	if lc.handler != nil {
-		if lc.handler.playback != nil {
-			return lc.handler.playback.Identifier(), nil
-		}
+		return lc.handler.playback.Identifier(), nil
 	}
 	return "", fmt.Errorf("local playback is not active")
 }

@@ -8,9 +8,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-
-	"github.com/creasty/defaults"
-	"github.com/go-playground/validator/v10"
 )
 
 /*
@@ -19,83 +16,6 @@ Config schema utilities which can:
  - Validate incoming JSON to assign to a struct
  - Support embedded structs
 */
-
-// DEMO ===================================================
-
-type Student struct {
-	Person
-	Subject string  `json:"subject" description:"What they study" validate:"required"`
-	GPA     float64 `json:"gpa" description:"Grade point average" validate:"required,gte=0,lte=4"`
-}
-
-type Person struct {
-	Age        int      `json:"age" description:"Age of the person" validate:"required,gte=0,lte=130"`
-	Name       string   `json:"name" description:"Name of the person" validate:"required"`
-	FavNum     float64  `json:"favnum" description:"Favorite Number" validate:"gte=0" default:"3.14"`
-	LikesPizza bool     `json:"likes_pizza" description:"Do they like pizza?" default:"true" validate:""`
-	Friends    []string `json:"friends" description:"Names of friends" validate:"" default:"[]"`
-}
-
-func main() {
-	// create json schema for student
-	// this describes the values we expect for a "Student"
-	studentType := reflect.TypeOf((*Student)(nil)).Elem()
-	schema, err := CreateSchema(studentType)
-	jsonSchema, err := CreateJsonSchema(schema)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(string(jsonSchema))
-
-	// The server used the schema and gave us this back
-	objectString := `{
-		"name": "Jake",
-		"age": 20,
-		"favnum": 16,
-		"subject": "Computer Science",
-		"gpa": 3.4
-	}`
-	student := NewStudent()
-
-	// unmarshal and update values from json
-	err = json.Unmarshal([]byte(objectString), &student)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// validate all values
-	validate := validator.New()
-	err = validate.Struct(&student)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-// create a new student, initialised with defaults
-func NewStudent() Student {
-	// create nil-initialised struct
-	student := Student{}
-	// set defaults
-	if err := defaults.Set(&student); err != nil {
-		panic(err)
-	}
-
-	return student
-}
-
-// create a new person, initialised with defaults
-func NewPerson() Person {
-	// create nil-initialised struct
-	person := Person{}
-	// set defaults
-	if err := defaults.Set(&person); err != nil {
-		panic(err)
-	}
-
-	return person
-}
-
-// END OF DEMO ===================================================
 
 type ConfigSchemer interface {
 	ValidateTags()

@@ -97,14 +97,20 @@ var globalConfig = BaseEffectConfig{}
 var validate *validator.Validate = validator.New()
 
 func init() {
-	validate.RegisterValidation("palette", validatePalette)
-	validate.RegisterValidation("color", validateColor)
+	err := validate.RegisterValidation("palette", validatePalette)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = validate.RegisterValidation("color", validateColor)
+	if err != nil {
+		log.Fatal(err)
+	}
 	// set global effect settings to default values
-	if err := defaults.Set(&globalConfig); err != nil {
+	if err = defaults.Set(&globalConfig); err != nil {
 		log.Fatal(err)
 	}
 	// validate global effect settings
-	if err := validate.Struct(&globalConfig); err != nil {
+	if err = validate.Struct(&globalConfig); err != nil {
 		log.Fatal(err)
 	}
 }

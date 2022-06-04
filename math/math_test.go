@@ -13,7 +13,10 @@ func BenchmarkInterpolate(t *testing.B) {
 		// Run the effect on some pixels
 		t.Run(fmt.Sprintf("10 to %d pixels", len(v)), func(t *testing.B) {
 			for i := 0; i < t.N; i++ {
-				Interpolate(in, v)
+				err := Interpolate(in, v)
+				if err != nil {
+					t.Error(err)
+				}
 			}
 		})
 	}

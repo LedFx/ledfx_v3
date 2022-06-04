@@ -119,27 +119,6 @@ func FromBufSliceSum(sum float64) string {
 Math utilities. TODO: move these to their own package?
 */
 
-func minMax(a, b int) (min, max int) {
-	if a > b {
-		return b, a
-	}
-	return a, b
-}
-
-func minMaxArray(array []float64) (float64, float64) {
-	var max float64 = array[0]
-	var min float64 = array[0]
-	for _, value := range array {
-		if max < value {
-			max = value
-		}
-		if min > value {
-			min = value
-		}
-	}
-	return min, max
-}
-
 // Return evenly spaced numbers over a specified interval
 func linspace(start, stop float64, num int) (ls []float64, err error) {
 	if start >= stop {

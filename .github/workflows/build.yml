@@ -48,7 +48,7 @@ jobs:
         run: |
           echo "Installing dependencies"
           sudo apt install gcc-aarch64-linux-gnu libc6-dev-arm64-cross
-          dpkg --add-architecture $GOARCH
+          sudo dpkg --add-architecture $GOARCH
           sudo apt update
           sudo apt install \
             libasound-dev:$GOARCH \

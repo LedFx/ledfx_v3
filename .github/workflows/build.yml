@@ -14,6 +14,7 @@ jobs:
     name: Build Binary
     runs-on: 'ubuntu-latest'
     strategy:
+      fail-fast: false
       matrix:
         goosarch:
           - 'darwin/amd64'

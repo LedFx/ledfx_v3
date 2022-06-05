@@ -8,12 +8,6 @@ import (
 	aubio "github.com/LedFx/aubio-go"
 )
 
-const (
-	fftSize         uint = 1024
-	framesPerBuffer uint = 44100 / 60
-	sampleRate      uint = 44100
-)
-
 type FxHandler struct {
 	frameCount int
 	pvoc       *aubio.PhaseVoc
@@ -48,11 +42,4 @@ func (fx *FxHandler) Callback(buf Buffer) {
 	fx.melbank.Do(fx.pvoc.Grain())
 	fx.onset.Do(simpleBuffer)
 	// bufSlice := fx.onset.Buffer().Slice()
-}
-
-func sumBufSlice(bufSlice []float64) (sum float64) {
-	for i := range bufSlice {
-		sum += bufSlice[i]
-	}
-	return sum
 }

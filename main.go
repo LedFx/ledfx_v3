@@ -4,10 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"ledfx/audio"
+	"ledfx/bridgeapi"
 	"ledfx/config"
 	"ledfx/constants"
+	"ledfx/effect"
 	"ledfx/logger"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -42,7 +45,6 @@ var (
 )
 
 func main() {
-
 	// Just print version and return if flag is set
 	// if config.GlobalConfig.Version {
 	// 	fmt.Println("LedFx " + constants.VERSION)
@@ -81,6 +83,18 @@ func main() {
 
 	// run systray
 	// systray.Run(utils.OnReady, utils.OnExit)
+
+	mux := http.DefaultServeMux
+
+	if err := bridgeapi.NewServer(audio.BufferCallback, mux); err != nil {
+		logger.Logger.WithField("category", "AudioBridge Server Init").Fatalf("Error initializing audio bridge server: %v", err)
+	}
+
+	effect.NewAPI(mux)
+
+	if err := http.ListenAndServe("0.0.0.0:8080", mux); err != nil {
+		logger.Logger.WithField("category", "HTTP Listener").Fatalf("Error listening and serving: %v", err)
+	}
 }
 
 func shutdown() {

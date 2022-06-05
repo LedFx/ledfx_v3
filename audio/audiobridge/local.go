@@ -46,7 +46,7 @@ func (br *Bridge) AddLocalOutput(verbose bool) (err error) {
 		br.local = newLocalHandler(verbose)
 	}
 
-	if br.local.playback.Device() != "" {
+	if br.local.playback != nil {
 		if verbose {
 			log.Logger.WithField("category", "Local Playback Init").Warnln("Local playback already exists! Resetting playback handler...")
 		}
@@ -77,7 +77,7 @@ func (lh *LocalHandler) Stop() {
 		log.Logger.WithField("category", "Local Audio UnixHandler").Warnf("Stopping capture handler...")
 		lh.capture.Quit()
 	}
-	if lh.playback.Device() != "" {
+	if lh.playback != nil {
 		log.Logger.WithField("category", "Local Audio UnixHandler").Warnf("Stopping playback handler...")
 		lh.playback.Quit()
 	}

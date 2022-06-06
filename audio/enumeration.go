@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"ledfx/config"
 	"ledfx/logger"
-	"os"
 	"text/tabwriter"
 
 	"github.com/gordonklaus/portaudio"
@@ -31,9 +30,9 @@ func GetPaDeviceInfo(ad config.AudioDevice) (d *portaudio.DeviceInfo, err error)
 	}
 	for i, h := range hs {
 		for _, d := range h.Devices {
-			if d.MaxInputChannels < 1 {
-				continue
-			}
+			// if d.MaxInputChannels < 1 {
+			// 	continue
+			// }
 			if ad.Id == createId(i, d.Name) {
 				return d, nil
 			}
@@ -62,16 +61,17 @@ func GetAudioDevices() (infos []config.AudioDevice, err error) {
 	}
 	for i, h := range hs {
 		for _, d := range h.Devices {
-			if d.MaxInputChannels < 1 {
-				continue
-			}
+			// if d.MaxInputChannels < 1 {
+			// 	continue
+			// }
 			ad := config.AudioDevice{
-				Id:         createId(i, d.Name),
-				HostApi:    h.Name,
-				SampleRate: d.DefaultSampleRate,
-				Name:       d.Name,
-				Channels:   d.MaxInputChannels,
-				IsDefault:  d.Name == h.DefaultInputDevice.Name,
+				Id:          createId(i, d.Name),
+				HostApi:     h.Name,
+				SampleRate:  d.DefaultSampleRate,
+				Name:        d.Name,
+				ChannelsIn:  d.MaxInputChannels,
+				ChannelsOut: d.MaxOutputChannels,
+				IsDefault:   d.Name == h.DefaultInputDevice.Name || d.Name == h.DefaultOutputDevice.Name,
 			}
 			infos = append(infos, ad)
 		}
@@ -85,7 +85,7 @@ func LogAudioDevices() {
 		logger.Logger.Error(err)
 		return
 	}
-	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+	w := tabwriter.NewWriter(logger.Logger.Out, 1, 1, 1, ' ', 0)
 
 	var icon rune
 
@@ -95,8 +95,21 @@ func LogAudioDevices() {
 		} else {
 			icon = '⨯'
 		}
-		fmt.Fprintf(w, "%s:\t%s,\tchannels: %d,\tsamplerate: %f,\tdefault: %c\n",
-			info.HostApi, info.Name, info.Channels, info.SampleRate, icon)
+		fmt.Fprintf(w, "%s:\t%s,\tChan In: %d,\tChan Out: %d,\tsamplerate: %f,\tdefault: %c\n",
+			info.HostApi, info.Name, info.ChannelsIn, info.ChannelsOut, info.SampleRate, icon)
 	}
 	w.Flush()
+}
+
+func GetDeviceByID(id string) (config.AudioDevice, error) {
+	devices, err := GetAudioDevices()
+	if err != nil {
+		return config.AudioDevice{}, err
+	}
+	for _, device := range devices {
+		if device.Id == id {
+			return device, nil
+		}
+	}
+	return config.AudioDevice{}, fmt.Errorf("could not find audio device matching id: %s", id)
 }

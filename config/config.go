@@ -11,13 +11,14 @@ import (
 )
 
 type AudioDevice struct {
-	Id         string  `mapstructure:"id" json:"id"`
-	HostApi    string  `mapstructure:"hostapi" json:"hostapi"`
-	SampleRate float64 `mapstructure:"sample_rate" json:"sample_rate"`
-	Name       string  `mapstructure:"name" json:"name"`
-	Channels   int     `mapstructure:"channels" json:"channels"`
-	IsDefault  bool    `mapstructure:"is_default" json:"is_default"`
-	Source     string  `mapstructure:"source" json:"source"`
+	Id          string  `mapstructure:"id" json:"id"`
+	HostApi     string  `mapstructure:"hostapi" json:"hostapi"`
+	SampleRate  float64 `mapstructure:"sample_rate" json:"sample_rate"`
+	Name        string  `mapstructure:"name" json:"name"`
+	ChannelsIn  int     `mapstructure:"channels_in" json:"channels_in"`
+	ChannelsOut int     `mapstructure:"channels_out" json:"channels_out"`
+	IsDefault   bool    `mapstructure:"is_default" json:"is_default"`
+	Source      string  `mapstructure:"source" json:"source"`
 }
 
 type AudioConfig struct {

@@ -1,7 +1,7 @@
 package color
 
 import (
-	"fmt"
+	"errors"
 	"image/color"
 	"math"
 )
@@ -115,22 +115,26 @@ func FromBufSliceSum(sum float64) string {
 	return ""
 }
 
-/*
-Math utilities. TODO: move these to their own package?
-*/
+// Linear pixel interpolation. Scale input pixels onto output pixels
+func Interpolate(in Pixels, out Pixels) error {
+	if len(in) < 2 || len(out) < 2 {
+		return errors.New("cannot interpolate using less than two pixels")
+	}
+	// handle trivial case same size in and out
+	if len(in) == len(out) {
+		copy(out, in)
+		return nil
+	}
+	out[len(out)-1] = in[len(in)-1]
 
-// Return evenly spaced numbers over a specified interval
-func linspace(start, stop float64, num int) (ls []float64, err error) {
-	if start >= stop {
-		return ls, fmt.Errorf("linspace start must not be greater than stop: %v, %v", start, stop)
+	ratio := float64(len(in)-1) / float64(len(out)-1)
+	for i := 0; i < len(out)-1; i++ {
+		x, f := math.Modf(ratio * float64(i))
+		ix := int(x)
+		out[i][0] = in[ix][0] + in[ix+1][0]*f
+		out[i][1] = in[ix][1] + in[ix+1][1]*f
+		out[i][2] = in[ix][2] + in[ix+1][2]*f
 	}
-	if num <= 0 {
-		return ls, fmt.Errorf("num must be greater than 0: %v, %v", start, stop)
-	}
-	ls = make([]float64, num)
-	delta := stop / float64(num)
-	for i, x := 0, start; i < num; i, x = i+1, x+delta {
-		ls[i] = x
-	}
-	return ls, nil
+
+	return nil
 }

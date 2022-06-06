@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"ledfx/audio"
-	"ledfx/bridgeapi"
+	"ledfx/audio/audiobridge"
 	"ledfx/config"
 	"ledfx/constants"
 	"ledfx/effect"
@@ -72,7 +72,6 @@ func main() {
 	*/
 	// profiler.Start()
 
-	audio.LogAudioDevices()
 	//go audio.CaptureDemo()
 
 	// Set up API routes
@@ -85,9 +84,25 @@ func main() {
 	// systray.Run(utils.OnReady, utils.OnExit)
 
 	mux := http.DefaultServeMux
+	a := audio.NewAnalyzer() // we only need one audio analyser. should it be more closely tied to the bridge?
+	defer a.Cleanup()
+	// if err := bridgeapi.NewServer(a.BufferCallback, mux); err != nil {
+	// 	logger.Logger.WithField("category", "AudioBridge Server Init").Fatalf("Error initializing audio bridge server: %v", err)
+	// }
 
-	if err := bridgeapi.NewServer(audio.BufferCallback, mux); err != nil {
-		logger.Logger.WithField("category", "AudioBridge Server Init").Fatalf("Error initializing audio bridge server: %v", err)
+	br, err := audiobridge.NewBridge(a.BufferCallback)
+	if err != nil {
+		log.Fatalf("Error initializing new bridge: %v\n", err)
+	}
+	defer br.Stop() // this sould also call analyser.cleanup(), it has to explicitly free some c memory
+
+	audio.LogAudioDevices()
+	audiodevice, err := audio.GetDeviceByID("9f012a5ef29af5e7b226bae734a8cb2ad229f063") // get from config
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := br.StartLocalInput(audiodevice, true); err != nil {
+		log.Fatalf("Error starting local input: %v\n", err)
 	}
 
 	effect.NewAPI(mux)

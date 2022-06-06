@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"image/color"
+	"ledfx/math_utils"
 	"math"
 	"strconv"
 	"strings"
@@ -161,7 +162,7 @@ func ParsePalette(gs string) (g *Palette, err error) {
 // Creates smooth color changes.
 // See: https://www.desmos.com/calculator/uh2s7dhmkw
 func ease(chunk_len int, start_val, end_val, slope float64) []float64 {
-	xs, _ := linspace(0, 1, chunk_len)
+	xs, _ := math_utils.Linspace(0, 1, chunk_len)
 	diff := end_val - start_val
 	for i, x := range xs {
 		xs[i] = diff*math.Pow(x, slope)/(math.Pow(x, slope)+math.Pow(1-x, slope)) + start_val

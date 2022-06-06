@@ -2,11 +2,12 @@ package playback
 
 import (
 	"fmt"
-	"github.com/gordonklaus/portaudio"
 	"io"
 	"ledfx/audio"
 	log "ledfx/logger"
 	"ledfx/util"
+
+	"github.com/gordonklaus/portaudio"
 )
 
 type WindowsHandler struct {
@@ -41,6 +42,7 @@ func NewHandler(verbose bool) (h *WindowsHandler, err error) {
 		buf:        make([]int16, 1408/2),
 	}
 
+	// todo choose an output device using identifier like input device
 	if h.outDev, err = portaudio.DefaultOutputDevice(); err != nil {
 		return nil, fmt.Errorf("error getting default output device: %w", err)
 	}

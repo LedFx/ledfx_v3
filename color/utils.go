@@ -74,13 +74,6 @@ func FillBetween(p Pixels, start, stop int, col Color) {
 	}
 }
 
-var TestPixels = []Pixels{
-	make(Pixels, 10),
-	make(Pixels, 100),
-	make(Pixels, 1000),
-	make(Pixels, 10000),
-}
-
 func (col Color) NRGBA() color.NRGBA {
 	return color.NRGBA{
 		R: NormalizeFloat(col[0]),

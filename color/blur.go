@@ -88,6 +88,7 @@ func (b *Blurrer) BoxBlur(p Pixels) {
 	}
 }
 
+// Slower kernel blurring function, exponential complexity. Avoid.
 func (b *Blurrer) KernelBlur(p Pixels) {
 	/*
 	   could try this kernel

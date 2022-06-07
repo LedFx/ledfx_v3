@@ -24,6 +24,7 @@ func NewPacketBuilder(pixelCount int, protocol UDPProtocol, timeout byte) (pb *p
 	}
 	switch protocol {
 	case WARLS:
+		pb.packets = make([][]byte, 1)
 		if pixelCount > 255 {
 			return pb, errTooManyPx
 		}
@@ -31,6 +32,7 @@ func NewPacketBuilder(pixelCount int, protocol UDPProtocol, timeout byte) (pb *p
 		pb.packets[0][0] = byte(protocol)
 		pb.packets[0][1] = timeout
 	case DRGB:
+		pb.packets = make([][]byte, 1)
 		if pixelCount > 490 {
 			return pb, errTooManyPx
 		}
@@ -38,6 +40,7 @@ func NewPacketBuilder(pixelCount int, protocol UDPProtocol, timeout byte) (pb *p
 		pb.packets[0][0] = byte(protocol)
 		pb.packets[0][1] = timeout
 	case DRGBW:
+		pb.packets = make([][]byte, 1)
 		if pixelCount > 367 {
 			return pb, errTooManyPx
 		}
@@ -51,6 +54,7 @@ func NewPacketBuilder(pixelCount int, protocol UDPProtocol, timeout byte) (pb *p
 		}
 		full_packets := pixelCount / 489
 		remainder := pixelCount % 489
+		pb.packets = make([][]byte, full_packets+1)
 
 		for i := 0; i < full_packets; i++ {
 			pb.packets[i] = make([]byte, 4+489*3)
@@ -71,6 +75,7 @@ func NewPacketBuilder(pixelCount int, protocol UDPProtocol, timeout byte) (pb *p
 		full_packets := pixelCount / 480
 		remainder := pixelCount % 480
 		dlen := 480
+		pb.packets = make([][]byte, full_packets+1)
 
 		// constructs the headers for the packets we'll be sending
 		// see: http://www.3waylabs.com/ddp/

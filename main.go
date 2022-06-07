@@ -84,13 +84,11 @@ func main() {
 	// systray.Run(utils.OnReady, utils.OnExit)
 
 	mux := http.DefaultServeMux
-	a := audio.NewAnalyzer() // we only need one audio analyser. should it be more closely tied to the bridge?
-	defer a.Cleanup()
 	// if err := bridgeapi.NewServer(a.BufferCallback, mux); err != nil {
 	// 	logger.Logger.WithField("category", "AudioBridge Server Init").Fatalf("Error initializing audio bridge server: %v", err)
 	// }
 
-	br, err := audiobridge.NewBridge(a.BufferCallback)
+	br, err := audiobridge.NewBridge(audio.Analyzer.BufferCallback)
 	if err != nil {
 		log.Fatalf("Error initializing new bridge: %v\n", err)
 	}
@@ -114,6 +112,9 @@ func main() {
 
 func shutdown() {
 	logger.Logger.Info("Shutting down LedFx")
+	// kill analyzer
+	audio.Analyzer.Cleanup()
+
 	// kill systray
 	systray.Quit()
 }

@@ -5,21 +5,21 @@ Exponential filters smooth the rise and fall of values
 */
 
 // Exponential filter for a single value
-type expFilter struct {
+type ExpFilter struct {
 	alphaDecay float64
 	alphaRise  float64
 	Value      float64
 }
 
-func NewExpFilter() *expFilter {
-	return &expFilter{
+func NewExpFilter() *ExpFilter {
+	return &ExpFilter{
 		alphaDecay: 0,
 		alphaRise:  0,
 		Value:      0,
 	}
 }
 
-func (e *expFilter) Update(value float64) {
+func (e *ExpFilter) Update(value float64) {
 	var alpha float64
 	if value > e.Value {
 		alpha = e.alphaRise
@@ -30,19 +30,19 @@ func (e *expFilter) Update(value float64) {
 }
 
 // Exponential filter for a slice
-type expFilterSlice struct {
-	expFilter
+type ExpFilterSlice struct {
+	ExpFilter
 	Value []float64
 }
 
-func NewExpFilterSlice(size int) *expFilterSlice {
-	return &expFilterSlice{
-		expFilter: expFilter{},
+func NewExpFilterSlice(size int) *ExpFilterSlice {
+	return &ExpFilterSlice{
+		ExpFilter: ExpFilter{},
 		Value:     make([]float64, size),
 	}
 }
 
-func (e *expFilterSlice) Update(value []float64) {
+func (e *ExpFilterSlice) Update(value []float64) {
 	var alpha float64
 	for i := range value {
 		if value[i] > e.Value[i] {

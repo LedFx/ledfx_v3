@@ -11,10 +11,10 @@ type ExpFilter struct {
 	Value      float64
 }
 
-func NewExpFilter() *ExpFilter {
+func NewExpFilter(rise, decay float64) *ExpFilter {
 	return &ExpFilter{
-		alphaDecay: 0,
-		alphaRise:  0,
+		alphaDecay: decay,
+		alphaRise:  rise,
 		Value:      0,
 	}
 }
@@ -31,14 +31,16 @@ func (e *ExpFilter) Update(value float64) {
 
 // Exponential filter for a slice
 type ExpFilterSlice struct {
-	ExpFilter
-	Value []float64
+	alphaDecay float64
+	alphaRise  float64
+	Value      []float64
 }
 
-func NewExpFilterSlice(size int) *ExpFilterSlice {
+func NewExpFilterSlice(rise, decay float64, size int) *ExpFilterSlice {
 	return &ExpFilterSlice{
-		ExpFilter: ExpFilter{},
-		Value:     make([]float64, size),
+		alphaDecay: decay,
+		alphaRise:  rise,
+		Value:      make([]float64, size),
 	}
 }
 

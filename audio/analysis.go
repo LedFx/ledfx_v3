@@ -158,6 +158,10 @@ func (a *analyzer) Cleanup() {
 	a.pvocMono.Free()
 	a.onsetVocals.Free()
 	a.pvocVocals.Free()
+
+	for id := range a.melbanks {
+		a.DeleteMelbank(id)
+	}
 }
 
 // convenience method to get the melbank data

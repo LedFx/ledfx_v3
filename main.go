@@ -92,7 +92,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error initializing new bridge: %v\n", err)
 	}
-	defer br.Stop() // this sould also call analyser.cleanup(), it has to explicitly free some c memory
+	defer br.Stop()
 
 	audio.LogAudioDevices()
 	audiodevice, err := audio.GetDeviceByID("9f012a5ef29af5e7b226bae734a8cb2ad229f063") // get from config

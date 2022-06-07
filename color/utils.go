@@ -6,6 +6,13 @@ import (
 	"math"
 )
 
+var TestPixels = []Pixels{
+	make(Pixels, 10),
+	make(Pixels, 100),
+	make(Pixels, 1000),
+	make(Pixels, 10000),
+}
+
 // Apply HSV saturation to an RGB color
 // 1: color remains unchanged, 0: color is fully desaturated
 func Saturation(c Color, s float64) Color {

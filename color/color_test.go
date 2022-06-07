@@ -10,13 +10,6 @@ Simple module tests should be a table of test cases.
 q is the question, a is the correct answer, e is bool if error expected
 */
 
-var TestPixels = []Pixels{
-	make(Pixels, 10),
-	make(Pixels, 100),
-	make(Pixels, 1000),
-	make(Pixels, 10000),
-}
-
 func TestNewColor(t *testing.T) {
 	cases := []struct {
 		q string

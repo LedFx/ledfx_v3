@@ -2,9 +2,12 @@ package virtual
 
 import (
 	"fmt"
+	"ledfx/audio"
+	"ledfx/audio/audiobridge"
 	"ledfx/color"
 	"ledfx/device"
 	"ledfx/effect"
+	"log"
 	"testing"
 	"time"
 )
@@ -17,7 +20,7 @@ func TestVirtual(t *testing.T) {
 	}
 	udpc := device.UDPConfig{
 		NetworkerConfig: device.NetworkerConfig{
-			IP:   "192.168.0.72",
+			IP:   "192.168.0.104",
 			Port: 21324,
 		},
 		Protocol: device.DRGB,
@@ -41,15 +44,30 @@ func TestVirtual(t *testing.T) {
 		"flip":           false,
 		"mirror":         false,
 		"bkg_brightness": 1,
-		"bkg_color":      "#FF0000",
+		"bkg_color":      "#000000",
 		"hue_shift":      0,
 	}
-	e, _, err := effect.New("weave", bdc.PixelCount, ec)
+	e, _, err := effect.New("energy", bdc.PixelCount, ec)
 	if err != nil {
 		t.Error(err)
 	}
 
 	p := make(color.Pixels, bdc.PixelCount)
+
+	br, err := audiobridge.NewBridge(audio.Analyzer.BufferCallback)
+	if err != nil {
+		log.Fatalf("Error initializing new bridge: %v\n", err)
+	}
+	defer br.Stop()
+
+	audiodevice, err := audio.GetDeviceByID("9f012a5ef29af5e7b226bae734a8cb2ad229f063") // get from config
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := br.StartLocalInput(audiodevice, true); err != nil {
+		log.Fatalf("Error starting local input: %v\n", err)
+
+	}
 
 	ticker := time.NewTicker(16 * time.Millisecond)
 	defer ticker.Stop()

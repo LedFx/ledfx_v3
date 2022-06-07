@@ -19,21 +19,52 @@ const (
 )
 
 type Analyzer struct {
-	mu       sync.Mutex
-	eq       *aubio.Filter     // balances the volume across freqs
-	onset    *aubio.Onset      // detects percussinve onsets
-	pvoc     *aubio.PhaseVoc   // transforms audio data to fft
-	melbank  *aubio.FilterBank // scales fft to perceptual bins
-	melfreqs []float64         // frequencies of each mel bin
-	// buf      *aubio.SimpleBuffer // not really used until I add buffer update methods to aubio-go
-	Melbank  []float64
-	OnsetNow bool
+	mu              sync.Mutex
+	bufMono         *aubio.SimpleBuffer // mono aubio buffer
+	bufVocals       *aubio.SimpleBuffer // vocals aubio buffer
+	bufInstruments  *aubio.SimpleBuffer // instruments aubio buffer
+	dataLeft        []float64           // left channel
+	dataRight       []float64           // right channel
+	dataMono        []float64           // mono mix of left and right
+	dataInstruments []float64           // non-centre panned audio (typically instruments)
+	dataVocals      []float64           // centre panned audio (typically vocals)
+	eq              *aubio.Filter       // balances the volume across freqs
+	onset           *aubio.Onset        // detects percussinve onsets
+	pvoc            *aubio.PhaseVoc     // transforms audio data to fft
+	melbank         *aubio.FilterBank   // scales fft to perceptual bins
+	melfreqs        []float64           // frequencies of each mel bin
+	// might need individual pvoc, melbank etc. for each audio channel. Not sure if they're stateless
+	// pvocMono           *aubio.PhaseVoc     // transforms audio data to fft
+	// pvocVocals         *aubio.PhaseVoc     // transforms audio data to fft
+	// pvocInstruments    *aubio.PhaseVoc     // transforms audio data to fft
+	// melbankMono        *aubio.FilterBank   // scales fft to perceptual bins
+	// melbankVocals      *aubio.FilterBank   // scales fft to perceptual bins
+	// melbankInstruments *aubio.FilterBank   // scales fft to perceptual bins
+	MelbankMono         []float64 // Mono melbank for effects
+	MelbankVocals       []float64 // Vocal melbank for effects
+	MelbankInstruments  []float64 // Instrument melbank for effects
+	OnsetNowMono        bool      // Mono onset for effects
+	OnsetNowVocals      bool      // Vocal onset for effects
+	OnsetNowInstruments bool      // Instrument onset for effects
 }
 
 func NewAnalyzer() *Analyzer {
 	a := &Analyzer{
-		mu:       sync.Mutex{},
-		OnsetNow: false,
+		mu:                  sync.Mutex{},
+		bufMono:             aubio.NewSimpleBuffer(framesPerBuffer),
+		bufVocals:           aubio.NewSimpleBuffer(framesPerBuffer),
+		bufInstruments:      aubio.NewSimpleBuffer(framesPerBuffer),
+		dataLeft:            make([]float64, framesPerBuffer),
+		dataRight:           make([]float64, framesPerBuffer),
+		dataMono:            make([]float64, framesPerBuffer),
+		dataInstruments:     make([]float64, framesPerBuffer),
+		dataVocals:          make([]float64, framesPerBuffer),
+		MelbankMono:         make([]float64, melBins),
+		MelbankVocals:       make([]float64, melBins),
+		MelbankInstruments:  make([]float64, melBins),
+		OnsetNowMono:        false,
+		OnsetNowVocals:      false,
+		OnsetNowInstruments: false,
 	}
 	var err error
 
@@ -89,52 +120,61 @@ func NewAnalyzer() *Analyzer {
 func (a *Analyzer) BufferCallback(buf Buffer) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
+	fpbint := int(framesPerBuffer)
 
-	// disgusting amount of buffer allocations for each audio frame.
-	// proof of concept, must tidy these away and just update the values
-	f64buf := buf.AsFloat64()
-	f64Left := f64buf[0:framesPerBuffer]                    // left channel
-	f64Right := f64buf[framesPerBuffer : framesPerBuffer*2] // right channel
-	f64Mono := make([]float64, framesPerBuffer)             // mono mix of left and right
-	f64Instruments := make([]float64, framesPerBuffer)      // non-centre panned audio (typically instruments)
-	f64Vocals := make([]float64, framesPerBuffer)           // centre panned audio (typically vocals)
-
-	// "kareoke" instrumental/vocal isolation
-	// see: https://www.youtube.com/watch?v=-KfGwz1Zg6I
-	for i := 0; i < int(framesPerBuffer); i++ {
-		f64Mono[i] = (f64Left[i] + f64Right[i]) / 2         // mix left and right to get mono
-		f64Instruments[i] = (f64Left[i] - f64Right[i]) / 2  // remove centre panned audio (vocals)
-		f64Vocals[i] = (f64Mono[i] - f64Instruments[i]) / 2 // remove non centre pan (instruments) from mono to get vocals
+	// Get our left and right channels as float64
+	for i := 0; i < fpbint; i++ {
+		a.dataLeft[i] = float64(buf[i])
+	}
+	for i := fpbint; i < fpbint*2; i++ {
+		a.dataRight[i-fpbint] = float64(buf[i])
 	}
 
-	// TODO update aubio so we can reuse the buffer and update values, rather
-	// than reallocating each audio frame.
-	// Unnecessary type conversions. This could be optimised a lot.
-	mono := aubio.NewSimpleBufferData(uint(framesPerBuffer), f64Mono)
-	vocals := aubio.NewSimpleBufferData(uint(framesPerBuffer), f64Vocals)
-	instruments := aubio.NewSimpleBufferData(uint(framesPerBuffer), f64Instruments)
+	// "karaoke" instrumental/vocal isolation
+	// see: https://www.youtube.com/watch?v=-KfGwz1Zg6I
+	// might need to divide each value by two. not sure..
+	for i := 0; i < fpbint; i++ {
+		a.dataMono[i] = (a.dataLeft[i] + a.dataRight[i])         // mix left and right to get mono
+		a.dataInstruments[i] = (a.dataLeft[i] - a.dataRight[i])  // remove centre panned audio (vocals)
+		a.dataVocals[i] = (a.dataMono[i] - a.dataInstruments[i]) // remove non centre pan (instruments) from mono to get vocals
+	}
 
-	defer mono.Free()
-	defer vocals.Free()
-	defer instruments.Free()
+	// CGo calls are slow. I've optimised this as best I can.
+	// Turns out the data conversion is a fraction of the cost of the c library calls
+	// could try directly operating on the C memory in aubio-go.
+	// Would be fast but also dangerous..
+	// https://copyninja.info/blog/workaround-gotypesystems.html
+	a.bufMono.SetData(a.dataMono)
+	a.bufVocals.SetData(a.dataVocals)
+	a.bufInstruments.SetData(a.dataInstruments)
 
-	// filter the incoming audio. this is like applying an eq to perceptually balance the audio.
-	// TODO see how applying this eq affects pitch and onset analysis of the buffer.
-	// if it's no good, we can do out of place and retain the original audio sample
-	a.eq.Do(mono)
-	a.eq.Do(vocals)
-	a.eq.Do(instruments)
+	// do mono frequency analysis
+	a.eq.DoOutplace(a.bufMono)
+	a.pvoc.Do(a.eq.Buffer())
+	a.melbank.Do(a.pvoc.Grain())
+	a.MelbankMono = a.melbank.Buffer().Slice()
 
-	// do freq analysis on mono audio
-	a.pvoc.Do(mono)              // calculate fft
-	a.melbank.Do(a.pvoc.Grain()) // scale it with melbank
-	a.Melbank = a.melbank.Buffer().Slice()
+	// do vocal frequency analysis
+	a.eq.DoOutplace(a.bufVocals)
+	a.pvoc.Do(a.eq.Buffer())
+	a.melbank.Do(a.pvoc.Grain())
+	a.MelbankVocals = a.melbank.Buffer().Slice()
+
+	// do instrument frequency analysis
+	a.eq.DoOutplace(a.bufInstruments)
+	a.pvoc.Do(a.eq.Buffer())
+	a.melbank.Do(a.pvoc.Grain())
+	a.MelbankInstruments = a.melbank.Buffer().Slice()
 
 	// do onset analysis
-	a.onset.Do(mono)
-	// more useless conversions.. dont need to convert the entire slice to f64 to see if the first value is nonzero
-	a.OnsetNow = a.onset.Buffer().Slice()[0] != 0
-	if a.OnsetNow {
+	a.onset.Do(a.bufMono)
+	a.OnsetNowMono = a.onset.Buffer().Get(uint(0)) != 0
+	a.onset.Do(a.bufVocals)
+	a.OnsetNowVocals = a.onset.Buffer().Get(uint(0)) != 0
+	a.onset.Do(a.bufInstruments)
+	a.OnsetNowInstruments = a.onset.Buffer().Get(uint(0)) != 0
+
+	if a.OnsetNowMono {
 		log.Logger.WithField("category", "Audio Analysis").Info("Onset detected")
 	}
 }
@@ -142,6 +182,10 @@ func (a *Analyzer) BufferCallback(buf Buffer) {
 func (a *Analyzer) Cleanup() {
 	a.mu.Lock()
 	defer a.mu.Unlock()
+	a.bufMono.Free()
+	a.bufVocals.Free()
+	a.bufInstruments.Free()
+
 	a.onset.Free()
 	a.pvoc.Free()
 	a.eq.Free()

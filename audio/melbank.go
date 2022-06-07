@@ -16,22 +16,28 @@ const (
 
 // Wrapper for filterbank which handles initialisation, normalisation
 type melbank struct {
-	fb    *aubio.FilterBank
-	Audio AudioStream
-	Min   int
-	Max   int
-	Freqs []float64
-	Data  []float64
+	fb           *aubio.FilterBank
+	Audio        AudioStream
+	Min          int
+	Max          int
+	Freqs        []float64
+	Data         []float64
+	GainFilter   *math_utils.ExpFilter
+	SmoothFilter *math_utils.ExpFilterSlice
 }
 
 // Specify the min and max frequencies
 func newMelbank(audio AudioStream, min, max uint) (*melbank, error) {
 
 	mb := &melbank{
-		fb:    aubio.NewFilterBank(melBins, framesPerBuffer),
-		Audio: audio,
-		Min:   int(min),
-		Max:   int(max),
+		fb:           aubio.NewFilterBank(melBins, framesPerBuffer),
+		Audio:        audio,
+		Min:          int(min),
+		Max:          int(max),
+		Freqs:        make([]float64, melBins+2),
+		Data:         make([]float64, melBins),
+		GainFilter:   math_utils.NewExpFilter(0.99, 0.01),
+		SmoothFilter: math_utils.NewExpFilterSlice(0.99, 0.7, int(melBins)),
 	}
 
 	if min < melMin || max > melMax {
@@ -60,7 +66,31 @@ func newMelbank(audio AudioStream, min, max uint) (*melbank, error) {
 // Perform mel binning on fft
 func (mb *melbank) Do(fft *aubio.ComplexBuffer) {
 	mb.fb.Do(fft)
-	mb.Data = mb.fb.Buffer().Slice()
+	copy(mb.Data, mb.fb.Buffer().Slice())
+	// Normalise the melbank gain
+	// first smooth the values out to soften peaks
+	gainData := make([]float64, melBins)
+	copy(gainData, mb.Data)
+	math_utils.Blur1D(gainData, 3)
+	// get max of gainData
+	var max float64
+	for _, val := range gainData {
+		if val > max {
+			max = val
+		}
+	}
+	// update gain filter to get smoothed value
+	mb.GainFilter.Update(max)
+	// divide the mel data by this smoothed gain value
+	if mb.GainFilter.Value != 0 {
+		for i, val := range mb.Data {
+			mb.Data[i] = val / mb.GainFilter.Value
+		}
+	}
+	// TODO this should be controlled by the effect's "intensity" config
+	// Apply temporal filtering to melbank so it's not jumping around like crazy
+	mb.SmoothFilter.Update(mb.Data)
+	mb.Data = mb.SmoothFilter.Value
 }
 
 // Cleanup allocated C memory

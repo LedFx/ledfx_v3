@@ -35,7 +35,7 @@ func newMelbank(audio AudioStream, min, max uint) (*melbank, error) {
 	}
 
 	if min < melMin || max > melMax {
-		return mb, fmt.Errorf("Invalid frequency range: %d %d. Must be %d to %d", min, max, melMin, melMax)
+		return mb, fmt.Errorf("invalid frequency range: %d %d. Must be %d to %d", min, max, melMin, melMax)
 	}
 
 	// Build the frequency bands for the melbank

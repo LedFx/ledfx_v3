@@ -161,12 +161,18 @@ func (a *analyzer) Cleanup() {
 	a.pvocVocals.Free()
 }
 
+// convenience method to get the melbank data
+func (a *analyzer) GetMelbankData(id string) ([]float64, error) {
+	mb, err := a.GetMelbank(id)
+	return mb.Data, err
+}
+
 func (a *analyzer) GetMelbank(id string) (mb *melbank, err error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	mb, ok := a.melbanks[id]
 	if !ok {
-		err = fmt.Errorf("Cannot find melbank registered for effect %s", id)
+		err = fmt.Errorf("cannot find melbank registered for effect %s", id)
 	}
 	return mb, err
 }

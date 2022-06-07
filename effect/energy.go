@@ -3,7 +3,9 @@ package effect
 import (
 	"encoding/json"
 	"fmt"
+	"ledfx/audio"
 	"ledfx/color"
+	"ledfx/logger"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -20,11 +22,46 @@ type EnergyConfig struct{}
 
 // Apply new pixels to an existing pixel array.
 func (e *Energy) assembleFrame(base *Effect, p color.Pixels) {
-	bkgb := base.Config.BkgBrightness //eg.
-	p[0][0] = bkgb
+	mel, err := audio.Analyzer.GetMelbank(base.ID)
+	if err != nil {
+		logger.Logger.WithField("context", "Effect Energy").Error(err)
+		return
+	}
+	lowsCol := base.palette.Get(0)
+	midsCol := base.palette.Get(0.5)
+	highCol := base.palette.Get(1)
+	lowsMidsCol := base.palette.Get(0.25)
+	midsHighCol := base.palette.Get(0.75)
+
+	lowsAmplitude := int(mel.LowsAmplitude() * float64(base.pixelCount))
+	midsAmplitude := int(mel.MidsAmplitude() * float64(base.pixelCount))
+	highAmplitude := int(mel.HighAmplitude() * float64(base.pixelCount))
+
+	var lows, mids, high bool
+	for i := 0; i < len(p); i++ {
+		lows = i < lowsAmplitude
+		mids = i < midsAmplitude
+		high = i < highAmplitude
+		switch {
+		case !lows && !mids && !high: // none, black colour
+			p[i] = color.Color{0, 0, 0}
+		case lows && mids && high: // bass mids and high, white colour
+			p[i] = color.Color{0, 0, 1}
+		case lows && !mids && !high: // bass
+			p[i] = lowsCol
+		case lows && mids && !high: // mix bass and mids
+			p[i] = lowsMidsCol
+		case !lows && mids && !high: // mids
+			p[i] = midsCol
+		case !lows && mids && high: // mix mids and high
+			p[i] = midsHighCol
+		case !lows && !mids && high: // high
+			p[i] = highCol
+		}
+	}
 }
 
-func (e *Energy) AudioUpdated() {}
+// func (e *Energy) AudioUpdated() {}
 
 // BOILERPLATE CODE BELOW. COPYPASTE & REPLACE CONFIG TYPE WITH THIS EFFECT'S CONFIG
 

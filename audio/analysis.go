@@ -62,6 +62,7 @@ func init() {
 		dataRight:      make([]float64, framesPerBuffer),
 		dataMono:       make([]float64, framesPerBuffer),
 		dataVocals:     make([]float64, framesPerBuffer),
+		melbanks:       make(map[string]*melbank),
 		OnsetNowMono:   false,
 		OnsetNowVocals: false,
 	}
@@ -87,8 +88,6 @@ func init() {
 	if Analyzer.pvocVocals, err = aubio.NewPhaseVoc(fftSize, framesPerBuffer); err != nil {
 		log.Logger.WithField("category", "Audio Analyzer Init").Fatalf("Error creating new Aubio Pvoc: %v", err)
 	}
-
-	// Create melbanks
 }
 
 func (a *analyzer) BufferCallback(buf Buffer) {

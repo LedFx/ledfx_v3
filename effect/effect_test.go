@@ -119,6 +119,9 @@ func TestGlobalEffectSettings(t *testing.T) {
 		HueShift:      0,
 		BkgBrightness: 0,
 		BkgColor:      "Black",
+		FreqMin:       20,
+		FreqMax:       20000,
+		Vocals:        true,
 	}
 	err := SetGlobalSettings(g)
 	if err != nil {

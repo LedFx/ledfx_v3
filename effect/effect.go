@@ -60,7 +60,7 @@ type BaseEffectConfig struct {
 	BkgColor      string  `mapstructure:"bkg_color" json:"bkg_color" description:"Apply a background color" default:"#000000" validate:"color"`
 	FreqMin       int     `mapstructure:"freq_min" json:"freq_min" description:"Lowest audio frequency to react to" default:"20" validate:"gte=20,lte=20000"`
 	FreqMax       int     `mapstructure:"freq_max" json:"freq_max" description:"Highest audio frequency to react to" default:"20000" validate:"gte=20,lte=20000"`
-	Vocals        bool    `mapstructure:"vocals" json:"vocals" description:"React to the vocals only. Works on most stereo songs." default:"false" validate:"bool"`
+	Vocals        bool    `mapstructure:"vocals" json:"vocals" description:"React to the vocals only. Works on most stereo songs." default:"false" validate:""`
 }
 
 func (e *Effect) GetID() string {
@@ -148,6 +148,10 @@ func (e *Effect) UpdateBaseConfig(c interface{}) (err error) {
 	// need to register a new melbank if our freqs or audio stream has changed
 	if e.Config.Vocals != newConfig.Vocals || e.Config.FreqMin != newConfig.FreqMin || e.Config.FreqMax != newConfig.FreqMax {
 		audio.Analyzer.DeleteMelbank(e.ID)
+		audio.Analyzer.NewMelbank(e.ID, as, uint(newConfig.FreqMin), uint(newConfig.FreqMax))
+	}
+	// need to register a melbank if the effect doesn't have one yet
+	if _, err := audio.Analyzer.GetMelbank(e.ID); err != nil {
 		audio.Analyzer.NewMelbank(e.ID, as, uint(newConfig.FreqMin), uint(newConfig.FreqMax))
 	}
 

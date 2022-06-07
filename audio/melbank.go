@@ -69,6 +69,54 @@ func (mb *melbank) Free() {
 	mb.fb.Coeffs().Free()
 }
 
+// returns the maximum value from the lowest third of the melbank
+func (mb *melbank) LowsAmplitude() float64 {
+	var max float64
+	var val float64
+	for i := 0; i < len(mb.Data)/3; i++ {
+		val = mb.Data[i]
+		if val > 1 {
+			return 1
+		}
+		if val > max {
+			max = val
+		}
+	}
+	return max
+}
+
+// returns the maximum value from the middle third of the melbank
+func (mb *melbank) MidsAmplitude() float64 {
+	var max float64
+	var val float64
+	for i := len(mb.Data) / 3; i < 2*len(mb.Data)/3; i++ {
+		val = mb.Data[i]
+		if val > 1 {
+			return 1
+		}
+		if val > max {
+			max = val
+		}
+	}
+	return max
+}
+
+// returns the maximum value from the highest third of the melbank
+func (mb *melbank) HighAmplitude() float64 {
+	var max float64
+	var val float64
+	for i := 2 * len(mb.Data) / 3; i < len(mb.Data); i++ {
+		val = mb.Data[i]
+		if val > 1 {
+			return 1
+		}
+		if val > max {
+			max = val
+		}
+	}
+	return max
+}
+
 // Custom mel scaling.
 // This scaling function is specially crafted to spread out the low range
 // and compress the highs in a visually/perceptually balanced way.

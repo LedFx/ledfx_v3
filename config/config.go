@@ -2,13 +2,15 @@ package config
 
 import (
 	"ledfx/constants"
-	"log"
+	"ledfx/logger"
 	"os"
 	"path/filepath"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
+
+const configName string = "config"
 
 type AudioDevice struct {
 	Id          string  `mapstructure:"id" json:"id"`
@@ -27,126 +29,98 @@ type AudioConfig struct {
 	FrameRate int         `mapstructure:"frame_rate" json:"frame_rate"`
 }
 
-type Config struct {
-	Version  string `mapstructure:"version" json:"version"`
-	Host     string `mapstructure:"host" json:"host"`
-	Port     int    `mapstructure:"port" json:"port"`
-	OpenUi   bool   `mapstructure:"open_ui" json:"open_ui"`
-	LogLevel int    `mapstructure:"log_level" json:"log_level"`
-	// Effects  []effect.PixelGenerator `mapstructure:"effects" json:"effects"`
-	// Virtuals []virtual.PixelMapper   `mapstructure:"virtuals" json:"virtuals"`
-	// Devices  []Device                `mapstructure:"devices" json:"devices"`
+type config struct {
+	Version  string                  `mapstructure:"version" json:"version"`
+	Host     string                  `mapstructure:"host" json:"host"`
+	Port     int                     `mapstructure:"port" json:"port"`
+	OpenUi   bool                    `mapstructure:"open_ui" json:"open_ui"`
+	LogLevel int                     `mapstructure:"log_level" json:"log_level"`
+	Effects  map[string]EffectEntry  `mapstructure:"effects" json:"effects"`
+	Devices  map[string]DeviceEntry  `mapstructure:"devices" json:"devices"`
+	Virtuals map[string]VirtualEntry `mapstructure:"virtuals" json:"virtuals"`
+	// Audio    AudioEntry              `mapstructure:"audio" json:"audio"`
 	// Audio    AudioConfig             `mapstructure:"audio" json:"audio"`
 }
 
-// func AddDeviceToConfig(device config.Device) (err error) {
-// 	if device.Id == "" {
-// 		err = errors.New("device id is empty. Please provide Id to add device to config")
-// 		return
-// 	}
-
-// 	if config.GlobalConfig.Devices == nil {
-// 		config.GlobalConfig.Devices = make([]config.Device, 0)
-// 	}
-
-// 	for index, dev := range config.GlobalConfig.Devices {
-// 		if dev.Id == device.Id {
-// 			config.GlobalConfig.Devices[index] = device
-// 			return config.GlobalViper.WriteConfig()
-// 		}
-// 	}
-
-// 	config.GlobalConfig.Devices = append(config.GlobalConfig.Devices, device)
-// 	config.GlobalViper.Set("devices", config.GlobalConfig.Devices)
-// 	return config.GlobalViper.WriteConfig()
-// }
-
-var configPath string
-var GlobalConfig *Config
-
+var config_inst *config = &config{
+	Version:  "",
+	Host:     "",
+	Port:     0,
+	OpenUi:   false,
+	LogLevel: 0,
+	Effects:  map[string]EffectEntry{},
+	Devices:  map[string]DeviceEntry{},
+	Virtuals: map[string]VirtualEntry{},
+}
 var GlobalViper *viper.Viper
 
-func Initialise() error {
+func init() {
 	GlobalViper = viper.New()
-
-	pflag.StringVarP(&configPath, "config", "c", "", "Directory that contains the configuration files")
+	var configPath string
+	pflag.StringVarP(&configPath, "config", "c", "", "Path to json configuration file")
+	pflag.StringP("host", "h", "0.0.0.0", "The hostname of the web interface")
 	pflag.IntP("port", "p", 8080, "Web interface port")
 	pflag.BoolP("version", "v", false, "Print the version of ledfx")
 	pflag.BoolP("open-ui", "u", false, "Automatically open the web interface")
-	pflag.BoolP("verbose", "i", false, "Set log level to INFO")
-	pflag.BoolP("very-verbose", "d", false, "Set log level to DEBUG")
-	pflag.String("host", "", "The hostname of the web interface")
-	pflag.BoolP("offline", "o", false, "Disable automated updates and sentry crash logger")
-	pflag.BoolP("sentry-crash-test", "s", false, "This crashes LedFx to test the sentry crash logger")
+	pflag.IntP("log_level", "l", 0, "Set log level [0: warnings, 1: info, 2: debug]")
+	// pflag.BoolP("offline", "o", false, "Disable automated updates and sentry crash logger")
 
 	pflag.Parse()
 	err := GlobalViper.BindPFlags(pflag.CommandLine)
 	if err != nil {
-		return err
+		logger.Logger.WithField("context", "Config Init").Fatal(err)
 	}
 
 	// Load config
-	err = loadConfig("config")
+	err = loadConfig(configPath)
 	if err != nil {
-		return err
+		logger.Logger.WithField("context", "Config Init").Fatal(err)
 	}
-
-	return nil
-}
-
-func createConfigIfNotExists(configName string) error {
-	// Create config dir and files if it does not exist
-	_, err := os.Open(filepath.Join(configPath, configName+".json"))
-	var f *os.File
-	if _, ok := err.(*os.PathError); ok {
-		f, err = os.Create(filepath.Join(configPath, configName+".json"))
-		if err != nil {
-			return err
-		}
-		_, err = f.WriteString("{}\n")
-		if err != nil {
-			return err
-		}
-		err = nil
-	}
-	return err
 }
 
 // LoadConfig reads in config file and ENV variables if set.
-func loadConfig(configName string) (err error) {
+func loadConfig(configPath string) error {
 
 	if configPath == "" {
-		configPath = constants.GetOsConfigDir()
+		configPath = filepath.Join(constants.GetOsConfigDir(), configName+".json")
 	}
 
-	err = os.MkdirAll(configPath, 0744) // ensure given config directory exists
+	err := os.MkdirAll(configPath, 0744) // ensure given config directory exists
 	if err != nil {
 		return err
 	}
 
-	err = createConfigIfNotExists(configName)
+	err = createConfigIfNotExists(configPath)
 	if err != nil {
 		return err
 	}
 
-	v := GlobalViper
-
+	GlobalViper.SetConfigName(configName)
+	GlobalViper.AutomaticEnv()
+	GlobalViper.AddConfigPath(configPath)
+	err = GlobalViper.ReadInConfig()
 	if err != nil {
 		return err
 	}
 
-	v.SetConfigName(configName)
-	v.AutomaticEnv()
-	v.AddConfigPath(configPath)
-	err = v.ReadInConfig()
-	if err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Println("Config file not found; using defaults")
-		}
-		return nil
+	err = GlobalViper.Unmarshal(&config_inst)
+	return err
+}
+
+func createConfigIfNotExists(configPath string) error {
+	var f *os.File
+	_, err := os.Open(configPath)
+	// if the error is not related to finding the path...
+	if _, ok := err.(*os.PathError); !ok {
+		return err
 	}
-
-	err = v.Unmarshal(&GlobalConfig)
-
-	return
+	// Create config dir and file given it does not exist
+	logger.Logger.WithField("context", "Config Init").Warnf("Config file not found; Creating default config at %s", configPath)
+	f, err = os.Create(configPath)
+	if err != nil {
+		return err
+	}
+	// write empty json to it
+	_, err = f.WriteString("{}\n")
+	return err
 }

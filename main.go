@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"ledfx/audio"
 	"ledfx/audio/audiobridge"
-	"ledfx/config"
 	"ledfx/constants"
 	"ledfx/effect"
 	"ledfx/logger"
@@ -30,12 +29,6 @@ func init() {
 		shutdown()
 		os.Exit(1)
 	}()
-
-	// Initialize Config
-	err := config.Initialise()
-	if err != nil {
-		log.Println(err)
-	}
 
 }
 

@@ -12,7 +12,7 @@ func BenchmarkEffects(t *testing.B) {
 	for _, eType := range effectTypes {
 		for _, p := range color.TestPixels {
 			// Make a new effect
-			effect, _, err := New(eType, len(p), c)
+			effect, _, err := New("", eType, len(p), c)
 			if err != nil {
 				t.Error(err)
 			}
@@ -57,7 +57,7 @@ func TestEffects(t *testing.T) {
 	for _, eType := range effectTypes {
 		for _, p := range color.TestPixels {
 			// Make a new effect
-			effect, _, err := New(eType, len(p), blank_c)
+			effect, _, err := New("", eType, len(p), blank_c)
 			if err != nil {
 				t.Error(err)
 			}

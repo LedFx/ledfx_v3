@@ -34,7 +34,7 @@ func Schema() (schema map[string]interface{}, err error) {
 		return schema, err
 	}
 	extraSchema := make(map[string]interface{})
-	// Copypaste for new effect types, if your effect has extra schema
+	// Copypaste for new effect types, IF YOUR EFFECT HAS EXTRA CONFIG
 	extraSchema["energy"], err = util.CreateSchema(reflect.TypeOf((*EnergyConfig)(nil)).Elem())
 	if err != nil {
 		return schema, err
@@ -43,8 +43,10 @@ func Schema() (schema map[string]interface{}, err error) {
 	return schema, err
 }
 
-// Creates a new effect and returns its unique id
-func New(effect_type string, pixelCount int, config interface{}) (effect *Effect, id string, err error) {
+// Creates a new effect and returns its unique id.
+// You can supply an ID, but if another effect has that id, this effect will make a different id.
+// It is guaranteed that after calling this, there will be AN effect with that id
+func New(preferred_id, effect_type string, pixelCount int, config interface{}) (effect *Effect, id string, err error) {
 	switch effect_type {
 	case "energy":
 		effect = &Effect{
@@ -67,23 +69,32 @@ func New(effect_type string, pixelCount int, config interface{}) (effect *Effect
 			pixelGenerator: &Pulse{},
 		}
 	default:
-		return effect, id, fmt.Errorf("%s is not a known effect type", effect_type)
+		return effect, id, fmt.Errorf("%s is not a known effect type. Has it been registered in effects.go?", effect_type)
 	}
 
-	// create an id and add it to the internal list of instances
-	id = effect_type
-	for i := 0; ; i++ {
-		id = effect_type + strconv.Itoa(i)
-		_, exists := effectInstances[id]
-		if !exists {
-			effectInstances[id] = effect
-			break
+	// if the preferred id is not nil and it has not already been registered, use it
+	if _, exists := effectInstances[preferred_id]; !exists && preferred_id != "" {
+		id = preferred_id
+		effectInstances[id] = effect
+	} else { // otherwise, generate a new id
+		for i := 0; ; i++ {
+			id = effect_type + strconv.Itoa(i)
+			_, exists := effectInstances[id]
+			if !exists {
+				effectInstances[id] = effect
+				break
+			}
 		}
 	}
 	// initialise the new effect with its id and config
 	if err = effect.initialize(id, pixelCount); err != nil {
 		return effect, id, nil
 	}
+	// Set effect's config to defaults
+	if err := defaults.Set(&effect.Config); err != nil {
+		return effect, id, err
+	}
+	// update with any given config
 	err = effect.UpdateBaseConfig(config)
 	return effect, id, err
 }

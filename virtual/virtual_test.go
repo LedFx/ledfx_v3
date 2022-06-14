@@ -47,7 +47,7 @@ func TestVirtual(t *testing.T) {
 		"bkg_color":      "#000000",
 		"hue_shift":      0,
 	}
-	e, _, err := effect.New("energy", bdc.PixelCount, ec)
+	e, _, err := effect.New("", "energy", bdc.PixelCount, ec)
 	if err != nil {
 		t.Error(err)
 	}
@@ -127,7 +127,7 @@ func BenchmarkVirtual(t *testing.B) {
 		"bkg_color":      "#000000",
 		"hue_shift":      0.1,
 	}
-	e, _, err := effect.New("palette", bdc.PixelCount, ec)
+	e, _, err := effect.New("", "palette", bdc.PixelCount, ec)
 	if err != nil {
 		t.Error(err)
 	}

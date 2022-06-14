@@ -45,6 +45,8 @@ github.com/LedFx/aubio-go v0.0.0-20220606205026-b42897ba8c06 h1:Qop/OYd5p3b8NnHc
 github.com/LedFx/aubio-go v0.0.0-20220606205026-b42897ba8c06/go.mod h1:fCpqn+1CuDGzMycWaQs+lNDpLaUqDgnP3Rw+bhIYjzw=
 github.com/LedFx/aubio-go v0.0.0-20220607001453-abe83d2413a3 h1:b/vXBw89GlfWqNTpTo9ciLnGKWuSma9UzjUBlDu3fXk=
 github.com/LedFx/aubio-go v0.0.0-20220607001453-abe83d2413a3/go.mod h1:fCpqn+1CuDGzMycWaQs+lNDpLaUqDgnP3Rw+bhIYjzw=
+github.com/LedFx/aubio-go v0.0.0-20220607221658-b7160562dcd4 h1:OevLhkPRc9h9wGwxGtBpmx90q4XP/0z3+yGC8Yl3/XE=
+github.com/LedFx/aubio-go v0.0.0-20220607221658-b7160562dcd4/go.mod h1:fCpqn+1CuDGzMycWaQs+lNDpLaUqDgnP3Rw+bhIYjzw=
 github.com/alexbrainman/sspi v0.0.0-20210105120005-909beea2cc74 h1:Kk6a4nehpJ3UuJRqlA3JxYxBZEqCeOmATOvrbT4p9RA=
 github.com/alexbrainman/sspi v0.0.0-20210105120005-909beea2cc74/go.mod h1:cEWa1LVoE5KvSD9ONXsZrj0z6KqySlCCNKHlLzbqAt4=
 github.com/antonfisher/nested-logrus-formatter v1.3.1 h1:NFJIr+pzwv5QLHTPyKz9UMEoHck02Q9L0FP13b/xSbQ=

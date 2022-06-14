@@ -33,9 +33,9 @@ func (e *Energy) assembleFrame(base *Effect, p color.Pixels) {
 	lowsMidsCol := base.palette.Get(0.25)
 	midsHighCol := base.palette.Get(0.75)
 
-	lowsAmplitude := int(mel.LowsAmplitude() * float64(base.pixelCount))
-	midsAmplitude := int(mel.MidsAmplitude() * float64(base.pixelCount))
-	highAmplitude := int(mel.HighAmplitude() * float64(base.pixelCount))
+	lowsAmplitude := int(mel.LowsAmplitude() * base.pixelScaler)
+	midsAmplitude := int(mel.MidsAmplitude() * base.pixelScaler)
+	highAmplitude := int(mel.HighAmplitude() * base.pixelScaler)
 
 	var lows, mids, high bool
 	for i := 0; i < len(p); i++ {

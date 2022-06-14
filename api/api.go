@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"ledfx/audio"
-	"ledfx/config"
 	"ledfx/logger"
 	"net/http"
 )
@@ -41,36 +40,36 @@ func HandleApi() {
 			logger.Logger.Warn(err)
 		}
 	})
-	http.HandleFunc("/api/config", func(w http.ResponseWriter, r *http.Request) {
-		SetHeader(w)
-		err := json.NewEncoder(w).Encode(config.GlobalConfig)
-		if err != nil {
-			logger.Logger.Warn(err)
-		}
-	})
+	// http.HandleFunc("/api/config", func(w http.ResponseWriter, r *http.Request) {
+	// 	SetHeader(w)
+	// 	err := json.NewEncoder(w).Encode(config.GlobalConfig)
+	// 	if err != nil {
+	// 		logger.Logger.Warn(err)
+	// 	}
+	// })
 
-	http.HandleFunc("/api/devices", func(w http.ResponseWriter, r *http.Request) {
-		SetHeader(w)
-		err := json.NewEncoder(w).Encode(config.GlobalConfig)
-		if err != nil {
-			logger.Logger.Warn(err)
-		}
-		// TODO: See comment for Virtuals
-		// json.NewEncoder(w).Encode(config.GlobalConfig.Devices)
-	})
+	// http.HandleFunc("/api/devices", func(w http.ResponseWriter, r *http.Request) {
+	// 	SetHeader(w)
+	// 	err := json.NewEncoder(w).Encode(config.GlobalConfig)
+	// 	if err != nil {
+	// 		logger.Logger.Warn(err)
+	// 	}
+	// 	// TODO: See comment for Virtuals
+	// 	// json.NewEncoder(w).Encode(config.GlobalConfig.Devices)
+	// })
 
-	http.HandleFunc("/api/virtuals", func(w http.ResponseWriter, r *http.Request) {
-		SetHeader(w)
-		// TODO:
-		// this is too much, we only need Virtuals
-		err := json.NewEncoder(w).Encode(config.GlobalConfig)
-		if err != nil {
-			logger.Logger.Warn(err)
-		}
+	// http.HandleFunc("/api/virtuals", func(w http.ResponseWriter, r *http.Request) {
+	// 	SetHeader(w)
+	// 	// TODO:
+	// 	// this is too much, we only need Virtuals
+	// 	err := json.NewEncoder(w).Encode(config.GlobalConfig)
+	// 	if err != nil {
+	// 		logger.Logger.Warn(err)
+	// 	}
 
-		// this is too less, we need the key also: {"virtuals": ...}
-		// json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
-	})
+	// 	// this is too less, we need the key also: {"virtuals": ...}
+	// 	// json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
+	// })
 	/*	http.HandleFunc("/api/virtuals/", func(w http.ResponseWriter, r *http.Request) {
 			if LastColor == "" {
 				LastColor = "#ff0000"

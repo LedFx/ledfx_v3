@@ -76,11 +76,11 @@ func (e *Effect) initialize(id string, pixelCount int) error {
 	e.pixelScaler = float64(pixelCount - 1)
 	e.palette = nil
 	e.blurrer = nil
-	// Set config to defaults
-	if err := defaults.Set(&e.Config); err != nil {
-		return err
-	}
 	return e.UpdateBaseConfig(e.Config)
+}
+
+func (e *Effect) UpdatePixelCount(pixelCount int) error {
+	return e.initialize(e.ID, pixelCount)
 }
 
 /*

@@ -93,6 +93,7 @@ func main() {
 	}
 
 	mux := http.DefaultServeMux
+	frontend.ServeHttp(mux)
 
 	// if err := bridgeapi.NewServer(a.BufferCallback, mux); err != nil {
 	// 	logger.Logger.WithField("category", "AudioBridge Server Init").Fatalf("Error initializing audio bridge server: %v", err)

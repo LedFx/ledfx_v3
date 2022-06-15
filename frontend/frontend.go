@@ -12,15 +12,13 @@ import (
 	"path/filepath"
 )
 
-func ServeHttp() {
-	Update()
-	serveFrontend := http.FileServer(http.Dir("frontend"))
-	// api.HandleApi()
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+func ServeHttp(mux *http.ServeMux) {
+	serveFrontend := http.FileServer(http.Dir("frontend/files"))
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		logger.Logger.WithField("context", "Frontend").Debugf("Request asked for %s", r.URL.Path)
 		if filepath.Ext(r.URL.Path) == "" {
-			logger.Logger.WithField("context", "Frontend").Debugln("Serving index.html")
-			http.ServeFile(w, r, "frontend/index.html")
+			logger.Logger.WithField("context", "Frontend").Debug("Serving index.html")
+			http.ServeFile(w, r, "frontend/files/index.html")
 		} else {
 			logger.Logger.WithField("context", "Frontend").Debugf("Serving HTTP for path: %s", r.URL.Path)
 			serveFrontend.ServeHTTP(w, r)

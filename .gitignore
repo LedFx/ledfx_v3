@@ -23,6 +23,6 @@ config.json
 ledfx
 
 # frontend
-frontend/
+frontend/files
 examples/apicontrol/tmp/*
 tmp/*.*

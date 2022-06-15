@@ -1,6 +1,6 @@
 package unstructuredold
 
 func SetupRoutes() {
-	ServeHttp()
+	// ServeHttp()
 	ServeWebsocket()
 }

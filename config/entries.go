@@ -44,6 +44,7 @@ func GetCore() CoreConfig {
 	// apply command line args which the user specified
 	host := pflag.Lookup("host")
 	port := pflag.Lookup("port")
+	noLogo := pflag.Lookup("no_logo")
 	openUi := pflag.Lookup("open_ui")
 	logLevel := pflag.Lookup("log_level")
 
@@ -52,6 +53,9 @@ func GetCore() CoreConfig {
 	}
 	if port.Changed {
 		core.Port = portArg
+	}
+	if noLogo.Changed {
+		core.NoLogo = noLogoArg
 	}
 	if openUi.Changed {
 		core.OpenUi = openUiArg
@@ -76,6 +80,15 @@ func SetCore(c map[string]interface{}) error {
 	}
 	store.Core = core
 	return nil
+}
+
+func GetFrontend() FrontendConfig {
+	return store.Frontend
+}
+
+func SetFrontend(f FrontendConfig) error {
+	store.Frontend = f
+	return saveConfig()
 }
 
 func DeleteEffect(id string) {

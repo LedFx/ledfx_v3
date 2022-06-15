@@ -1,4 +1,4 @@
-package unstructuredold
+package util
 
 import (
 	"testing"
@@ -11,12 +11,5 @@ var logoLength = 60276
 func TestLogoSize(t *testing.T) {
 	if len(logoTxt) != logoLength {
 		t.Errorf("Logo length has changed - did you update the logo? %d != %d", len(logoTxt), logoLength)
-	}
-}
-
-func TestLogoOutput(t *testing.T) {
-	err := PrintLogo()
-	if err != nil {
-		t.Errorf("PrintLogo() returned an error: %s", err)
 	}
 }

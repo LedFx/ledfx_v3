@@ -6,12 +6,16 @@ import (
 	"ledfx/config"
 	"ledfx/constants"
 	"ledfx/effect"
+	"ledfx/frontend"
 	"ledfx/logger"
+	"ledfx/util"
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 
+	pretty "github.com/fatih/color"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,25 +32,44 @@ func init() {
 }
 
 func main() {
-	// Print the cli logo
-	// err := utils.PrintLogo()
-	// if err != nil {
-	// 	logger.Logger.Fatal(err)
-	// }
-	fmt.Println()
-	fmt.Println("Welcome to LedFx " + constants.VERSION)
-	fmt.Println()
-
 	coreConfig := config.GetCore()
 	logger.Logger.SetLevel(logrus.Level(5 - coreConfig.LogLevel))
+	hostport := fmt.Sprintf("%s:%d", coreConfig.Host, coreConfig.Port)
+	url := fmt.Sprintf("http://%s", hostport)
 
 	logger.Logger.Info("Info message logging enabled")
 	logger.Logger.Debug("Debug message logging enabled")
 
+	// Print the cli logo and welcome message
+	if !coreConfig.NoLogo {
+		util.PrintLogo()
+	}
+	fmt.Println()
+	fmt.Println("Welcome to LedFx " + constants.VERSION)
+	fmt.Println()
+
+	// Print URL to go to
+	linkPrinter := pretty.New(pretty.FgHiBlue, pretty.Bold, pretty.Underline)
+	fmt.Println("Access LedFx through the web interface.")
+	switch runtime.GOOS {
+	case "darwin":
+		fmt.Print("[CMD]+Click: ")
+	default:
+		fmt.Print("[CTRL]+Click: ")
+	}
+	linkPrinter.Print(url)
+	fmt.Println()
+	fmt.Println()
+
+	frontend.Update()
+
+	if coreConfig.OpenUi {
+		util.OpenBrowser(url)
+		logger.Logger.Info("Automatically opened the browser")
+	}
+
 	// TODO: handle other flags
 	/**
-	  OpenUi
-	  Host
 	  Offline
 	  SentryCrash
 	  profiler
@@ -70,6 +93,7 @@ func main() {
 	}
 
 	mux := http.DefaultServeMux
+
 	// if err := bridgeapi.NewServer(a.BufferCallback, mux); err != nil {
 	// 	logger.Logger.WithField("category", "AudioBridge Server Init").Fatalf("Error initializing audio bridge server: %v", err)
 	// }
@@ -91,9 +115,8 @@ func main() {
 
 	effect.NewAPI(mux)
 
-	address := fmt.Sprintf("%s:%d", coreConfig.Host, coreConfig.Port)
-	logger.Logger.WithField("category", "HTTP Listener").Infof("Starting LedFx HTTP Server at %s", address)
-	if err := http.ListenAndServe(address, mux); err != nil {
+	logger.Logger.WithField("category", "HTTP Listener").Infof("Starting LedFx HTTP Server at %s", hostport)
+	if err := http.ListenAndServe(hostport, mux); err != nil {
 		logger.Logger.WithField("category", "HTTP Listener").Fatalf("Error listening and serving: %v", err)
 	}
 }

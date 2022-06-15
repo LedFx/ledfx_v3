@@ -1,17 +1,14 @@
-//go:generate goversioninfo -icon=assets/logo.ico
-package unstructuredold
+package util
 
 import (
 	_ "embed"
-	log "ledfx/logger"
+	"fmt"
+	"ledfx/logger"
 
 	"fyne.io/systray"
 )
 
-//go:embed assets/logo.ico
-var logo []byte
-
-func OnReady() {
+func OnReady(url string) {
 	systray.SetIcon(logo)
 	systray.SetTooltip("LedFx-Go")
 	mOpen := systray.AddMenuItem("Open", "Open LedFx Frontend in Browser")
@@ -22,9 +19,9 @@ func OnReady() {
 		for {
 			select {
 			case <-mOpen.ClickedCh:
-				Openbrowser("http://localhost:8080/#/?newCore=1")
+				OpenBrowser(fmt.Sprintf("http://%s/#/?newCore=1", url))
 			case <-mGithub.ClickedCh:
-				Openbrowser("https://github.com/LedFx/ledfx_rewrite")
+				OpenBrowser("https://github.com/LedFx/ledfx_rewrite")
 			case <-mQuit.ClickedCh:
 				systray.Quit()
 				return
@@ -34,5 +31,5 @@ func OnReady() {
 }
 
 func OnExit() {
-	log.Logger.WithField("category", "Systray Handler").Warnln("Closing systray...")
+	logger.Logger.WithField("category", "Systray Handler").Warnln("Closing systray...")
 }

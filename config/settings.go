@@ -66,17 +66,18 @@ func GetSettings() SettingsConfig {
 }
 
 func SetSettings(c map[string]interface{}) error {
-	settings := store.Settings
-	err := mapstructure.Decode(c, &settings)
+	prevSettings := store.Settings
+	err := mapstructure.Decode(c, &store.Settings)
 	if err != nil {
 		logger.Logger.WithField("context", "Config").Warn(err)
 		return err
 	}
-	err = validate.Struct(&c)
+	err = validate.Struct(&store.Settings)
 	if err != nil {
+		store.Settings = prevSettings
 		logger.Logger.WithField("context", "Config").Warn(err)
 		return err
 	}
-	store.Settings = settings
+	saveConfig()
 	return nil
 }

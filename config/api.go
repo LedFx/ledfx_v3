@@ -37,7 +37,13 @@ func NewAPI(mux *http.ServeMux) {
 
 		case http.MethodPut:
 			// Update settings
-			err := json.NewDecoder(request.Body).Decode(&store.Settings)
+			settings := make(map[string]interface{})
+			err := json.NewDecoder(request.Body).Decode(&settings)
+			if err != nil {
+				writer.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			err = SetSettings(settings)
 			if err != nil {
 				writer.WriteHeader(http.StatusBadRequest)
 				return

@@ -3,7 +3,10 @@ package effect
 import (
 	"encoding/json"
 	"fmt"
+	"ledfx/audio"
 	"ledfx/color"
+	"ledfx/config"
+	"ledfx/logger"
 	"ledfx/util"
 	"log"
 	"reflect"
@@ -44,9 +47,8 @@ func Schema() (schema map[string]interface{}, err error) {
 }
 
 // Creates a new effect and returns its unique id.
-// You can supply an ID, but if another effect has that id, this effect will make a different id.
-// It is guaranteed that after calling this, there will be AN effect with that id
-func New(preferred_id, effect_type string, pixelCount int, config interface{}) (effect *Effect, id string, err error) {
+// You can supply an ID. If an effect exists with this id, it will be destroyed and overwriten with this new effect
+func New(new_id, effect_type string, pixelCount int, new_config interface{}) (effect *Effect, id string, err error) {
 	switch effect_type {
 	case "energy":
 		effect = &Effect{
@@ -71,11 +73,12 @@ func New(preferred_id, effect_type string, pixelCount int, config interface{}) (
 	default:
 		return effect, id, fmt.Errorf("%s is not a known effect type. Has it been registered in effects.go?", effect_type)
 	}
+	effect.Type = effect_type
 
-	// if the preferred id is not nil and it has not already been registered, use it
-	if _, exists := effectInstances[preferred_id]; !exists && preferred_id != "" {
-		id = preferred_id
-		effectInstances[id] = effect
+	// if the id exists and has already been registered, overwrite the existing effect with that id
+	if _, exists := effectInstances[new_id]; exists && new_id != "" {
+		Destroy(id)
+		effectInstances[new_id] = effect
 	} else { // otherwise, generate a new id
 		for i := 0; ; i++ {
 			id = effect_type + strconv.Itoa(i)
@@ -95,7 +98,8 @@ func New(preferred_id, effect_type string, pixelCount int, config interface{}) (
 		return effect, id, err
 	}
 	// update with any given config
-	err = effect.UpdateBaseConfig(config)
+	err = effect.UpdateBaseConfig(new_config)
+	logger.Logger.WithField("context", "Effects").Infof("Created %s effect with id %s", effect_type, id)
 	return effect, id, err
 }
 
@@ -192,6 +196,8 @@ func Get(id string) (*Effect, error) {
 
 // Kill an effect instance
 func Destroy(id string) {
+	audio.Analyzer.DeleteMelbank(id)
+	config.DeleteEffect(id)
 	delete(effectInstances, id)
 }
 
@@ -210,4 +216,15 @@ func JsonSchema() (jsonSchema []byte, err error) {
 	}
 	jsonSchema, err = util.CreateJsonSchema(schema)
 	return jsonSchema, err
+}
+
+func LoadFromConfig() error {
+	storedEffects := config.GetEffects()
+	for id, entry := range storedEffects {
+		_, _, err := New(id, entry.Type, 100, entry.BaseConfig)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

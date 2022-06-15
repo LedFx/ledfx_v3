@@ -1,10 +1,10 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"ledfx/audio"
 	"ledfx/audio/audiobridge"
+	"ledfx/config"
 	"ledfx/constants"
 	"ledfx/effect"
 	"ledfx/logger"
@@ -15,12 +15,10 @@ import (
 	"syscall"
 
 	"fyne.io/systray"
+	"github.com/sirupsen/logrus"
 )
 
 func init() {
-	flag.StringVar(&ip, "ip", "0.0.0.0", "The IP address the frontend will run on")
-	flag.IntVar(&port, "port", 8080, "The port the frontend will run on")
-
 	// Capture ctrl-c or sigterm to gracefully shutdown
 	c := make(chan os.Signal, 2)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
@@ -32,18 +30,7 @@ func init() {
 
 }
 
-var (
-	ip   string
-	port int
-)
-
 func main() {
-	// Just print version and return if flag is set
-	// if config.GlobalConfig.Version {
-	// 	fmt.Println("LedFx " + constants.VERSION)
-	// 	return
-	// }
-
 	// Print the cli logo
 	// err := utils.PrintLogo()
 	// if err != nil {
@@ -51,6 +38,8 @@ func main() {
 	// }
 	fmt.Println("Welcome to LedFx " + constants.VERSION)
 	fmt.Println()
+
+	logger.Logger.SetLevel(logrus.Level(5 - config.GetCore().LogLevel))
 
 	logger.Logger.Info("Verbose logging enabled")
 	logger.Logger.Debug("Very verbose logging enabled")
@@ -76,6 +65,11 @@ func main() {
 	// run systray
 	// systray.Run(utils.OnReady, utils.OnExit)
 
+	err := effect.LoadFromConfig()
+	if err != nil {
+		logger.Logger.WithField("context", "Load Effects from Config").Fatal(err)
+	}
+
 	mux := http.DefaultServeMux
 	// if err := bridgeapi.NewServer(a.BufferCallback, mux); err != nil {
 	// 	logger.Logger.WithField("category", "AudioBridge Server Init").Fatalf("Error initializing audio bridge server: %v", err)
@@ -87,7 +81,7 @@ func main() {
 	}
 	defer br.Stop()
 
-	audio.LogAudioDevices()
+	// audio.LogAudioDevices()
 	audiodevice, err := audio.GetDeviceByID("9f012a5ef29af5e7b226bae734a8cb2ad229f063") // get from config
 	if err != nil {
 		log.Fatal(err)

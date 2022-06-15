@@ -172,23 +172,3 @@ func TestGlobalEffectSettings(t *testing.T) {
 		t.Error("Invalid config should return an error")
 	}
 }
-
-// cases := []struct {
-// 	q string
-// 	a Color
-// 	e bool
-// }{
-// 	{"#ffFf00", Color{1, 1, 0}, false},
-// 	{"RGB(0,255, 0)", Color{0, 1, 0}, false},
-// 	{"#fF0", Color{0, 0, 0}, true},
-// 	{"rgb(-1,0,256)", Color{}, true},
-// 	{"#efghij", Color{}, true},
-// 	{"nonsense color", Color{}, true},
-// 	{"red", Color{1, 0, 0}, false},
-// }
-// for _, c := range cases {
-// 	guess, err := NewColor(c.q)
-// 	if (c.a != guess) || (err == nil == c.e) { // if the answer is wrong, or the error value is unexpected
-// 		t.Errorf("Failed to parse %s: expected (%v, %v) but got (%v, %v)", c.q, c.a, c.e, guess, err)
-// 	}
-// }

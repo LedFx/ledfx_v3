@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"ledfx/audio"
 	"ledfx/color"
+	"ledfx/config"
 	"math"
 	"sync"
 	"time"
@@ -30,6 +31,7 @@ type AudioPixelGenerator interface {
 
 type Effect struct {
 	ID             string
+	Type           string
 	pixelCount     int
 	pixelScaler    float64          // use this to multiply 0-1 float indexes to real integer indexes
 	Config         BaseEffectConfig // base config. try to make the effect using only keys from this
@@ -76,7 +78,7 @@ func (e *Effect) initialize(id string, pixelCount int) error {
 	e.pixelScaler = float64(pixelCount - 1)
 	e.palette = nil
 	e.blurrer = nil
-	return e.UpdateBaseConfig(e.Config)
+	return nil
 }
 
 func (e *Effect) UpdatePixelCount(pixelCount int) error {
@@ -157,7 +159,21 @@ func (e *Effect) UpdateBaseConfig(c interface{}) (err error) {
 
 	// apply config to effect
 	e.Config = newConfig
-	return nil
+
+	// save to config store
+	mapConfig := map[string]interface{}{}
+	err = mapstructure.Decode(newConfig, &mapConfig)
+	if err != nil {
+		return err
+	}
+	err = config.AddEntry(
+		e.ID,
+		config.EffectEntry{
+			Type:       e.Type,
+			BaseConfig: mapConfig,
+		},
+	)
+	return err
 }
 
 // Effect implementation can implement this method

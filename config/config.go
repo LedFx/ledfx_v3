@@ -1,16 +1,33 @@
 package config
 
 import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"ledfx/constants"
 	"ledfx/logger"
 	"os"
 	"path/filepath"
 
+	"github.com/creasty/defaults"
+	"github.com/go-playground/validator/v10"
 	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 )
 
 const configName string = "config"
+
+var configPath string
+var hostArg string // core config values which can be set by command line args
+var portArg int
+var openUiArg bool
+var logLevelArg int
+var validate *validator.Validate = validator.New()
+var store *config = &config{
+	Core:     CoreConfig{},
+	Effects:  map[string]EffectEntry{},
+	Devices:  map[string]DeviceEntry{},
+	Virtuals: map[string]VirtualEntry{},
+}
 
 type AudioDevice struct {
 	Id          string  `mapstructure:"id" json:"id"`
@@ -29,12 +46,16 @@ type AudioConfig struct {
 	FrameRate int         `mapstructure:"frame_rate" json:"frame_rate"`
 }
 
+type CoreConfig struct {
+	Host     string `mapstructure:"host" json:"host" default:"0.0.0.0" validate:"ip"`
+	Port     int    `mapstructure:"port" json:"port" default:"8080" validate:"gte=0,lte=65536"`
+	OpenUi   bool   `mapstructure:"open_ui" json:"open_ui" default:"false" validate:""`
+	LogLevel int    `mapstructure:"log_level" json:"log_level" default:"2" validate:"gte=0,lte=2"`
+}
+
 type config struct {
-	Version  string                  `mapstructure:"version" json:"version"`
-	Host     string                  `mapstructure:"host" json:"host"`
-	Port     int                     `mapstructure:"port" json:"port"`
-	OpenUi   bool                    `mapstructure:"open_ui" json:"open_ui"`
-	LogLevel int                     `mapstructure:"log_level" json:"log_level"`
+	//Version  string                  `mapstructure:"version" json:"version"`
+	Core     CoreConfig              `mapstructure:"core" json:"core"`
 	Effects  map[string]EffectEntry  `mapstructure:"effects" json:"effects"`
 	Devices  map[string]DeviceEntry  `mapstructure:"devices" json:"devices"`
 	Virtuals map[string]VirtualEntry `mapstructure:"virtuals" json:"virtuals"`
@@ -42,85 +63,118 @@ type config struct {
 	// Audio    AudioConfig             `mapstructure:"audio" json:"audio"`
 }
 
-var config_inst *config = &config{
-	Version:  "",
-	Host:     "",
-	Port:     0,
-	OpenUi:   false,
-	LogLevel: 0,
-	Effects:  map[string]EffectEntry{},
-	Devices:  map[string]DeviceEntry{},
-	Virtuals: map[string]VirtualEntry{},
-}
-var GlobalViper *viper.Viper
-
+/* Populates the config store (live config in memory).
+1. set config store to defaults
+2. update with any values from the config file
+3. update with any command line args
+*/
 func init() {
-	GlobalViper = viper.New()
-	var configPath string
+	// special args
+	var version bool
+
+	pflag.BoolVarP(&version, "version", "v", false, "Print the version of LedFx")
 	pflag.StringVarP(&configPath, "config", "c", "", "Path to json configuration file")
-	pflag.StringP("host", "h", "0.0.0.0", "The hostname of the web interface")
-	pflag.IntP("port", "p", 8080, "Web interface port")
-	pflag.BoolP("version", "v", false, "Print the version of ledfx")
-	pflag.BoolP("open-ui", "u", false, "Automatically open the web interface")
-	pflag.IntP("log_level", "l", 0, "Set log level [0: warnings, 1: info, 2: debug]")
+	pflag.StringVarP(&hostArg, "host", "h", "0.0.0.0", "The hostname of the web interface")
+	pflag.IntVarP(&portArg, "port", "p", 8080, "Web interface port")
+	pflag.BoolVarP(&openUiArg, "open_ui", "u", false, "Automatically open the web interface")
+	pflag.IntVarP(&logLevelArg, "log_level", "l", 2, "Set log level [0: debug, 1: info, 2: warnings]")
 	// pflag.BoolP("offline", "o", false, "Disable automated updates and sentry crash logger")
 
 	pflag.Parse()
-	err := GlobalViper.BindPFlags(pflag.CommandLine)
+
+	// Just print version and exit if flag is set
+	if version {
+		fmt.Println("LedFx " + constants.VERSION)
+		os.Exit(0)
+	}
+
+	// validate all the command line args
+	coreConfigArgs := CoreConfig{
+		Host:     hostArg,
+		Port:     portArg,
+		OpenUi:   openUiArg,
+		LogLevel: logLevelArg,
+	}
+	err := validate.Struct(&coreConfigArgs)
+	if err != nil {
+		logger.Logger.WithField("context", "Command Line Arguments").Fatal(err)
+	}
+
+	// apply defaults to the config
+	err = defaults.Set(store)
 	if err != nil {
 		logger.Logger.WithField("context", "Config Init").Fatal(err)
 	}
 
-	// Load config
-	err = loadConfig(configPath)
-	if err != nil {
+	// load any config saved on file
+	loadConfig()
+	// TODO validate config loaded from json
+
+	logger.Logger.WithField("context", "Config Init").Infof("Initialised config")
+}
+
+// LoadConfig reads in config file and populates the config instance.
+func loadConfig() {
+
+	// make sure config file can be opened
+	if err := ensureConfigFile(); err != nil {
 		logger.Logger.WithField("context", "Config Init").Fatal(err)
+	}
+
+	// read the contents
+	logger.Logger.WithField("context", "Config Init").Infof("Loading config file: %s", configPath)
+	content, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		logger.Logger.WithField("context", "Config Init").Fatal("Error reading config file: ", err)
+	}
+
+	// parse as json
+	// unknown keys will be ignored
+	err = json.Unmarshal(content, &store)
+	if err != nil {
+		logger.Logger.WithField("context", "Config Init").Fatal("Error parsing config file: ", err)
 	}
 }
 
-// LoadConfig reads in config file and ENV variables if set.
-func loadConfig(configPath string) error {
-
-	if configPath == "" {
-		configPath = filepath.Join(constants.GetOsConfigDir(), configName+".json")
+// Makes sure that a config can be opened at the configPath
+func ensureConfigFile() error {
+	// if user supplied a config, simply test if we can open it
+	if configPath != "" {
+		_, err := os.Open(configPath)
+		return err
 	}
-
-	err := os.MkdirAll(configPath, 0744) // ensure given config directory exists
+	// if not supplied, make sure we have a config file in the default location
+	configDir := constants.GetOsConfigDir()
+	configPath = filepath.Join(configDir, configName+".json")
+	// first, ensure config directory exists
+	err := os.MkdirAll(configDir, 0744)
 	if err != nil {
 		return err
 	}
-
-	err = createConfigIfNotExists(configPath)
-	if err != nil {
+	// try to open config file in the default directory
+	_, err = os.Open(configPath)
+	if err == nil { // if it exists and we can open it, we're good to go
 		return err
 	}
-
-	GlobalViper.SetConfigName(configName)
-	GlobalViper.AutomaticEnv()
-	GlobalViper.AddConfigPath(configPath)
-	err = GlobalViper.ReadInConfig()
+	// if it doesn't exist, create it
+	logger.Logger.WithField("context", "Config Init").Warn("Config file not found")
+	logger.Logger.WithField("context", "Config Init").Warnf("Creating blank config at %s", configPath)
+	_, err = os.Create(configPath)
 	if err != nil {
-		return err
+		logger.Logger.WithField("context", "Config Init").Errorf("Failed to create blank config at %s", configPath)
 	}
-
-	err = GlobalViper.Unmarshal(&config_inst)
+	// finally, test we can open the new blank config and write empty config to it
+	f, err := os.Open(configPath)
+	f.Close()
+	saveConfig()
 	return err
 }
 
-func createConfigIfNotExists(configPath string) error {
-	var f *os.File
-	_, err := os.Open(configPath)
-	// if the error is not related to finding the path...
-	if _, ok := err.(*os.PathError); !ok {
-		return err
-	}
-	// Create config dir and file given it does not exist
-	logger.Logger.WithField("context", "Config Init").Warnf("Config file not found; Creating default config at %s", configPath)
-	f, err = os.Create(configPath)
+func saveConfig() error {
+	file, _ := json.MarshalIndent(store, "", "  ")
+	err := ioutil.WriteFile(configPath, file, 0644)
 	if err != nil {
-		return err
+		logger.Logger.WithField("context", "Config").Warnf("Failed to save config to file at %s", configPath)
 	}
-	// write empty json to it
-	_, err = f.WriteString("{}\n")
 	return err
 }

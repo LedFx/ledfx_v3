@@ -89,17 +89,25 @@ func New(new_id, effect_type string, pixelCount int, new_config interface{}) (ef
 			}
 		}
 	}
+	logger.Logger.WithField("context", "Effects").Debugf("Creating %s effect with id %s", effect_type, id)
+
 	// initialise the new effect with its id and config
 	if err = effect.initialize(id, pixelCount); err != nil {
+		Destroy(id)
 		return effect, id, nil
 	}
 	// Set effect's config to defaults
-	if err := defaults.Set(&effect.Config); err != nil {
+	if err = defaults.Set(&effect.Config); err != nil {
+		Destroy(id)
 		return effect, id, err
 	}
 	// update with any given config
-	err = effect.UpdateBaseConfig(new_config)
-	logger.Logger.WithField("context", "Effects").Infof("Created %s effect with id %s", effect_type, id)
+	if err = effect.UpdateBaseConfig(new_config); err != nil {
+		logger.Logger.WithField("context", "Effects").Warnf("Effect %s created with invalid config - aborting", id)
+		Destroy(id)
+		return effect, id, err
+	}
+	logger.Logger.WithField("context", "Effects").Infof("Created effect with id %s", id)
 	return effect, id, err
 }
 
@@ -196,9 +204,11 @@ func Get(id string) (*Effect, error) {
 
 // Kill an effect instance
 func Destroy(id string) {
+	logger.Logger.WithField("context", "Effects").Debugf("Deleting effect with id %s", id)
 	audio.Analyzer.DeleteMelbank(id)
 	config.DeleteEffect(id)
 	delete(effectInstances, id)
+	logger.Logger.WithField("context", "Effects").Infof("Deleted effect with id %s", id)
 }
 
 func GetIDs() []string {

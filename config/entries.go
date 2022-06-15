@@ -22,9 +22,9 @@ type VirtualEntry struct{}
 func AddEntry(id string, entry interface{}) (err error) {
 	switch t := entry.(type) {
 	case EffectEntry:
-		logger.Logger.WithField("context", "Config").Infof("Saving effect entry with id %s", id)
-		logger.Logger.WithField("context", "Config").Debug(entry)
 		store.Effects[id] = entry.(EffectEntry)
+		logger.Logger.WithField("context", "Config").Debugf("Saved %s to config", id)
+		logger.Logger.WithField("context", "Config").Debug(entry)
 	case DeviceEntry:
 		err = errors.New("device config entry not yet implemented")
 	case VirtualEntry:
@@ -65,12 +65,12 @@ func SetCore(c map[string]interface{}) error {
 	core := store.Core
 	err := mapstructure.Decode(c, &core)
 	if err != nil {
-		logger.Logger.WithField("context", "Save Core Config").Warn(err)
+		logger.Logger.WithField("context", "Config").Warn(err)
 		return err
 	}
 	err = validate.Struct(&c)
 	if err != nil {
-		logger.Logger.WithField("context", "Save Core Config").Warn(err)
+		logger.Logger.WithField("context", "Config").Warn(err)
 		return err
 	}
 	store.Core = core
@@ -78,7 +78,11 @@ func SetCore(c map[string]interface{}) error {
 }
 
 func DeleteEffect(id string) {
+	if _, exists := store.Effects[id]; !exists {
+		return
+	}
 	delete(store.Effects, id)
+	logger.Logger.WithField("context", "Config").Debugf("Deleted %s from config", id)
 	saveConfig()
 }
 

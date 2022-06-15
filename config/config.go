@@ -176,5 +176,6 @@ func saveConfig() error {
 	if err != nil {
 		logger.Logger.WithField("context", "Config").Warnf("Failed to save config to file at %s", configPath)
 	}
+	logger.Logger.WithField("context", "Config").Debugf("Saved config")
 	return err
 }

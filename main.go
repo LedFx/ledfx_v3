@@ -3,18 +3,15 @@ package main
 import (
 	"fmt"
 	"ledfx/audio"
-	"ledfx/audio/audiobridge"
 	"ledfx/config"
 	"ledfx/constants"
 	"ledfx/effect"
 	"ledfx/logger"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"fyne.io/systray"
 	"github.com/sirupsen/logrus"
 )
 
@@ -36,13 +33,15 @@ func main() {
 	// if err != nil {
 	// 	logger.Logger.Fatal(err)
 	// }
+	fmt.Println()
 	fmt.Println("Welcome to LedFx " + constants.VERSION)
 	fmt.Println()
 
-	logger.Logger.SetLevel(logrus.Level(5 - config.GetCore().LogLevel))
+	coreConfig := config.GetCore()
+	logger.Logger.SetLevel(logrus.Level(5 - coreConfig.LogLevel))
 
-	logger.Logger.Info("Verbose logging enabled")
-	logger.Logger.Debug("Very verbose logging enabled")
+	logger.Logger.Info("Info message logging enabled")
+	logger.Logger.Debug("Debug message logging enabled")
 
 	// TODO: handle other flags
 	/**
@@ -75,24 +74,26 @@ func main() {
 	// 	logger.Logger.WithField("category", "AudioBridge Server Init").Fatalf("Error initializing audio bridge server: %v", err)
 	// }
 
-	br, err := audiobridge.NewBridge(audio.Analyzer.BufferCallback)
-	if err != nil {
-		log.Fatalf("Error initializing new bridge: %v\n", err)
-	}
-	defer br.Stop()
+	// br, err := audiobridge.NewBridge(audio.Analyzer.BufferCallback)
+	// if err != nil {
+	// 	log.Fatalf("Error initializing new bridge: %v\n", err)
+	// }
+	// defer br.Stop()
 
-	// audio.LogAudioDevices()
-	audiodevice, err := audio.GetDeviceByID("9f012a5ef29af5e7b226bae734a8cb2ad229f063") // get from config
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := br.StartLocalInput(audiodevice, true); err != nil {
-		log.Fatalf("Error starting local input: %v\n", err)
-	}
+	// // audio.LogAudioDevices()
+	// audiodevice, err := audio.GetDeviceByID("9f012a5ef29af5e7b226bae734a8cb2ad229f063") // get from config
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// if err := br.StartLocalInput(audiodevice, true); err != nil {
+	// 	logger.Logger.WithField("category", "HTTP Listener").Fatalf("Error starting local input: %v\n", err)
+	// }
 
 	effect.NewAPI(mux)
 
-	if err := http.ListenAndServe("0.0.0.0:8080", mux); err != nil {
+	address := fmt.Sprintf("%s:%d", coreConfig.Host, coreConfig.Port)
+	logger.Logger.WithField("category", "HTTP Listener").Infof("Starting LedFx HTTP Server at %s", address)
+	if err := http.ListenAndServe(address, mux); err != nil {
 		logger.Logger.WithField("category", "HTTP Listener").Fatalf("Error listening and serving: %v", err)
 	}
 }
@@ -103,5 +104,5 @@ func shutdown() {
 	audio.Analyzer.Cleanup()
 
 	// kill systray
-	systray.Quit()
+	// systray.Quit()
 }

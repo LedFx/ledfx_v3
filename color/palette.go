@@ -55,7 +55,7 @@ func (p *Palette) String() string {
 
 // TODO: check the return type. Pointer or struct?
 func NewPalette(gs string) (g *Palette, err error) {
-	predef, isPredef := LedFxPalettes[gs]
+	predef, isPredef := LedFxPalettes[strings.ToLower(gs)]
 	if isPredef {
 		return ParsePalette(predef)
 	}
@@ -80,7 +80,10 @@ func ParsePalette(gs string) (g *Palette, err error) {
 	gs = strings.ReplaceAll(gs, " ", "")
 	splits = strings.SplitN(gs, "(", 2)
 	mode := splits[0]
-	g.mode = strings.TrimSuffix(mode, "-palette")
+	g.mode = strings.TrimSuffix(mode, "-gradient")
+	if g.mode != "linear" || len(splits) != 2 {
+		return nil, errInvalidPalette
+	}
 	angleColorPos := splits[1]
 	angleColorPos = strings.TrimRight(angleColorPos, ")")
 	splits = strings.SplitN(angleColorPos, ",", 2)

@@ -11,6 +11,7 @@ import (
 
 // the saved config entry for an effect
 type EffectEntry struct {
+	ID          string                 `mapstructure:"id" json:"id"`
 	Type        string                 `mapstructure:"type" json:"type"`
 	BaseConfig  map[string]interface{} `mapstructure:"base_config" json:"base_config"`
 	ExtraConfig map[string]interface{} `mapstructure:"extra_config" json:"extra_config"`
@@ -88,6 +89,15 @@ func DeleteEffect(id string) {
 
 func GetEffects() map[string]EffectEntry {
 	return store.Effects
+}
+
+func GetEffect(id string) (EffectEntry, error) {
+	if entry, ok := store.Effects[id]; ok {
+		return entry, nil
+	} else {
+		return entry, fmt.Errorf("cannot retrieve effect config of id: %s", id)
+	}
+
 }
 
 // func GetDevices() map[string]DeviceEntry {

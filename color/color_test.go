@@ -37,6 +37,7 @@ func TestNewPalette(t *testing.T) {
 		test string
 		pass bool
 	}{
+		{"this is not a palette", false},
 		{"linear-gradient(#ffFf00 10%, )", false},
 		{"linear-gradient(180deg, #ffgh00 10%)", false},
 		{"linear-gradient(180deg, rgb(299,0,299) 10%)", false},

@@ -71,7 +71,7 @@ func New(new_id, effect_type string, pixelCount int, new_config interface{}) (ef
 			pixelGenerator: &Pulse{},
 		}
 	default:
-		return effect, id, fmt.Errorf("%s is not a known effect type. Has it been registered in effects.go?", effect_type)
+		return effect, id, fmt.Errorf("'%s' is not a known effect type. Has it been registered in effects.go?", effect_type)
 	}
 	effect.Type = effect_type
 

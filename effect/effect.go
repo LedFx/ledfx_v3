@@ -2,6 +2,7 @@ package effect
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"ledfx/audio"
 	"ledfx/color"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/creasty/defaults"
+	"github.com/go-playground/validator/v10"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -112,8 +114,14 @@ func (e *Effect) UpdateBaseConfig(c interface{}) (err error) {
 
 	// validate all values
 	err = validate.Struct(&newConfig)
-	if err != nil {
-		return err
+	if errs, ok := validate.Struct(&newConfig).(validator.ValidationErrors); ok {
+		if errs != nil {
+			errString := "Validation Errors: "
+			for _, err := range errs {
+				errString += fmt.Sprintf("Field %s with value %v; ", err.Field(), err.Value())
+			}
+			return errors.New(errString)
+		}
 	}
 
 	// update any stored properties that are based on the config
@@ -169,6 +177,7 @@ func (e *Effect) UpdateBaseConfig(c interface{}) (err error) {
 	err = config.AddEntry(
 		e.ID,
 		config.EffectEntry{
+			ID:         e.ID,
 			Type:       e.Type,
 			BaseConfig: mapConfig,
 		},

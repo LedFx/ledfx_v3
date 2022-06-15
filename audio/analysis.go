@@ -148,16 +148,14 @@ func (a *analyzer) BufferCallback(buf Buffer) {
 
 func (a *analyzer) Cleanup() {
 	a.mu.Lock()
-	defer a.mu.Unlock()
 	a.eq.Free()
-
 	a.bufMono.Free()
 	a.bufVocals.Free()
-
 	a.onsetMono.Free()
 	a.pvocMono.Free()
 	a.onsetVocals.Free()
 	a.pvocVocals.Free()
+	a.mu.Unlock()
 
 	for id := range a.melbanks {
 		a.DeleteMelbank(id)
@@ -184,7 +182,7 @@ func (a *analyzer) DeleteMelbank(id string) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if mb, ok := a.melbanks[id]; ok {
-		log.Logger.WithField("category", "Audio Analysis").Debugf("Deleted melbank for effect %s.", id)
+		log.Logger.WithField("category", "Audio Analysis").Debugf("Deleted melbank for effect %s", id)
 		mb.Free()
 		delete(a.melbanks, id)
 	}
@@ -195,12 +193,12 @@ func (a *analyzer) NewMelbank(id string, audio AudioStream, min_freq, max_freq u
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if _, ok := a.melbanks[id]; ok {
-		log.Logger.WithField("category", "Audio Analysis").Debugf("Effect %s attempted to create a new melbank but already has one registered.", id)
+		log.Logger.WithField("category", "Audio Analysis").Debugf("Effect %s attempted to create a new melbank but already has one registered", id)
 		a.DeleteMelbank(id)
 	}
 	mb, err := newMelbank(audio, min_freq, max_freq)
 	if err == nil {
-		log.Logger.WithField("category", "Audio Analysis").Debugf("Registered new melbank for effect %s.", id)
+		log.Logger.WithField("category", "Audio Analysis").Debugf("Registered new melbank for effect %s", id)
 		a.melbanks[id] = mb
 	}
 	return err

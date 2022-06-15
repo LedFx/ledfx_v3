@@ -1,0 +1,82 @@
+package config
+
+import (
+	"ledfx/logger"
+	"ledfx/util"
+	"reflect"
+
+	"github.com/mitchellh/mapstructure"
+	"github.com/spf13/pflag"
+)
+
+type SettingsConfig struct {
+	Host     string `mapstructure:"host" json:"host" default:"0.0.0.0" validate:"ip" description:"Web interface hostname"`
+	Port     int    `mapstructure:"port" json:"port" default:"8080" validate:"gte=0,lte=65536" description:"Web interface port"`
+	NoLogo   bool   `mapstructure:"no_logo" json:"no_logo" default:"false" validate:"" description:"Hide the command line logo at startup"`
+	NoUpdate bool   `mapstructure:"no_update" json:"no_update" default:"false" validate:"" description:"Disable automatic updates at startup"`
+	OpenUi   bool   `mapstructure:"open_ui" json:"open_ui" default:"false" validate:"" description:"Automatically open the web interface at startup"`
+	LogLevel int    `mapstructure:"log_level" json:"log_level" default:"2" validate:"gte=0,lte=2" description:"Set log level [0: debug, 1: info, 2: warnings]"`
+}
+
+// Generate settings config schema
+func SettingsSchema() (schema map[string]interface{}, err error) {
+	return util.CreateSchema(reflect.TypeOf((*SettingsConfig)(nil)).Elem())
+}
+
+// Generate settings config schema as json
+func CoreJsonSchema() (jsonSchema []byte, err error) {
+	schema, err := SettingsSchema()
+	if err != nil {
+		return jsonSchema, err
+	}
+	jsonSchema, err = util.CreateJsonSchema(schema)
+	return jsonSchema, err
+}
+
+// returns settings including those set by command line args
+func GetSettings() SettingsConfig {
+	settings := store.Settings
+	// apply command line args which the user specified
+	host := pflag.Lookup("host")
+	port := pflag.Lookup("port")
+	noLogo := pflag.Lookup("no_logo")
+	noUpdate := pflag.Lookup("no_update")
+	openUi := pflag.Lookup("open_ui")
+	logLevel := pflag.Lookup("log_level")
+
+	if host.Changed {
+		settings.Host = hostArg
+	}
+	if port.Changed {
+		settings.Port = portArg
+	}
+	if noLogo.Changed {
+		settings.NoLogo = noLogoArg
+	}
+	if noUpdate.Changed {
+		settings.NoUpdate = noUpdateArg
+	}
+	if openUi.Changed {
+		settings.OpenUi = openUiArg
+	}
+	if logLevel.Changed {
+		settings.LogLevel = logLevelArg
+	}
+	return settings
+}
+
+func SetSettings(c map[string]interface{}) error {
+	settings := store.Settings
+	err := mapstructure.Decode(c, &settings)
+	if err != nil {
+		logger.Logger.WithField("context", "Config").Warn(err)
+		return err
+	}
+	err = validate.Struct(&c)
+	if err != nil {
+		logger.Logger.WithField("context", "Config").Warn(err)
+		return err
+	}
+	store.Settings = settings
+	return nil
+}

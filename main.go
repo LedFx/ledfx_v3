@@ -32,16 +32,16 @@ func init() {
 }
 
 func main() {
-	coreConfig := config.GetCore()
-	logger.Logger.SetLevel(logrus.Level(5 - coreConfig.LogLevel))
-	hostport := fmt.Sprintf("%s:%d", coreConfig.Host, coreConfig.Port)
+	settings := config.GetSettings()
+	logger.Logger.SetLevel(logrus.Level(5 - settings.LogLevel))
+	hostport := fmt.Sprintf("%s:%d", settings.Host, settings.Port)
 	url := fmt.Sprintf("http://%s", hostport)
 
 	logger.Logger.Info("Info message logging enabled")
 	logger.Logger.Debug("Debug message logging enabled")
 
 	// Print the cli logo and welcome message
-	if !coreConfig.NoLogo {
+	if !settings.NoLogo {
 		util.PrintLogo()
 	}
 	fmt.Println()
@@ -61,17 +61,19 @@ func main() {
 	fmt.Println()
 	fmt.Println()
 
-	frontend.Update()
+	if settings.NoUpdate {
+		logger.Logger.Warn("Not checking for updates")
+	} else {
+		frontend.Update()
+	}
 
-	if coreConfig.OpenUi {
+	if settings.OpenUi {
 		util.OpenBrowser(url)
 		logger.Logger.Info("Automatically opened the browser")
 	}
 
 	// TODO: handle other flags
 	/**
-	  Offline
-	  SentryCrash
 	  profiler
 	*/
 	// profiler.Start()
@@ -115,6 +117,7 @@ func main() {
 	// }
 
 	effect.NewAPI(mux)
+	config.NewAPI(mux)
 
 	logger.Logger.WithField("category", "HTTP Listener").Infof("Starting LedFx HTTP Server at %s", hostport)
 	if err := http.ListenAndServe(hostport, mux); err != nil {

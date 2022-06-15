@@ -4,10 +4,28 @@ import (
 	"errors"
 	"fmt"
 	"ledfx/logger"
-
-	"github.com/mitchellh/mapstructure"
-	"github.com/spf13/pflag"
 )
+
+type EntryType int
+
+const (
+	Effect EntryType = iota
+	Device
+	Virtual
+)
+
+func (e EntryType) String() string {
+	switch e {
+	case Effect:
+		return "effect"
+	case Device:
+		return "device"
+	case Virtual:
+		return "virtual"
+	default:
+		return "unknown"
+	}
+}
 
 // the saved config entry for an effect
 type EffectEntry struct {
@@ -39,64 +57,25 @@ func AddEntry(id string, entry interface{}) (err error) {
 	return saveConfig()
 }
 
-func GetCore() CoreConfig {
-	core := store.Core
-	// apply command line args which the user specified
-	host := pflag.Lookup("host")
-	port := pflag.Lookup("port")
-	noLogo := pflag.Lookup("no_logo")
-	openUi := pflag.Lookup("open_ui")
-	logLevel := pflag.Lookup("log_level")
-
-	if host.Changed {
-		core.Host = hostArg
+func DeleteEntry(t EntryType, id string) {
+	switch t {
+	case Effect:
+		if _, exists := store.Effects[id]; !exists {
+			return
+		}
+		delete(store.Effects, id)
+	case Device:
+		if _, exists := store.Devices[id]; !exists {
+			return
+		}
+		delete(store.Devices, id)
+	case Virtual:
+		if _, exists := store.Virtuals[id]; !exists {
+			return
+		}
+		delete(store.Virtuals, id)
 	}
-	if port.Changed {
-		core.Port = portArg
-	}
-	if noLogo.Changed {
-		core.NoLogo = noLogoArg
-	}
-	if openUi.Changed {
-		core.OpenUi = openUiArg
-	}
-	if logLevel.Changed {
-		core.LogLevel = logLevelArg
-	}
-	return core
-}
-
-func SetCore(c map[string]interface{}) error {
-	core := store.Core
-	err := mapstructure.Decode(c, &core)
-	if err != nil {
-		logger.Logger.WithField("context", "Config").Warn(err)
-		return err
-	}
-	err = validate.Struct(&c)
-	if err != nil {
-		logger.Logger.WithField("context", "Config").Warn(err)
-		return err
-	}
-	store.Core = core
-	return nil
-}
-
-func GetFrontend() FrontendConfig {
-	return store.Frontend
-}
-
-func SetFrontend(f FrontendConfig) error {
-	store.Frontend = f
-	return saveConfig()
-}
-
-func DeleteEffect(id string) {
-	if _, exists := store.Effects[id]; !exists {
-		return
-	}
-	delete(store.Effects, id)
-	logger.Logger.WithField("context", "Config").Debugf("Deleted %s from config", id)
+	logger.Logger.WithField("context", "Config").Debugf("Deleted %s %s from config", t.String(), id)
 	saveConfig()
 }
 

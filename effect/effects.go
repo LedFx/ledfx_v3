@@ -206,7 +206,7 @@ func Get(id string) (*Effect, error) {
 func Destroy(id string) {
 	logger.Logger.WithField("context", "Effects").Debugf("Deleting effect with id %s", id)
 	audio.Analyzer.DeleteMelbank(id)
-	config.DeleteEffect(id)
+	config.DeleteEntry(config.Effect, id)
 	delete(effectInstances, id)
 	logger.Logger.WithField("context", "Effects").Infof("Deleted effect with id %s", id)
 }

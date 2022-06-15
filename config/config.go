@@ -20,11 +20,12 @@ var configPath string
 var hostArg string // core config values which can be set by command line args
 var portArg int
 var noLogoArg bool
+var noUpdateArg bool
 var openUiArg bool
 var logLevelArg int
 var validate *validator.Validate = validator.New()
 var store *config = &config{
-	Core:     CoreConfig{},
+	Settings: SettingsConfig{},
 	Effects:  map[string]EffectEntry{},
 	Devices:  map[string]DeviceEntry{},
 	Virtuals: map[string]VirtualEntry{},
@@ -47,27 +48,9 @@ type AudioConfig struct {
 	FrameRate int         `mapstructure:"frame_rate" json:"frame_rate"`
 }
 
-type CoreConfig struct {
-	Host     string `mapstructure:"host" json:"host" default:"0.0.0.0" validate:"ip"`
-	Port     int    `mapstructure:"port" json:"port" default:"8080" validate:"gte=0,lte=65536"`
-	NoLogo   bool   `mapstructure:"no_logo" json:"no_logo" default:"false" validate:""`
-	OpenUi   bool   `mapstructure:"open_ui" json:"open_ui" default:"false" validate:""`
-	LogLevel int    `mapstructure:"log_level" json:"log_level" default:"2" validate:"gte=0,lte=2"`
-}
-
-type FrontendConfig struct {
-	TagName     string `mapstructure:"tag_name" json:"tag_name"`
-	Commit      string `mapstructure:"target_commitish" json:"target_commitish"`
-	Name        string `mapstructure:"name" json:"name"`
-	Draft       bool   `mapstructure:"draft" json:"draft"`
-	Prerelease  bool   `mapstructure:"prerelease" json:"prerelease"`
-	CreatedAt   string `mapstructure:"created_at" json:"created_at"`
-	PublishedAt string `mapstructure:"published_at" json:"published_at"`
-}
-
 type config struct {
 	//Version  string                  `mapstructure:"version" json:"version"`
-	Core     CoreConfig              `mapstructure:"core" json:"core"`
+	Settings SettingsConfig          `mapstructure:"core" json:"core"`
 	Frontend FrontendConfig          `mapstructure:"frontend" json:"frontend"`
 	Effects  map[string]EffectEntry  `mapstructure:"effects" json:"effects"`
 	Devices  map[string]DeviceEntry  `mapstructure:"devices" json:"devices"`
@@ -87,10 +70,11 @@ func init() {
 
 	pflag.BoolVarP(&version, "version", "v", false, "Print the version of LedFx")
 	pflag.StringVarP(&configPath, "config", "c", "", "Path to json configuration file")
-	pflag.StringVarP(&hostArg, "host", "h", "0.0.0.0", "The hostname of the web interface")
+	pflag.StringVarP(&hostArg, "host", "h", "0.0.0.0", "Web interface hostname")
 	pflag.IntVarP(&portArg, "port", "p", 8080, "Web interface port")
-	pflag.BoolVarP(&noLogoArg, "no_logo", "n", false, "Hide the command line interface logo at startup")
-	pflag.BoolVarP(&openUiArg, "open_ui", "u", false, "Automatically open the web interface")
+	pflag.BoolVarP(&noLogoArg, "no_logo", "n", false, "Hide the command line logo at startup")
+	pflag.BoolVarP(&noUpdateArg, "no_update", "u", false, "Disable automatic updates at startup")
+	pflag.BoolVarP(&openUiArg, "open_ui", "o", false, "Automatically open the web interface at startup")
 	pflag.IntVarP(&logLevelArg, "log_level", "l", 2, "Set log level [0: debug, 1: info, 2: warnings]")
 	// pflag.BoolP("offline", "o", false, "Disable automated updates and sentry crash logger")
 
@@ -103,14 +87,15 @@ func init() {
 	}
 
 	// validate all the command line args
-	coreConfigArgs := CoreConfig{
+	SettingsConfigArgs := SettingsConfig{
 		Host:     hostArg,
 		Port:     portArg,
 		NoLogo:   noLogoArg,
 		OpenUi:   openUiArg,
+		NoUpdate: noUpdateArg,
 		LogLevel: logLevelArg,
 	}
-	err := validate.Struct(&coreConfigArgs)
+	err := validate.Struct(&SettingsConfigArgs)
 	if err != nil {
 		logger.Logger.WithField("context", "Command Line Arguments").Fatal(err)
 	}

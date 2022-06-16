@@ -15,6 +15,7 @@ import (
 	"runtime"
 	"syscall"
 
+	"fyne.io/systray"
 	pretty "github.com/fatih/color"
 	"github.com/sirupsen/logrus"
 )
@@ -67,6 +68,12 @@ func main() {
 		frontend.Update()
 	}
 
+	if settings.NoTray {
+		logger.Logger.Warn("Not creating system tray icon")
+	} else {
+		go systray.Run(util.StartTray(url), util.StopTray)
+	}
+
 	if settings.OpenUi {
 		util.OpenBrowser(url)
 		logger.Logger.Info("Automatically opened the browser")
@@ -87,7 +94,6 @@ func main() {
 	// load effects, devices, virtuals
 
 	// run systray
-	// systray.Run(utils.OnReady, utils.OnExit)
 
 	err := effect.LoadFromConfig()
 	if err != nil {
@@ -131,5 +137,5 @@ func shutdown() {
 	audio.Analyzer.Cleanup()
 
 	// kill systray
-	// systray.Quit()
+	systray.Quit()
 }

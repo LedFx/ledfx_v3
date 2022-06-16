@@ -14,6 +14,7 @@ type SettingsConfig struct {
 	Port     int    `mapstructure:"port" json:"port" default:"8080" validate:"gte=0,lte=65536" description:"Web interface port"`
 	NoLogo   bool   `mapstructure:"no_logo" json:"no_logo" default:"false" validate:"" description:"Hide the command line logo at startup"`
 	NoUpdate bool   `mapstructure:"no_update" json:"no_update" default:"false" validate:"" description:"Disable automatic updates at startup"`
+	NoTray   bool   `mapstructure:"no_tray" json:"no_tray" default:"false" validate:"" description:"Disable system tray icon to access LedFx"`
 	OpenUi   bool   `mapstructure:"open_ui" json:"open_ui" default:"false" validate:"" description:"Automatically open the web interface at startup"`
 	LogLevel int    `mapstructure:"log_level" json:"log_level" default:"2" validate:"gte=0,lte=2" description:"Set log level [0: debug, 1: info, 2: warnings]"`
 }
@@ -41,6 +42,7 @@ func GetSettings() SettingsConfig {
 	port := pflag.Lookup("port")
 	noLogo := pflag.Lookup("no_logo")
 	noUpdate := pflag.Lookup("no_update")
+	noTray := pflag.Lookup("no_tray")
 	openUi := pflag.Lookup("open_ui")
 	logLevel := pflag.Lookup("log_level")
 
@@ -55,6 +57,9 @@ func GetSettings() SettingsConfig {
 	}
 	if noUpdate.Changed {
 		settings.NoUpdate = noUpdateArg
+	}
+	if noTray.Changed {
+		settings.NoTray = noTrayArg
 	}
 	if openUi.Changed {
 		settings.OpenUi = openUiArg

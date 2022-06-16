@@ -16,13 +16,18 @@ import (
 
 const configName string = "config"
 
-var configPath string
-var hostArg string // core config values which can be set by command line args
-var portArg int
-var noLogoArg bool
-var noUpdateArg bool
-var openUiArg bool
-var logLevelArg int
+// config values which can be set by command line args
+var (
+	configPath  string
+	hostArg     string
+	portArg     int
+	noLogoArg   bool
+	noTrayArg   bool
+	noUpdateArg bool
+	openUiArg   bool
+	logLevelArg int
+)
+
 var validate *validator.Validate = validator.New()
 var store *config = &config{
 	Settings: SettingsConfig{},
@@ -73,6 +78,7 @@ func init() {
 	pflag.StringVarP(&hostArg, "host", "h", "0.0.0.0", "Web interface hostname")
 	pflag.IntVarP(&portArg, "port", "p", 8080, "Web interface port")
 	pflag.BoolVarP(&noLogoArg, "no_logo", "n", false, "Hide the command line logo at startup")
+	pflag.BoolVarP(&noTrayArg, "no_tray", "t", false, "Disable system tray icon to access LedFx")
 	pflag.BoolVarP(&noUpdateArg, "no_update", "u", false, "Disable automatic updates at startup")
 	pflag.BoolVarP(&openUiArg, "open_ui", "o", false, "Automatically open the web interface at startup")
 	pflag.IntVarP(&logLevelArg, "log_level", "l", 2, "Set log level [0: debug, 1: info, 2: warnings]")

@@ -3,7 +3,7 @@ module ledfx
 go 1.18
 
 require (
-	fyne.io/systray v1.9.0
+	fyne.io/systray v1.10.0
 	github.com/LedFx/aubio-go v0.0.0-20220607221658-b7160562dcd4
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/carterpeel/abool v1.2.1-0.20220225054344-4f95bb28612b
@@ -59,6 +59,7 @@ require (
 	github.com/muesli/clusters v0.0.0-20200529215643-2700303c1762 // indirect
 	github.com/muesli/kmeans v0.3.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/tevino/abool v1.2.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go4.org/intern v0.0.0-20220301175310-a089fc204883 // indirect
 	go4.org/mem v0.0.0-20220409205537-d9185028b2dc // indirect

@@ -1,5 +1,7 @@
 fyne.io/systray v1.9.0 h1:KqnfKHXMU19XmVv87vd84nTJWp7Yz4plXjvWHh3cjAI=
 fyne.io/systray v1.9.0/go.mod h1:N4ZU0i34X+n8soFRlBNkmJTunw9wD+9jIP19fSZpjSI=
+fyne.io/systray v1.10.0 h1:Yr1D9Lxeiw3+vSuZWPlaHC8BMjIHZXJKkek706AfYQk=
+fyne.io/systray v1.10.0/go.mod h1:oM2AQqGJ1AMo4nNqZFYU8xYygSBZkW2hmdJ7n4yjedE=
 github.com/DATA-DOG/go-sqlmock v1.3.3/go.mod h1:f/Ixk793poVmq4qj/V1dPUg2JEAKC73Q5eFN3EC/SaM=
 github.com/LedFx/aubio-go v0.0.0-20220607221658-b7160562dcd4 h1:OevLhkPRc9h9wGwxGtBpmx90q4XP/0z3+yGC8Yl3/XE=
 github.com/LedFx/aubio-go v0.0.0-20220607221658-b7160562dcd4/go.mod h1:fCpqn+1CuDGzMycWaQs+lNDpLaUqDgnP3Rw+bhIYjzw=
@@ -318,3 +320,5 @@ inet.af/netaddr v0.0.0-20211027220019-c74959edd3b6/go.mod h1:y3MGhcFMlh0KZPMuXXo
 sigs.k8s.io/yaml v1.2.0/go.mod h1:yfXDCHCao9+ENCvLSE62v9VSji2MKu5jeNfTrofGhJc=
 tailscale.com v1.24.2 h1:xNqEMKLHjqKwKUlggL2QEt1B+oit08w3SwZEIWCmqTg=
 tailscale.com v1.24.2/go.mod h1:/z/lF98LSt9CjpwVT6pHh5Vwb1NGsM5/ACI4cLMJfvY=
+tailscale.com v1.26.0 h1:P52fXdVSBjeMvlCSZew8roeFTzO+dv0MQwTrVnLEKdw=
+tailscale.com v1.26.0/go.mod h1:fEHdIssBhv1Ax889L8TNPDlECCcDpqYm/M+wwVbFFvw=

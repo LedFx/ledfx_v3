@@ -24,6 +24,7 @@ var (
 	noLogoArg   bool
 	noTrayArg   bool
 	noUpdateArg bool
+	noScanArg   bool
 	openUiArg   bool
 	logLevelArg int
 )
@@ -82,6 +83,7 @@ func init() {
 	pflag.BoolVarP(&noLogoArg, "no_logo", "n", false, "Hide the command line logo at startup")
 	pflag.BoolVarP(&noTrayArg, "no_tray", "t", false, "Disable system tray icon to access LedFx")
 	pflag.BoolVarP(&noUpdateArg, "no_update", "u", false, "Disable automatic updates at startup")
+	pflag.BoolVarP(&noScanArg, "no_scan", "s", false, "Disable automatic WLED scanning and configuration in LedFx")
 	pflag.BoolVarP(&openUiArg, "open_ui", "o", false, "Automatically open the web interface at startup")
 	pflag.IntVarP(&logLevelArg, "log_level", "l", 2, "Set log level [0: debug, 1: info, 2: warnings]")
 	// pflag.BoolP("offline", "o", false, "Disable automated updates and sentry crash logger")

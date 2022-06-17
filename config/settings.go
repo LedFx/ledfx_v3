@@ -15,6 +15,7 @@ type SettingsConfig struct {
 	NoLogo   bool   `mapstructure:"no_logo" json:"no_logo" default:"false" validate:"" description:"Hide the command line logo at startup"`
 	NoUpdate bool   `mapstructure:"no_update" json:"no_update" default:"false" validate:"" description:"Disable automatic updates at startup"`
 	NoTray   bool   `mapstructure:"no_tray" json:"no_tray" default:"false" validate:"" description:"Disable system tray icon to access LedFx"`
+	NoScan   bool   `mapstructure:"no_scan" json:"no_scan" default:"false" validate:"" description:"Disable automatic WLED scanning and configuration in LedFx"`
 	OpenUi   bool   `mapstructure:"open_ui" json:"open_ui" default:"false" validate:"" description:"Automatically open the web interface at startup"`
 	LogLevel int    `mapstructure:"log_level" json:"log_level" default:"2" validate:"gte=0,lte=2" description:"Set log level [0: debug, 1: info, 2: warnings]"`
 }
@@ -42,6 +43,7 @@ func GetSettings() SettingsConfig {
 	port := pflag.Lookup("port")
 	noLogo := pflag.Lookup("no_logo")
 	noUpdate := pflag.Lookup("no_update")
+	noScan := pflag.Lookup("no_scan")
 	noTray := pflag.Lookup("no_tray")
 	openUi := pflag.Lookup("open_ui")
 	logLevel := pflag.Lookup("log_level")
@@ -57,6 +59,9 @@ func GetSettings() SettingsConfig {
 	}
 	if noUpdate.Changed {
 		settings.NoUpdate = noUpdateArg
+	}
+	if noScan.Changed {
+		settings.NoScan = noScanArg
 	}
 	if noTray.Changed {
 		settings.NoTray = noTrayArg
@@ -83,6 +88,15 @@ func SetSettings(c map[string]interface{}) error {
 		logger.Logger.WithField("context", "Config").Warn(err)
 		return err
 	}
-	saveConfig()
-	return nil
+	// if scan setting is changed, we need to handle it
+	if GetSettings().NoScan != prevSettings.NoScan {
+		switch store.Settings.NoScan {
+		case false:
+			util.EnableScan()
+		case true:
+			util.DisableScan()
+		}
+	}
+	err = saveConfig()
+	return err
 }

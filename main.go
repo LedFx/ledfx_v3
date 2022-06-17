@@ -92,6 +92,13 @@ func main() {
 		logger.Logger.WithField("context", "Load Effects from Config").Fatal(err)
 	}
 
+	// Handle WLED scanning
+	if !settings.NoScan {
+		util.EnableScan()
+	} else {
+		logger.Logger.Warning("WLED scanning is disabled")
+	}
+
 	// Add routes
 	mux := http.DefaultServeMux
 	effect.NewAPI(mux)

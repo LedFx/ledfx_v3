@@ -27,11 +27,11 @@ func (e *Energy) assembleFrame(base *Effect, p color.Pixels) {
 		logger.Logger.WithField("context", "Effect Energy").Error(err)
 		return
 	}
-	lowsCol := base.palette.Get(0)
-	midsCol := base.palette.Get(0.5)
-	highCol := base.palette.Get(1)
-	lowsMidsCol := base.palette.Get(0.25)
-	midsHighCol := base.palette.Get(0.75)
+	lowsCol := color.Color{0, 1, 1}
+	midsCol := color.Color{0.5, 1, 1}
+	highCol := color.Color{1, 1, 1}
+	lowsMidsCol := color.Color{0.25, 1, 1}
+	midsHighCol := color.Color{0.75, 1, 1}
 
 	lowsAmplitude := int(mel.LowsAmplitude() * base.pixelScaler)
 	midsAmplitude := int(mel.MidsAmplitude() * base.pixelScaler)

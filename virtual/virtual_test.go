@@ -35,17 +35,17 @@ func TestVirtual(t *testing.T) {
 		t.Error(err)
 	}
 	ec := map[string]interface{}{
-		"intensity":      1,
-		"brightness":     0.5,
+		"intensity":      0.5,
+		"brightness":     1,
 		"saturation":     1,
-		"palette":        "Rainbow",
-		"blur":           1,
-		"decay":          0.5,
+		"palette":        "RGB",
+		"blur":           0.9,
+		"decay":          0.1,
 		"flip":           false,
-		"mirror":         false,
+		"mirror":         true,
 		"bkg_brightness": 1,
 		"bkg_color":      "#000000",
-		"hue_shift":      0,
+		"hue_shift":      0.00001,
 	}
 	e, _, err := effect.New("", "energy", bdc.PixelCount, ec)
 	if err != nil {

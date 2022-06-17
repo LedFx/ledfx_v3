@@ -67,17 +67,19 @@ func (p Pixels) ToRGBW(out PixelsRGBW) {
 }
 
 // fils a colour between two indexes. use base.pixelScaler to convert 0-1 floats to integer index
-func FillBetween(p Pixels, start, stop int, col Color) {
-	if stop == start {
-		p[start] = col
-		return
-	}
+func FillBetween(p Pixels, start, stop int, col Color, blend bool) {
 	// make sure ascending indexes
 	if start > stop {
 		start, stop = stop, start
 	}
 	for i := start; i <= stop; i++ {
-		p[i] = col
+		if blend {
+			p[i][0] = (p[i][0] + col[0]) / 2
+			p[i][1] = (p[i][1] + col[1]) / 2
+			p[i][2] = (p[i][2] + col[2]) / 2
+		} else {
+			p[i] = col
+		}
 	}
 }
 

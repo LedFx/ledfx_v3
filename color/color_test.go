@@ -197,7 +197,7 @@ func TestHueShift(t *testing.T) {
 func TestFillBetween(t *testing.T) {
 	p := make(Pixels, 10)
 	c := Color{1, 1, 1}
-	FillBetween(p, 0, 9, c)
+	FillBetween(p, 0, 9, c, false)
 	if p[0][0] != 1 || p[9][2] != 1 {
 		t.Fail()
 	}

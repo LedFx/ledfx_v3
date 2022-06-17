@@ -5,27 +5,6 @@ import (
 	"strconv"
 )
 
-/*
-NEW DEVICES MUST BE REGISTERED IN THESE TWO FUNCTIONS =====================
-*/
-
-// Generate a map schema for all devices
-// func Schema() (schema map[string]interface{}, err error) {
-// 	schema = make(map[string]interface{})
-// 	schema["base"], err = utils.CreateSchema(reflect.TypeOf((*BaseEffectConfig)(nil)).Elem())
-// 	if err != nil {
-// 		return schema, err
-// 	}
-// 	extraSchema := make(map[string]interface{})
-// 	// Copypaste for new device types
-// 	extraSchema["energy"], err = utils.CreateSchema(reflect.TypeOf((*EnergyConfig)(nil)).Elem())
-// 	if err != nil {
-// 		return schema, err
-// 	}
-// 	schema["extra"] = extraSchema
-// 	return schema, err
-// }
-
 // Creates a new device and returns its unique id
 func New(device_type string, baseConfig BaseDeviceConfig, implConfig interface{}) (device *Device, id string, err error) {
 	switch device_type {
@@ -54,10 +33,6 @@ func New(device_type string, baseConfig BaseDeviceConfig, implConfig interface{}
 	// err = device.UpdateBaseConfig(config)
 	return device, id, err
 }
-
-/*
-Nothing to modify below here =====================
-*/
 
 var deviceInstances = make(map[string]*Device)
 

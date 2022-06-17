@@ -1,7 +1,9 @@
 package effect
 
 import (
+	"ledfx/audio"
 	"ledfx/color"
+	"ledfx/logger"
 	"math"
 )
 
@@ -13,18 +15,27 @@ type Weave struct {
 
 // Apply new pixels to an existing pixel array.
 func (e *Weave) assembleFrame(base *Effect, p color.Pixels) {
+	mel, err := audio.Analyzer.GetMelbank(base.ID)
+	if err != nil {
+		logger.Logger.WithField("context", "Effect Weave").Error(err)
+		return
+	}
+	lowsStep := base.deltaStart.Seconds()*base.Config.Intensity*3 + 0
+	midsStep := base.deltaStart.Seconds()*base.Config.Intensity*3 + 0.5
+	highStep := base.deltaStart.Seconds()*base.Config.Intensity*3 + 1
 
-	lowsNew := int(weavePosition(base.deltaStart.Seconds(), 4) * base.pixelScaler)
-	midsNew := int(weavePosition(base.deltaStart.Seconds(), 2) * base.pixelScaler)
-	highNew := int(weavePosition(base.deltaStart.Seconds(), 1) * base.pixelScaler)
+	lowsNew := int(weavePosition(lowsStep, 1) * base.pixelScaler)
+	midsNew := int(weavePosition(midsStep, 1) * base.pixelScaler)
+	highNew := int(weavePosition(highStep, 1) * base.pixelScaler)
 
-	color.FillBetween(p, e.lowsPos, lowsNew, color.Color{0, 1, 1})
-	color.FillBetween(p, e.midsPos, midsNew, color.Color{0.5, 1, 1})
-	color.FillBetween(p, e.highPos, highNew, color.Color{1, 1, 1})
+	color.FillBetween(p, e.highPos, highNew, color.Color{1, 0.4, mel.HighAmplitude()}, true)
+	color.FillBetween(p, e.midsPos, midsNew, color.Color{0.5, 0.4, mel.MidsAmplitude()}, true)
+	color.FillBetween(p, e.lowsPos, lowsNew, color.Color{0, 0.4, mel.LowsAmplitude()}, true)
 
 	for i := range p {
-		p[i][1] += 0.1
-		p[i][2] -= 0.01
+		if p[i][1] < 1 {
+			p[i][1] += 0.1
+		}
 	}
 
 	// replace this with audio data

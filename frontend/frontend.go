@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 )
 
-func ServeHttp(mux *http.ServeMux) {
+func NewServer(mux *http.ServeMux) {
 	serveFrontend := http.FileServer(http.Dir("frontend/files"))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		logger.Logger.WithField("context", "Frontend").Debugf("Request asked for %s", r.URL.Path)
@@ -48,7 +48,7 @@ func Update() {
 		logger.Logger.WithField("context", "Frontend Updater").Debug("Frontend is up to date")
 		return
 	} else {
-		logger.Logger.WithField("context", "Frontend Updater").Info("New frontend available. Updating...")
+		logger.Logger.WithField("context", "Frontend Updater").Infof("New frontend available! Updating to %s", latestFrontend.TagName)
 	}
 
 	// If an update is available, download it

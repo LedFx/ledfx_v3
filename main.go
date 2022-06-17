@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"ledfx/audio"
+	"ledfx/bridgeapi"
 	"ledfx/config"
 	"ledfx/constants"
 	"ledfx/effect"
@@ -13,12 +14,15 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"sync"
 	"syscall"
 
 	"fyne.io/systray"
 	pretty "github.com/fatih/color"
 	"github.com/sirupsen/logrus"
 )
+
+var wg sync.WaitGroup
 
 func init() {
 	// Capture ctrl-c or sigterm to gracefully shutdown
@@ -29,7 +33,6 @@ func init() {
 		shutdown()
 		os.Exit(1)
 	}()
-
 }
 
 func main() {
@@ -40,6 +43,73 @@ func main() {
 
 	logger.Logger.Info("Info message logging enabled")
 	logger.Logger.Debug("Debug message logging enabled")
+
+	// Check for updates
+	if settings.NoUpdate {
+		logger.Logger.Warn("Not checking for updates")
+	} else {
+		frontend.Update()
+	}
+
+	// run systray
+	if settings.NoTray {
+		logger.Logger.Warn("Not creating system tray icon")
+	} else {
+		go systray.Run(util.StartTray(url), util.StopTray)
+	}
+
+	// TODO: handle other flags
+	/**
+	  profiler
+	*/
+	// profiler.Start()
+
+	//go audio.CaptureDemo()
+
+	// Set up API routes
+	// Initialise frontend
+	// Scan for WLED
+	// Run systray
+	// load effects, devices, virtuals
+
+	// br, err := audiobridge.NewBridge(audio.Analyzer.BufferCallback)
+	// if err != nil {
+	// 	log.Fatalf("Error initializing new bridge: %v\n", err)
+	// }
+	// defer br.Stop()
+
+	// // audio.LogAudioDevices()
+	// audiodevice, err := audio.GetDeviceByID("9f012a5ef29af5e7b226bae734a8cb2ad229f063") // get from config
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// if err := br.StartLocalInput(audiodevice, true); err != nil {
+	// 	logger.Logger.WithField("category", "HTTP Listener").Fatalf("Error starting local input: %v\n", err)
+	// }
+
+	err := effect.LoadFromConfig()
+	if err != nil {
+		logger.Logger.WithField("context", "Load Effects from Config").Fatal(err)
+	}
+
+	// Add routes
+	mux := http.DefaultServeMux
+	effect.NewAPI(mux)
+	config.NewAPI(mux)
+	frontend.NewServer(mux)
+	if err := bridgeapi.NewServer(audio.Analyzer.BufferCallback, mux); err != nil {
+		logger.Logger.WithField("category", "AudioBridge Server Init").Fatalf("Error initializing audio bridge server: %v", err)
+	}
+
+	// Start web server
+	wg.Add(1)
+	logger.Logger.WithField("category", "HTTP Listener").Infof("Starting LedFx HTTP Server at %s", hostport)
+	go func() {
+		defer wg.Done()
+		if err := http.ListenAndServe(hostport, mux); err != nil {
+			logger.Logger.WithField("category", "HTTP Listener").Fatalf("Error listening and serving: %v", err)
+		}
+	}()
 
 	// Print the cli logo and welcome message
 	if !settings.NoLogo {
@@ -62,73 +132,14 @@ func main() {
 	fmt.Println()
 	fmt.Println()
 
-	if settings.NoUpdate {
-		logger.Logger.Warn("Not checking for updates")
-	} else {
-		frontend.Update()
-	}
-
-	if settings.NoTray {
-		logger.Logger.Warn("Not creating system tray icon")
-	} else {
-		go systray.Run(util.StartTray(url), util.StopTray)
-	}
-
+	// Open the browser
 	if settings.OpenUi {
 		util.OpenBrowser(url)
 		logger.Logger.Info("Automatically opened the browser")
 	}
 
-	// TODO: handle other flags
-	/**
-	  profiler
-	*/
-	// profiler.Start()
-
-	//go audio.CaptureDemo()
-
-	// Set up API routes
-	// Initialise frontend
-	// Scan for WLED
-	// Run systray
-	// load effects, devices, virtuals
-
-	// run systray
-
-	err := effect.LoadFromConfig()
-	if err != nil {
-		logger.Logger.WithField("context", "Load Effects from Config").Fatal(err)
-	}
-
-	mux := http.DefaultServeMux
-	frontend.ServeHttp(mux)
-
-	// if err := bridgeapi.NewServer(a.BufferCallback, mux); err != nil {
-	// 	logger.Logger.WithField("category", "AudioBridge Server Init").Fatalf("Error initializing audio bridge server: %v", err)
-	// }
-
-	// br, err := audiobridge.NewBridge(audio.Analyzer.BufferCallback)
-	// if err != nil {
-	// 	log.Fatalf("Error initializing new bridge: %v\n", err)
-	// }
-	// defer br.Stop()
-
-	// // audio.LogAudioDevices()
-	// audiodevice, err := audio.GetDeviceByID("9f012a5ef29af5e7b226bae734a8cb2ad229f063") // get from config
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// if err := br.StartLocalInput(audiodevice, true); err != nil {
-	// 	logger.Logger.WithField("category", "HTTP Listener").Fatalf("Error starting local input: %v\n", err)
-	// }
-
-	effect.NewAPI(mux)
-	config.NewAPI(mux)
-
-	logger.Logger.WithField("category", "HTTP Listener").Infof("Starting LedFx HTTP Server at %s", hostport)
-	if err := http.ListenAndServe(hostport, mux); err != nil {
-		logger.Logger.WithField("category", "HTTP Listener").Fatalf("Error listening and serving: %v", err)
-	}
+	// Wait for all running goroutines to finish
+	wg.Wait()
 }
 
 func shutdown() {

@@ -73,7 +73,9 @@ func init() {
 	// special args
 	var version bool
 
-	pflag.BoolVarP(&version, "version", "v", false, "Print the version of LedFx")
+	pflag.CommandLine.SortFlags = false
+
+	pflag.BoolVarP(&version, "version", "v", false, "Print the version of LedFx and exit")
 	pflag.StringVarP(&configPath, "config", "c", "", "Path to json configuration file")
 	pflag.StringVarP(&hostArg, "host", "h", "0.0.0.0", "Web interface hostname")
 	pflag.IntVarP(&portArg, "port", "p", 8080, "Web interface port")
@@ -109,14 +111,14 @@ func init() {
 	// apply defaults to the config
 	err = defaults.Set(store)
 	if err != nil {
-		logger.Logger.WithField("context", "Config Init").Fatal(err)
+		logger.Logger.WithField("context", "Config").Fatal(err)
 	}
 
 	// load any config saved on file
 	loadConfig()
 	// TODO validate config loaded from json
 
-	logger.Logger.WithField("context", "Config Init").Infof("Initialised config")
+	logger.Logger.WithField("context", "Config").Infof("Initialised config")
 }
 
 // LoadConfig reads in config file and populates the config instance.
@@ -124,21 +126,21 @@ func loadConfig() {
 
 	// make sure config file can be opened
 	if err := ensureConfigFile(); err != nil {
-		logger.Logger.WithField("context", "Config Init").Fatal(err)
+		logger.Logger.WithField("context", "Config").Fatal(err)
 	}
 
 	// read the contents
-	logger.Logger.WithField("context", "Config Init").Infof("Loading config file: %s", configPath)
+	logger.Logger.WithField("context", "Config").Infof("Loading config file: %s", configPath)
 	content, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		logger.Logger.WithField("context", "Config Init").Fatal("Error reading config file: ", err)
+		logger.Logger.WithField("context", "Config").Fatal("Error reading config file: ", err)
 	}
 
 	// parse as json
 	// unknown keys will be ignored
 	err = json.Unmarshal(content, &store)
 	if err != nil {
-		logger.Logger.WithField("context", "Config Init").Fatal("Error parsing config file: ", err)
+		logger.Logger.WithField("context", "Config").Fatal("Error parsing config file: ", err)
 	}
 }
 
@@ -163,11 +165,11 @@ func ensureConfigFile() error {
 		return err
 	}
 	// if it doesn't exist, create it
-	logger.Logger.WithField("context", "Config Init").Warn("Config file not found")
-	logger.Logger.WithField("context", "Config Init").Warnf("Creating blank config at %s", configPath)
+	logger.Logger.WithField("context", "Config").Warn("Config file not found")
+	logger.Logger.WithField("context", "Config").Warnf("Creating blank config at %s", configPath)
 	_, err = os.Create(configPath)
 	if err != nil {
-		logger.Logger.WithField("context", "Config Init").Errorf("Failed to create blank config at %s", configPath)
+		logger.Logger.WithField("context", "Config").Errorf("Failed to create blank config at %s", configPath)
 	}
 	// finally, test we can open the new blank config and write empty config to it
 	f, err := os.Open(configPath)

@@ -76,40 +76,40 @@ func (j *JsonCTL) YouTubeSet(jsonData []byte) (respBytes []byte, err error) {
 
 	switch conf.Action {
 	case YouTubeActionDownload:
-		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Downloading audio track(s) from URL '%s'", conf.URL)
+		log.Logger.WithField("context", "YouTube JSONCTL").Infof("Downloading audio track(s) from URL '%s'", conf.URL)
 		return nil, j.curYouTubePlayer.Download(conf.URL)
 	case YouTubeActionPlay:
-		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Starting YouTube playback...")
+		log.Logger.WithField("context", "YouTube JSONCTL").Infof("Starting YouTube playback...")
 		if err := j.curYouTubePlayer.Play(); err != nil {
 			return nil, err
 		}
 		return json.Marshal(j.curYouTubePlayer.NowPlaying())
 	case YouTubeActionStop:
-		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Stopping YouTube player...")
+		log.Logger.WithField("context", "YouTube JSONCTL").Infof("Stopping YouTube player...")
 		return nil, j.curYouTubePlayer.Close()
 	case YouTubeActionPause:
-		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Pausing YouTube playback...")
+		log.Logger.WithField("context", "YouTube JSONCTL").Infof("Pausing YouTube playback...")
 		j.curYouTubePlayer.Pause()
 	case YouTubeActionResume:
-		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Resuming YouTube playback...")
+		log.Logger.WithField("context", "YouTube JSONCTL").Infof("Resuming YouTube playback...")
 		j.curYouTubePlayer.Unpause()
 		return json.Marshal(j.curYouTubePlayer.NowPlaying())
 	case YouTubeActionNext:
-		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Skipping to next YouTube track...")
+		log.Logger.WithField("context", "YouTube JSONCTL").Infof("Skipping to next YouTube track...")
 		j.curYouTubePlayer.Next()
 		return json.Marshal(j.curYouTubePlayer.NowPlaying())
 	case YouTubeActionPrevious:
-		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Rewinding to previous YouTube track...")
+		log.Logger.WithField("context", "YouTube JSONCTL").Infof("Rewinding to previous YouTube track...")
 		j.curYouTubePlayer.Previous()
 		return json.Marshal(j.curYouTubePlayer.NowPlaying())
 	case YouTubeActionPlayByIndex:
-		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Plauing track by index %d...", conf.Index)
+		log.Logger.WithField("context", "YouTube JSONCTL").Infof("Plauing track by index %d...", conf.Index)
 		if err := j.curYouTubePlayer.PlayTrack(conf.Index); err != nil {
 			return nil, fmt.Errorf("error playing track by index: %w", err)
 		}
 		return json.Marshal(j.curYouTubePlayer.NowPlaying())
 	case YouTubeActionPlayByName:
-		log.Logger.WithField("category", "YouTube JSONCTL").Infof("Playing track %q...", conf.TrackName)
+		log.Logger.WithField("context", "YouTube JSONCTL").Infof("Playing track %q...", conf.TrackName)
 		if err := j.curYouTubePlayer.PlayTrackByName(conf.TrackName); err != nil {
 			return nil, fmt.Errorf("error playing track by name: %w", err)
 		}

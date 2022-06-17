@@ -8,7 +8,7 @@ import (
 
 func Start() {
 	go func() {
-		log.Logger.WithField("category", "Performance Profiler").Errorf("Error starting PPROF: %v", http.ListenAndServe("localhost:6060", nil))
+		log.Logger.WithField("context", "Performance Profiler").Errorf("Error starting PPROF: %v", http.ListenAndServe("localhost:6060", nil))
 	}()
 
 }

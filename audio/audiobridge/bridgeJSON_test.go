@@ -27,9 +27,9 @@ func TestBridgeMic2LocalJSON(t *testing.T) {
 	for i := range devices {
 		if strings.Contains(strings.ToLower(devices[i].Name), "mic") {
 			inputDev = &devices[i]
-			log.Logger.WithField("category", "Mic2Speaker").Infof("Mic Device: %s", inputDev.Name)
-			log.Logger.WithField("category", "Mic2Speaker").Infof("Mic Input Channels: %d", inputDev.ChannelsIn)
-			log.Logger.WithField("category", "Mic2Speaker").Infof("Mic Sample Rate: %f", inputDev.SampleRate)
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Device: %s", inputDev.Name)
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Input Channels: %d", inputDev.ChannelsIn)
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Sample Rate: %f", inputDev.SampleRate)
 			break
 		}
 	}

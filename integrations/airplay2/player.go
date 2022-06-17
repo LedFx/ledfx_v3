@@ -71,7 +71,7 @@ func newPlayer(byteWriter *audio.AsyncMultiWriter) *audioPlayer {
 }
 
 func (p *audioPlayer) Play(session *rtsp.Session) {
-	log.Logger.WithField("category", "AirPlay Player").Warnf("Starting new session")
+	log.Logger.WithField("context", "AirPlay Player").Warnf("Starting new session")
 	p.sessionActive = true
 	decoder := codec.GetCodec(session)
 	go func(dc *codec.Handler) {
@@ -90,7 +90,7 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 					func() {
 						defer func() {
 							if err := recover(); err != nil {
-								log.Logger.WithField("category", "AirPlay Player").Errorf("Recovered from panic during playStream: %v\n", err)
+								log.Logger.WithField("context", "AirPlay Player").Errorf("Recovered from panic during playStream: %v\n", err)
 							}
 						}()
 
@@ -98,12 +98,12 @@ func (p *audioPlayer) Play(session *rtsp.Session) {
 						codec.NormalizeAudio(recvBuf, p.volume)
 
 						if _, err := p.byteWriter.Write(recvBuf); err != nil {
-							log.Logger.WithField("category", "AirPlay Player").Errorf("Error writing to byteWriter: %v", err)
+							log.Logger.WithField("context", "AirPlay Player").Errorf("Error writing to byteWriter: %v", err)
 						}
 					}()
 				}
 			case <-p.quit:
-				log.Logger.WithField("category", "AirPlay Player").Warnf("Session with peer '%s' closed", session.Description.ConnectData.ConnectionAddress)
+				log.Logger.WithField("context", "AirPlay Player").Warnf("Session with peer '%s' closed", session.Description.ConnectData.ConnectionAddress)
 				return
 			}
 		}
@@ -146,7 +146,7 @@ func (p *audioPlayer) SetMute(isMuted bool) {
 		p.broadcastParam(raop.ParamMuted(isMuted))
 	}
 	if isMuted {
-		log.Logger.WithField("category", "AirPlay Player").Infoln("Muting stream...")
+		log.Logger.WithField("context", "AirPlay Player").Infoln("Muting stream...")
 	}
 }
 

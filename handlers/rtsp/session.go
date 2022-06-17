@@ -67,12 +67,12 @@ func (s *Session) InitReceive() error {
 
 // Close closes a session
 func (s *Session) Close(closeDone chan struct{}) {
-	log.Logger.WithField("category", "RTSP Session").Infoln("Closing session...")
+	log.Logger.WithField("context", "RTSP Session").Infoln("Closing session...")
 	s.stopChan = closeDone
 	if s.dataConn != nil {
 		s.dataConn.Close()
 	} else {
-		log.Logger.WithField("category", "RTSP Session").Infoln("Currently no data connection...")
+		log.Logger.WithField("context", "RTSP Session").Infoln("Currently no data connection...")
 		s.stopChan <- struct{}{}
 	}
 }
@@ -80,12 +80,12 @@ func (s *Session) Close(closeDone chan struct{}) {
 // StartReceiving starts a session for listening for data
 func (s *Session) StartReceiving() error {
 	// start listening for audio data
-	log.Logger.WithField("category", "RTSP Session").Infoln("Session started. Listening for audio packets...")
+	log.Logger.WithField("context", "RTSP Session").Infoln("Session started. Listening for audio packets...")
 	go func(conn *net.UDPConn) {
 		for {
 			n, _, err := conn.ReadFromUDP(s.buf.Bytes())
 			if err != nil {
-				log.Logger.WithField("category", "RTSP Session").Warnf("Error reading data from socket: %v", err)
+				log.Logger.WithField("context", "RTSP Session").Warnf("Error reading data from socket: %v", err)
 				close(s.DataChan)
 				conn = nil
 				break
@@ -94,7 +94,7 @@ func (s *Session) StartReceiving() error {
 			// send the data to the decoder
 			if s.decrypter != nil {
 				if packet, err = s.decrypter.Decode(packet); err != nil {
-					log.Logger.WithField("category", "RTSP Session").Errorf("Error decrypting packet: %v", err)
+					log.Logger.WithField("context", "RTSP Session").Errorf("Error decrypting packet: %v", err)
 					return
 				}
 			}
@@ -103,7 +103,7 @@ func (s *Session) StartReceiving() error {
 			copy(s.sendBuf, packet)
 			s.DataChan <- s.sendBuf
 		}
-		log.Logger.WithField("category", "RTSP Session").Infoln("Signalling Session is closed")
+		log.Logger.WithField("context", "RTSP Session").Infoln("Signalling Session is closed")
 		if s.stopChan != nil {
 			s.stopChan <- struct{}{}
 		}
@@ -117,7 +117,7 @@ func (s *Session) StartSending() (err error) {
 	if s.dataConn, err = net.Dial("udp", fmt.Sprintf("%s:%d", s.RemotePorts.Address, s.RemotePorts.Data)); err != nil {
 		return fmt.Errorf("error dialing '%s:%d': %w", s.RemotePorts.Address, s.RemotePorts.Data, err)
 	}
-	log.Logger.WithField("category", "RTSP Session").Infoln("Sending session started successfully")
+	log.Logger.WithField("context", "RTSP Session").Infoln("Sending session started successfully")
 	return nil
 }
 

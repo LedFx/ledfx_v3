@@ -15,7 +15,7 @@ func NewAPI(mux *http.ServeMux) {
 			schemaBytes, err := JsonSchema()
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Logger.WithField("category", "Effects API").Errorf("Error generating JSON Schema")
+				log.Logger.WithField("context", "Effects API").Errorf("Error generating JSON Schema")
 				return
 			}
 			_, _ = writer.Write(schemaBytes)
@@ -31,7 +31,7 @@ func NewAPI(mux *http.ServeMux) {
 			b, err := json.Marshal(config.GetEffects())
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Logger.WithField("category", "Effects API").Errorf("Error generating effects config")
+				log.Logger.WithField("context", "Effects API").Errorf("Error generating effects config")
 				return
 			}
 			_, _ = writer.Write(b)
@@ -48,14 +48,14 @@ func NewAPI(mux *http.ServeMux) {
 			if err != nil {
 				writer.WriteHeader(http.StatusNotFound)
 				writer.Write([]byte(err.Error()))
-				log.Logger.WithField("category", "Effects API").Error(err)
+				log.Logger.WithField("context", "Effects API").Error(err)
 				return
 			}
 			err = effect.UpdateBaseConfig(data.BaseConfig)
 			if err != nil {
 				writer.WriteHeader(http.StatusBadRequest)
 				writer.Write([]byte(err.Error()))
-				log.Logger.WithField("category", "Effects API").Error(err)
+				log.Logger.WithField("context", "Effects API").Error(err)
 				return
 			}
 			c, _ := config.GetEffect(data.ID)
@@ -63,7 +63,7 @@ func NewAPI(mux *http.ServeMux) {
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				writer.Write([]byte(err.Error()))
-				log.Logger.WithField("category", "Effects API").Error(err)
+				log.Logger.WithField("context", "Effects API").Error(err)
 				return
 			}
 			writer.Write(b)
@@ -81,7 +81,7 @@ func NewAPI(mux *http.ServeMux) {
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				writer.Write([]byte(err.Error()))
-				log.Logger.WithField("category", "Effects API").Error(err)
+				log.Logger.WithField("context", "Effects API").Error(err)
 				return
 			}
 			c, _ := config.GetEffect(id)
@@ -89,7 +89,7 @@ func NewAPI(mux *http.ServeMux) {
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				writer.Write([]byte(err.Error()))
-				log.Logger.WithField("category", "Effects API").Error(err)
+				log.Logger.WithField("context", "Effects API").Error(err)
 				return
 			}
 			writer.Write(b)

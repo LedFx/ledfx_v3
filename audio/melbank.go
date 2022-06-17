@@ -49,7 +49,7 @@ func newMelbank(audio AudioStream, min, max uint) (*melbank, error) {
 	freqs, err := math_utils.Linspace(HzToMel(float64(min)), HzToMel(float64(max)), int(melBins)+2)
 	if err != nil {
 		return mb, err
-		// log.Logger.WithField("category", "melbank Init").Fatalf("Error initialising melbank: %v", err)
+		// log.Logger.WithField("context", "melbank Init").Fatalf("Error initialising melbank: %v", err)
 	}
 	// convert linear freq scale to perceptually even scale.
 	for i := range freqs {

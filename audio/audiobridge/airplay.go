@@ -62,7 +62,7 @@ func (br *Bridge) AddAirPlayOutput(searchKey string, searchType AirPlaySearchTyp
 	// Close any connections that would be a duplicate of our current connection.
 	for i := range br.airplay.clients {
 		if br.airplay.clients[i].RemoteIP().Equal(client.RemoteIP()) {
-			log.Logger.WithField("category", "AirPlay Client Init").Warnf("Closing previous session with matching remote address...")
+			log.Logger.WithField("context", "AirPlay Client Init").Warnf("Closing previous session with matching remote address...")
 			br.airplay.clients[i].Close()
 		}
 	}

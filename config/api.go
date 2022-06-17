@@ -14,7 +14,7 @@ func NewAPI(mux *http.ServeMux) {
 			schemaBytes, err := CoreJsonSchema()
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Logger.WithField("category", "Settings API").Error("Error generating JSON Schema:", err)
+				log.Logger.WithField("context", "Settings API").Error("Error generating JSON Schema:", err)
 				return
 			}
 			_, _ = writer.Write(schemaBytes)
@@ -30,7 +30,7 @@ func NewAPI(mux *http.ServeMux) {
 			b, err := json.Marshal(store.Settings)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				log.Logger.WithField("category", "Settings API").Errorf("Error generating settings config")
+				log.Logger.WithField("context", "Settings API").Errorf("Error generating settings config")
 				return
 			}
 			_, _ = writer.Write(b)
@@ -52,7 +52,7 @@ func NewAPI(mux *http.ServeMux) {
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				writer.Write([]byte(err.Error()))
-				log.Logger.WithField("category", "Settings API").Error(err)
+				log.Logger.WithField("context", "Settings API").Error(err)
 				return
 			}
 			writer.Write(b)

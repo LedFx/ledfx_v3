@@ -57,11 +57,11 @@ func EstablishSession(ip string, port int, codec CodecType) (*rtsp.Session, erro
 	for handshaking {
 		handshaking, err = sm.transition(client, session)
 		if err != nil {
-			log.Logger.WithField("category", "RAOP Client").Println("Error encountered during RTSP handshaking, ", err)
+			log.Logger.WithField("context", "RAOP Client").Println("Error encountered during RTSP handshaking, ", err)
 			return nil, err
 		}
 	}
-	log.Logger.WithField("category", "RAOP Client").Println("done handshaking")
+	log.Logger.WithField("context", "RAOP Client").Println("done handshaking")
 	return session, nil
 }
 
@@ -127,7 +127,7 @@ func announce(client *rtsp.Client, session *rtsp.Session, codec CodecType) (stat
 	var b bytes.Buffer
 	_, err := sdp.Write(&b, sessionDescription)
 	if err != nil {
-		log.Logger.WithField("category", "RAOP Client").Println("Error converting SDP payload, ", err)
+		log.Logger.WithField("context", "RAOP Client").Println("Error converting SDP payload, ", err)
 		return nil, err
 	}
 	req.Body = b.Bytes()

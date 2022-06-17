@@ -2,10 +2,11 @@ package statpoll
 
 import (
 	"errors"
-	"github.com/gorilla/websocket"
 	log "ledfx/logger"
 	"ledfx/tickpool"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 type Response struct {
@@ -61,9 +62,9 @@ func (s *StatPoller) socketLoop(ws *websocket.Conn, statReq *Request) {
 		case <-tick.C:
 			if err := ws.WriteJSON(&resp); err != nil {
 				if errors.As(err, &websocketClosedError) {
-					log.Logger.WithField("category", "StatPoll SocketLoop").Warnln("Websocket session closed")
+					log.Logger.WithField("context", "StatPoll SocketLoop").Warnln("Websocket session closed")
 				} else {
-					log.Logger.WithField("category", "StatPoll SocketLoop").Errorf("Error writing JSON to websocket: %v", err)
+					log.Logger.WithField("context", "StatPoll SocketLoop").Errorf("Error writing JSON to websocket: %v", err)
 				}
 				return
 			}

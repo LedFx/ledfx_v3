@@ -33,7 +33,7 @@ func (br *Bridge) StartLocalInput(audioDevice config.AudioDevice, verbose bool) 
 		br.local.capture.Quit()
 	}
 
-	log.Logger.WithField("category", "Local Capture Init").Infof("Initializing new capture handler...")
+	log.Logger.WithField("context", "Local Capture Init").Infof("Initializing new capture handler...")
 	if br.local.capture, err = capture.NewHandler(audioDevice, br.byteWriter, verbose); err != nil {
 		return fmt.Errorf("error initializing new capture handler: %w", err)
 	}
@@ -48,7 +48,7 @@ func (br *Bridge) AddLocalOutput(verbose bool) (err error) {
 
 	if br.local.playback != nil {
 		if verbose {
-			log.Logger.WithField("category", "Local Playback Init").Warnln("Local playback already exists! Resetting playback handler...")
+			log.Logger.WithField("context", "Local Playback Init").Warnln("Local playback already exists! Resetting playback handler...")
 		}
 		id := br.local.playback.Identifier()
 		br.local.playback.Quit()
@@ -57,13 +57,13 @@ func (br *Bridge) AddLocalOutput(verbose bool) (err error) {
 		}
 	}
 
-	log.Logger.WithField("category", "Local Playback Init").Infof("Initializing new playback handler...")
+	log.Logger.WithField("context", "Local Playback Init").Infof("Initializing new playback handler...")
 	if br.local.playback, err = playback.NewHandler(verbose); err != nil {
 		return fmt.Errorf("error initializing new playback handler: %w", err)
 	}
 
 	if verbose {
-		log.Logger.WithField("category", "Local Playback Init").Infof("Wiring local playback output to existing source...")
+		log.Logger.WithField("context", "Local Playback Init").Infof("Wiring local playback output to existing source...")
 	}
 	if err := br.wireLocalOutput(br.local.playback); err != nil {
 		return fmt.Errorf("error wiring local output: %w", err)
@@ -74,11 +74,11 @@ func (br *Bridge) AddLocalOutput(verbose bool) (err error) {
 
 func (lh *LocalHandler) Stop() {
 	if lh.capture != nil {
-		log.Logger.WithField("category", "Local Audio UnixHandler").Warnf("Stopping capture handler...")
+		log.Logger.WithField("context", "Local Audio UnixHandler").Warnf("Stopping capture handler...")
 		lh.capture.Quit()
 	}
 	if lh.playback != nil {
-		log.Logger.WithField("category", "Local Audio UnixHandler").Warnf("Stopping playback handler...")
+		log.Logger.WithField("context", "Local Audio UnixHandler").Warnf("Stopping playback handler...")
 		lh.playback.Quit()
 	}
 }

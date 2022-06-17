@@ -125,7 +125,7 @@ func AnimateAlbumArt(data []byte, width, height, numFrames int) ([]byte, error) 
 
 	imgs := make([]image.Image, numFrames)
 	for i := 0; i < numFrames; i++ {
-		log.Logger.WithField("category", "Cover Animator").Infof("Computing frame %d", i)
+		log.Logger.WithField("context", "Cover Animator").Infof("Computing frame %d", i)
 		noisy, err := gr1.RawNoise(width, height, 996, 0.02)
 		if err != nil {
 			return nil, fmt.Errorf("error generating raw noisy PNG: %w", err)

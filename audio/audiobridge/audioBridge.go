@@ -2,10 +2,11 @@ package audiobridge
 
 import (
 	"fmt"
-	"github.com/gordonklaus/portaudio"
 	"ledfx/audio"
 	"ledfx/audio/audiobridge/assets"
 	log "ledfx/logger"
+
+	"github.com/gordonklaus/portaudio"
 )
 
 // NewBridge initializes a new bridge between a source and destination audio device.
@@ -56,16 +57,16 @@ func (br *Bridge) Stop() {
 		}()
 	}()
 	if br.airplay != nil {
-		log.Logger.WithField("category", "Audio Bridge").Warnf("Stopping AirPlay handler...")
+		log.Logger.WithField("context", "Audio Bridge").Warnf("Stopping AirPlay handler...")
 		br.airplay.Stop()
 	}
 
 	if br.local != nil {
-		log.Logger.WithField("category", "Audio Bridge").Warnf("Stopping local audio handler...")
+		log.Logger.WithField("context", "Audio Bridge").Warnf("Stopping local audio handler...")
 		br.local.Stop()
 	}
 
-	log.Logger.WithField("category", "Audio Bridge").Warnf("Terminating PortAudio...")
+	log.Logger.WithField("context", "Audio Bridge").Warnf("Terminating PortAudio...")
 	_ = portaudio.Terminate()
 }
 

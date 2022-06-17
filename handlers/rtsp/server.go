@@ -6,6 +6,7 @@ import (
 	"io"
 	log "ledfx/logger"
 	"net"
+
 	"tailscale.com/net/interfaces"
 )
 
@@ -38,7 +39,7 @@ func (r *Server) AddHandler(m Method, rh RequestHandler) {
 
 // Stop stops the RTSP server
 func (r *Server) Stop() {
-	log.Logger.WithField("category", "RTSP Server").Println("Stopping RTSP server")
+	log.Logger.WithField("context", "RTSP Server").Println("Stopping RTSP server")
 	r.done <- true
 }
 
@@ -47,15 +48,15 @@ func (r *Server) Start(verbose bool, doneCh chan struct{}) {
 	// Get the default outbound interface address
 	_, myIP, ok := interfaces.LikelyHomeRouterIP()
 	if !ok {
-		log.Logger.WithField("category", "RTSP Server").Errorf("Error getting local outbound IP address: ok=%v", ok)
+		log.Logger.WithField("context", "RTSP Server").Errorf("Error getting local outbound IP address: ok=%v", ok)
 		return
 	}
 	r.ip = myIP.String()
-	log.Logger.WithField("category", "RTSP Server").Printf("Starting RTSP server on address: %s:%d", r.ip, r.port)
+	log.Logger.WithField("context", "RTSP Server").Printf("Starting RTSP server on address: %s:%d", r.ip, r.port)
 
 	tcpListen, err := net.Listen("tcp", fmt.Sprintf("%s:%d", r.ip, r.port))
 	if err != nil {
-		log.Logger.WithField("category", "RTSP Server").Errorln("Error listening:", err.Error())
+		log.Logger.WithField("context", "RTSP Server").Errorln("Error listening:", err.Error())
 		return
 	}
 
@@ -66,7 +67,7 @@ func (r *Server) Start(verbose bool, doneCh chan struct{}) {
 			conn, err := tcpListen.Accept()
 			if err != nil {
 				if !errors.Is(err, net.ErrClosed) {
-					log.Logger.WithField("category", "RTSP Server").Warnf("Error accepting: %v", err)
+					log.Logger.WithField("context", "RTSP Server").Warnf("Error accepting: %v", err)
 				}
 				return
 			}
@@ -90,20 +91,20 @@ func (r *Server) read(conn net.Conn, handlers map[Method]RequestHandler, verbose
 		request, err := readRequest(conn)
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-				log.Logger.WithField("category", "RTSP Server").Infof("Client '%s' closed connection", remoteAddr)
+				log.Logger.WithField("context", "RTSP Server").Infof("Client '%s' closed connection", remoteAddr)
 			} else {
-				log.Logger.WithField("category", "RTSP Server").Errorf("Error reading data: %v", err)
+				log.Logger.WithField("context", "RTSP Server").Errorf("Error reading data: %v", err)
 			}
 			return
 		}
 
 		if verbose {
-			log.Logger.WithField("category", "RTSP Server - REQUEST").Println(request.String())
+			log.Logger.WithField("context", "RTSP Server - REQUEST").Println(request.String())
 		}
 
 		handler, exists := handlers[request.Method]
 		if !exists {
-			log.Logger.WithField("category", "RTSP Server").Printf("Method '%s' does not have a handler. Skipping", request.Method)
+			log.Logger.WithField("context", "RTSP Server").Printf("Method '%s' does not have a handler. Skipping", request.Method)
 			continue
 		}
 		// for now, we just stick in the protocol (protocol/version) from the request
@@ -114,7 +115,7 @@ func (r *Server) read(conn net.Conn, handlers map[Method]RequestHandler, verbose
 		// invokes the client specified handler to build the response
 		handler(request, resp, localAddr, remoteAddr)
 		if verbose {
-			log.Logger.WithField("category", "RTSP Server - RESPONSE").Println(resp.String())
+			log.Logger.WithField("context", "RTSP Server - RESPONSE").Println(resp.String())
 		}
 		_, _ = writeResponse(conn, resp)
 	}

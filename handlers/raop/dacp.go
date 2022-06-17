@@ -58,7 +58,7 @@ func DiscoverDacpClient(dacpID string, activeRemote string) *DacpClient {
 	serviceType := "_dacp._tcp"
 	resolver, err := zeroconf.NewResolver(nil)
 	if err != nil {
-		log.Logger.WithField("category", "DACP Discovery").Errorln("Failed to initialize resolver:", err.Error())
+		log.Logger.WithField("context", "DACP Discovery").Errorln("Failed to initialize resolver:", err.Error())
 	}
 
 	entries := make(chan *zeroconf.ServiceEntry)
@@ -67,9 +67,9 @@ func DiscoverDacpClient(dacpID string, activeRemote string) *DacpClient {
 	defer cancel()
 	err = resolver.Browse(ctx, serviceType, "local", entries)
 	if err != nil {
-		log.Logger.WithField("category", "DACP Discovery").Errorln("Failed to browse:", err.Error())
+		log.Logger.WithField("context", "DACP Discovery").Errorln("Failed to browse:", err.Error())
 	}
-	log.Logger.WithField("category", "DACP Discovery").Println("searching for DAACP airplay client")
+	log.Logger.WithField("context", "DACP Discovery").Println("searching for DAACP airplay client")
 	instanceName := fmt.Sprintf("iTunes_Ctrl_%s", dacpID)
 	var entry *zeroconf.ServiceEntry
 	foundEntry := make(chan *zeroconf.ServiceEntry)
@@ -90,13 +90,13 @@ func DiscoverDacpClient(dacpID string, activeRemote string) *DacpClient {
 
 	select {
 	case entry = <-foundEntry:
-		log.Logger.WithField("category", "DACP Discovery").Println("Found DAACP airplay client")
+		log.Logger.WithField("context", "DACP Discovery").Println("Found DAACP airplay client")
 	case <-ctx.Done():
-		log.Logger.WithField("category", "DACP Discovery").Println("DACP airplay client not found")
+		log.Logger.WithField("context", "DACP Discovery").Println("DACP airplay client not found")
 	}
 
 	if entry == nil {
-		log.Logger.WithField("category", "DACP Discovery").Println("no DACP client found, playback control is disabled")
+		log.Logger.WithField("context", "DACP Discovery").Println("no DACP client found, playback control is disabled")
 		return nil
 	}
 	client := newDacpClient(entry.AddrIPv4[0].String(), entry.Port, dacpID, activeRemote)

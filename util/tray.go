@@ -34,5 +34,5 @@ func StartTray(url string) func() {
 
 func StopTray() {
 	// TODO kill ledfx from here. need to emit a broadcast event.
-	logger.Logger.WithField("category", "Systray Handler").Warnln("Closing systray...")
+	logger.Logger.WithField("context", "Systray Handler").Warnln("Closing systray...")
 }

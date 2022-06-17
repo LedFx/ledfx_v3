@@ -45,8 +45,8 @@ func (bw *AsyncMultiWriter) SetAsyncThreshold(threshold int) {
 func (bw *AsyncMultiWriter) checkAsyncThreshold() {
 	// We only check if it's equal since checking for >= would spam the log.
 	if len(bw.writers) == bw.asyncThreshold {
-		log.Logger.WithField("category", "Audio MultiWriter").Infof("Writer threshold reached! (Writers: %d || Threshold: %d)", len(bw.writers), bw.asyncThreshold)
-		log.Logger.WithField("category", "Audio MultiWriter").Infoln("Enabling asynchronous streaming to compensate for threshold delay...")
+		log.Logger.WithField("context", "Audio MultiWriter").Infof("Writer threshold reached! (Writers: %d || Threshold: %d)", len(bw.writers), bw.asyncThreshold)
+		log.Logger.WithField("context", "Audio MultiWriter").Infoln("Enabling asynchronous streaming to compensate for threshold delay...")
 		bw.writeFn = bw.writeAsync
 	} else {
 		bw.writeFn = bw.writeSeq
@@ -148,9 +148,9 @@ func (bw *AsyncMultiWriter) writeAsync(p []byte) (int, error) {
 		go func(i2 int) {
 			defer bw.wg.Done()
 			if _, err := bw.writers[i2].Write(p); err != nil {
-				log.Logger.WithField("category", "Named MultiWriter").Errorf("Error writing to writer with index %d: %v", i2, err)
+				log.Logger.WithField("context", "Named MultiWriter").Errorf("Error writing to writer with index %d: %v", i2, err)
 				if err = bw.removeByIndex(i2); err != nil {
-					log.Logger.WithField("category", "Named MultiWriter").Errorf("Error removing writer with index '%d': %v", i2, err)
+					log.Logger.WithField("context", "Named MultiWriter").Errorf("Error removing writer with index '%d': %v", i2, err)
 				}
 			}
 		}(i)
@@ -165,9 +165,9 @@ func (bw *AsyncMultiWriter) writeSeq(p []byte) (int, error) {
 
 	for i := range bw.writers {
 		if n, err := bw.writers[i].Write(p); err != nil {
-			log.Logger.WithField("category", "Named MultiWriter").Errorf("Error writing to writer with index %d: %v", i, err)
+			log.Logger.WithField("context", "Named MultiWriter").Errorf("Error writing to writer with index %d: %v", i, err)
 			if err = bw.removeByIndex(i); err != nil {
-				log.Logger.WithField("category", "Named MultiWriter").Errorf("Error removing writer with index '%d': %v", i, err)
+				log.Logger.WithField("context", "Named MultiWriter").Errorf("Error removing writer with index '%d': %v", i, err)
 			}
 			return n, err
 		}

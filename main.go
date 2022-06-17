@@ -84,7 +84,7 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 	// if err := br.StartLocalInput(audiodevice, true); err != nil {
-	// 	logger.Logger.WithField("category", "HTTP Listener").Fatalf("Error starting local input: %v\n", err)
+	// 	logger.Logger.WithField("context", "HTTP Listener").Fatalf("Error starting local input: %v\n", err)
 	// }
 
 	err := effect.LoadFromConfig()
@@ -105,16 +105,18 @@ func main() {
 	config.NewAPI(mux)
 	frontend.NewServer(mux)
 	if err := bridgeapi.NewServer(audio.Analyzer.BufferCallback, mux); err != nil {
-		logger.Logger.WithField("category", "AudioBridge Server Init").Fatalf("Error initializing audio bridge server: %v", err)
+		logger.Logger.WithField("context", "AudioBridge").Fatalf("Error initializing audio bridge server: %v", err)
+	} else {
+		logger.Logger.WithField("context", "AudioBridge").Info("Initialised AudioBridge")
 	}
 
 	// Start web server
 	wg.Add(1)
-	logger.Logger.WithField("category", "HTTP Listener").Infof("Starting LedFx HTTP Server at %s", hostport)
+	logger.Logger.WithField("context", "HTTP Listener").Infof("Starting LedFx HTTP Server at %s", hostport)
 	go func() {
 		defer wg.Done()
 		if err := http.ListenAndServe(hostport, mux); err != nil {
-			logger.Logger.WithField("category", "HTTP Listener").Fatalf("Error listening and serving: %v", err)
+			logger.Logger.WithField("context", "HTTP Listener").Fatalf("Error listening and serving: %v", err)
 		}
 	}()
 

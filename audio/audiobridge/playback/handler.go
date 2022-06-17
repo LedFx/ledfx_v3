@@ -48,8 +48,8 @@ func NewHandler(verbose bool) (h *WindowsHandler, err error) {
 	}
 
 	if verbose {
-		log.Logger.WithField("category", "Local Playback Init").Infof("Default output device: %s", h.outDev.Name)
-		log.Logger.WithField("category", "Local Capture Init").Infof("Opening stream... (%dCH/16-bit @%vhz)", h.outDev.MaxOutputChannels, h.outDev.DefaultSampleRate)
+		log.Logger.WithField("context", "Local Playback Init").Infof("Default output device: %s", h.outDev.Name)
+		log.Logger.WithField("context", "Local Capture Init").Infof("Opening stream... (%dCH/16-bit @%vhz)", h.outDev.MaxOutputChannels, h.outDev.DefaultSampleRate)
 	}
 
 	// Ensure format compatibility with the data sent over Player.Write()
@@ -66,7 +66,7 @@ func NewHandler(verbose bool) (h *WindowsHandler, err error) {
 		return nil, fmt.Errorf("error opening PortAudio stream: %w", err)
 	}
 	if verbose {
-		log.Logger.WithField("category", "Local Capture Init").Infof("Starting stream...")
+		log.Logger.WithField("context", "Local Capture Init").Infof("Starting stream...")
 	}
 	if err = h.stream.Start(); err != nil {
 		return nil, fmt.Errorf("error starting stream: %w", err)

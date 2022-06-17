@@ -3,7 +3,6 @@ package youtube
 import (
 	"errors"
 	"fmt"
-	"go.uber.org/atomic"
 	"io"
 	"ledfx/audio"
 	log "ledfx/logger"
@@ -13,6 +12,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"go.uber.org/atomic"
 )
 
 type Player struct {
@@ -74,7 +75,7 @@ func (p *Player) Download(URL string) error {
 			entry := playlist.Videos[i]
 			video, err := p.h.cl.VideoFromPlaylistEntry(playlist.Videos[i])
 			if err != nil {
-				log.Logger.WithField("category", "YouTube Download Handler").Errorf("Error getting entry metadata for %q: %v", entry.Title, err)
+				log.Logger.WithField("context", "YouTube Download Handler").Errorf("Error getting entry metadata for %q: %v", entry.Title, err)
 				playlist.Videos = append(playlist.Videos[:i], playlist.Videos[i+1:]...)
 				toDownload = toDownload[:len(toDownload)-1]
 				continue
@@ -120,7 +121,7 @@ func (p *Player) Download(URL string) error {
 		}
 		path, err := p.h.downloadWAV(v, current+1, len(toDownload), clearBar)
 		if err != nil {
-			log.Logger.WithField("category", "YouTube Download Handler").Errorf("Error downloading %q: %v", cleanString(v.Title), err)
+			log.Logger.WithField("context", "YouTube Download Handler").Errorf("Error downloading %q: %v", cleanString(v.Title), err)
 			continue
 		}
 		p.tracks = append(p.tracks, v)
@@ -320,7 +321,7 @@ func (p *Player) playLoop() {
 			case <-p.pause:
 				<-p.unpause
 			case <-p.done:
-				log.Logger.WithField("category", "YouTube Playback Loop").Warnf("Got 'DONE' signal...")
+				log.Logger.WithField("context", "YouTube Playback Loop").Warnf("Got 'DONE' signal...")
 				return
 			case buf := <-p.play:
 				_, _ = p.out.Write(buf)
@@ -359,12 +360,12 @@ func (p *Player) cycleTracks() {
 			func() {
 				wav, err := os.Open(path)
 				if err != nil {
-					log.Logger.WithField("category", "YouTube Track Cycle").Errorf("Error opening %q: %v", path, err)
+					log.Logger.WithField("context", "YouTube Track Cycle").Errorf("Error opening %q: %v", path, err)
 					return
 				}
 
 				if p.curWav, err = NewFileBuffer(wav); err != nil {
-					log.Logger.WithField("category", "YouTube Track Cycle").Errorf("Error creating new file buffer: %v", err)
+					log.Logger.WithField("context", "YouTube Track Cycle").Errorf("Error creating new file buffer: %v", err)
 					return
 				}
 				defer p.curWav.Close()

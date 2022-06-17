@@ -3,11 +3,6 @@ package youtube
 import (
 	"errors"
 	"fmt"
-	ffmpeg "github.com/carterpeel/ffmpeg-go"
-	pretty "github.com/fatih/color"
-	yt "github.com/kkdai/youtube/v2"
-	progressbar "github.com/schollz/progressbar/v3"
-	"go.uber.org/atomic"
 	"io"
 	"ledfx/audio"
 	log "ledfx/logger"
@@ -19,6 +14,12 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	ffmpeg "github.com/carterpeel/ffmpeg-go"
+	pretty "github.com/fatih/color"
+	yt "github.com/kkdai/youtube/v2"
+	progressbar "github.com/schollz/progressbar/v3"
+	"go.uber.org/atomic"
 )
 
 type Handler struct {
@@ -95,7 +96,7 @@ func (h *Handler) downloadWAV(info TrackInfo, current, max int, clearBar bool) (
 
 	// Don't re-download files we already have
 	if util.FileExists(path) {
-		log.Logger.WithField("category", "YouTube WAV Downloader").Infof("Found cached audio file: %q", filepath.Base(path))
+		log.Logger.WithField("context", "YouTube WAV Downloader").Infof("Found cached audio file: %q", filepath.Base(path))
 		return path, nil
 	}
 

@@ -2,10 +2,11 @@ package airplay2
 
 import (
 	"fmt"
-	"github.com/grantmd/go-airplay" //nolint:typecheck
 	log "ledfx/logger"
 	"net"
 	"regexp"
+
+	"github.com/grantmd/go-airplay" //nolint:typecheck
 )
 
 func queryDevice(params ClientDiscoveryParameters) (*airplay.AirplayDevice, error) {
@@ -69,7 +70,7 @@ func queryDeviceByName(name string, verbose bool) (device *airplay.AirplayDevice
 }
 
 func printDevice(device *airplay.AirplayDevice) {
-	log.Logger.WithField("category", "AirPlay Discovery").Infof(
+	log.Logger.WithField("context", "AirPlay Discovery").Infof(
 		`NAME="%s" SERVER="%s:%d" HOSTNAME="%s" AUDIO="%dch/%dhz/%d-bit" PCM="%v" ALAC="%v"`,
 		device.Name,
 		device.IP,

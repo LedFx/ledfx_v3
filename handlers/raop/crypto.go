@@ -78,7 +78,7 @@ func aeskeyFromRsa(rsaaeskey64 string) (key []byte, err error) {
 // 6. the signed data is base64 encoded
 func generateChallengeResponse(challenge string, macAddr net.HardwareAddr, ipAddr string) (string, error) {
 
-	log.Logger.WithField("category", "RAOP Crypto").Printf(fmt.Sprintf("building challenge for %s (ip: %s, mac: %s)", challenge, ipAddr, macAddr.String()))
+	log.Logger.WithField("context", "RAOP Crypto").Printf(fmt.Sprintf("building challenge for %s (ip: %s, mac: %s)", challenge, ipAddr, macAddr.String()))
 
 	// the incoming challenge will be unpadded, need to pad to
 	a := base64pad(challenge)
@@ -104,7 +104,7 @@ func generateChallengeResponse(challenge string, macAddr net.HardwareAddr, ipAdd
 		decodedChallenge = append(decodedChallenge, 0)
 	}
 
-	log.Logger.WithField("category", "RAOP Crypto").Println(hex.EncodeToString(decodedChallenge))
+	log.Logger.WithField("context", "RAOP Crypto").Println(hex.EncodeToString(decodedChallenge))
 
 	rsaPrivKey, err := getPrivateKey()
 	if err != nil {
@@ -122,7 +122,7 @@ func generateChallengeResponse(challenge string, macAddr net.HardwareAddr, ipAdd
 		signedResponse64 = base64unpad(signedResponse64)
 	}
 
-	log.Logger.WithField("category", "RAOP Crypto").Printf("Generated challenge response: %s\n", signedResponse64)
+	log.Logger.WithField("context", "RAOP Crypto").Printf("Generated challenge response: %s\n", signedResponse64)
 	return signedResponse64, nil
 }
 

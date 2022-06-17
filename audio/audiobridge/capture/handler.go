@@ -2,10 +2,11 @@ package capture
 
 import (
 	"fmt"
-	"github.com/gordonklaus/portaudio"
 	"ledfx/audio"
 	"ledfx/config"
 	log "ledfx/logger"
+
+	"github.com/gordonklaus/portaudio"
 )
 
 type Handler struct {
@@ -17,7 +18,7 @@ type Handler struct {
 
 func NewHandler(audioDevice config.AudioDevice, byteWriter *audio.AsyncMultiWriter, verbose bool) (h *Handler, err error) {
 	if verbose {
-		log.Logger.WithField("category", "Local Capture Init").Infof("Getting info for device '%s'...", audioDevice.Name)
+		log.Logger.WithField("context", "Local Capture Init").Infof("Getting info for device '%s'...", audioDevice.Name)
 	}
 	dev, err := audio.GetPaDeviceInfo(audioDevice)
 	if err != nil {
@@ -41,14 +42,14 @@ func NewHandler(audioDevice config.AudioDevice, byteWriter *audio.AsyncMultiWrit
 	switch p.Input.Channels {
 	case 1:
 		if verbose {
-			log.Logger.WithField("category", "Local Capture Init").Infof("Opening stream with Mono2Stereo callback...")
+			log.Logger.WithField("context", "Local Capture Init").Infof("Opening stream with Mono2Stereo callback...")
 		}
 		if h.Stream, err = portaudio.OpenStream(p, h.mono2StereoCallback); err != nil {
 			return nil, fmt.Errorf("error opening mono Portaudio stream: %w", err)
 		}
 	case 2:
 		if verbose {
-			log.Logger.WithField("category", "Local Capture Init").Infof("Opening stream with Stereo callback...")
+			log.Logger.WithField("context", "Local Capture Init").Infof("Opening stream with Stereo callback...")
 		}
 		if h.Stream, err = portaudio.OpenStream(p, h.stereoCallback); err != nil {
 			return nil, fmt.Errorf("error opening stereo Portaudio stream: %w", err)
@@ -58,7 +59,7 @@ func NewHandler(audioDevice config.AudioDevice, byteWriter *audio.AsyncMultiWrit
 	}
 
 	if verbose {
-		log.Logger.WithField("category", "Local Capture Init").Infof("Starting stream...")
+		log.Logger.WithField("context", "Local Capture Init").Infof("Starting stream...")
 	}
 	if err = h.Stream.Start(); err != nil {
 		return nil, fmt.Errorf("error starting capture stream: %w", err)
@@ -77,9 +78,9 @@ func (h *Handler) mono2StereoCallback(in audio.Buffer) {
 
 func (h *Handler) Quit() {
 	h.stopped = true
-	log.Logger.WithField("category", "Capture Handler").Warnf("Aborting stream...")
+	log.Logger.WithField("context", "Capture Handler").Warnf("Aborting stream...")
 	h.Stream.Abort()
-	log.Logger.WithField("category", "Capture Handler").Warnf("Closing stream...")
+	log.Logger.WithField("context", "Capture Handler").Warnf("Closing stream...")
 	h.Stream.Close()
 }
 

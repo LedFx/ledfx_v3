@@ -78,7 +78,7 @@ func (s *Server) Start() error {
 		err := s.svc.Start(s.conf.VerboseLogging, true)
 		errCh <- err
 		if err != nil {
-			log.Logger.WithField("category", "AirPlay Server").Errorf("Error starting AirPlay server: %v", err)
+			log.Logger.WithField("context", "AirPlay Server").Errorf("Error starting AirPlay server: %v", err)
 			return
 		}
 		s.svc.Wait()

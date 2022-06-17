@@ -3,12 +3,13 @@ package airplay2
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/grantmd/go-airplay"
 	"ledfx/handlers/raop"
 	"ledfx/handlers/rtsp"
 	log "ledfx/logger"
 	"net"
 	"time"
+
+	"github.com/grantmd/go-airplay"
 )
 
 type Client struct {
@@ -45,7 +46,7 @@ func NewClient(searchParameters ClientDiscoveryParameters) (cl *Client, err erro
 }
 
 func (cl *Client) ConfirmConnect() (err error) {
-	log.Logger.WithField("category", "AirPlay Client").Infof("Establishing session with %s...", cl.dev.Name)
+	log.Logger.WithField("context", "AirPlay Client").Infof("Establishing session with %s...", cl.dev.Name)
 	if cl.session, err = raop.EstablishSession(cl.dev.IP.String(), int(cl.dev.Port), raop.CodecTypePCM); err != nil {
 		return fmt.Errorf("error establishing RTSP session: %w", err)
 	}
@@ -125,56 +126,56 @@ func (cl *Client) SetParam(par interface{}) {
 
 	switch val := par.(type) {
 	case raop.ParamVolume:
-		log.Logger.WithField("category", "AirPlay Client").Infof("Propagating volume '%f' to destination server", val)
+		log.Logger.WithField("context", "AirPlay Client").Infof("Propagating volume '%f' to destination server", val)
 
 		req.Headers["Content-Type"] = "text/parameters"
 		req.Body = []byte(fmt.Sprintf("volume: %f", val))
 	case raop.ParamMuted:
-		log.Logger.WithField("category", "AirPlay Client").Infof("Propagating muted value '%v' to destination server", val)
+		log.Logger.WithField("context", "AirPlay Client").Infof("Propagating muted value '%v' to destination server", val)
 
 		req.Headers["Content-Type"] = "text/parameters"
 		req.Body = []byte("volume: -144")
 	case raop.ParamTrackInfo:
-		log.Logger.WithField("category", "AirPlay Client").Infof("Propagating track info to destination server")
+		log.Logger.WithField("context", "AirPlay Client").Infof("Propagating track info to destination server")
 
 		req.Headers["Content-Type"] = "application/x-dmap-tagged"
 		if req.Body, err = raop.EncodeDaap(map[string]interface{}{"daap.songalbum": val.Album, "daap.itemname": val.Title, "daap.songartist": val.Artist}); err != nil {
-			log.Logger.WithField("category", "AirPlay Client").Errorf("Error encoding track information as DAAP: %v\n", err)
+			log.Logger.WithField("context", "AirPlay Client").Errorf("Error encoding track information as DAAP: %v\n", err)
 			return
 		}
 	case raop.ParamAlbumArt:
-		log.Logger.WithField("category", "AirPlay Client").Infof("Propagating album art to destination server\n")
+		log.Logger.WithField("context", "AirPlay Client").Infof("Propagating album art to destination server\n")
 		req.Headers["Content-Type"] = "image/jpeg"
 		req.Body = val
 	}
 
 	if cl.paramConn == nil {
-		log.Logger.WithField("category", "AirPlay Client").Warnf("Rebuilding RTSP parameter session...")
+		log.Logger.WithField("context", "AirPlay Client").Warnf("Rebuilding RTSP parameter session...")
 		if cl.paramConn, err = rtsp.NewClient(cl.dev.IP.String(), int(cl.dev.Port)); err != nil {
-			log.Logger.WithField("category", "AirPlay Client").Errorf("Error establishing RTSP parameter session: %v", err)
+			log.Logger.WithField("context", "AirPlay Client").Errorf("Error establishing RTSP parameter session: %v", err)
 		}
 	}
 
 	resp, err := cl.paramConn.Send(req)
 	if err != nil {
-		log.Logger.WithField("category", "AirPlay Client").Errorf("Error sending volume request: %v\n", err)
+		log.Logger.WithField("context", "AirPlay Client").Errorf("Error sending volume request: %v\n", err)
 		return
 	}
 	if resp.Status != rtsp.Ok {
-		log.Logger.WithField("category", "AirPlay Client").Errorf("Unexpected response code from destination server: %s\n", resp.Status.String())
-		log.Logger.WithField("category", "AirPlay Client").Errorf("Response: \n----\n[%s]\n----\n", resp.String())
+		log.Logger.WithField("context", "AirPlay Client").Errorf("Unexpected response code from destination server: %s\n", resp.Status.String())
+		log.Logger.WithField("context", "AirPlay Client").Errorf("Response: \n----\n[%s]\n----\n", resp.String())
 	}
 }
 
 func (cl *Client) Close() {
 	if cl.session != nil {
 		if err := cl.session.DataConn().Close(); err != nil {
-			log.Logger.WithField("category", "AirPlay Client").Errorf("Error closing client session conn: %v", err)
+			log.Logger.WithField("context", "AirPlay Client").Errorf("Error closing client session conn: %v", err)
 		}
 	}
 	if cl.paramConn != nil {
 		if err := cl.paramConn.Close(); err != nil {
-			log.Logger.WithField("category", "AirPlay Client").Errorf("Error closing client param conn: %v", err)
+			log.Logger.WithField("context", "AirPlay Client").Errorf("Error closing client param conn: %v", err)
 		}
 		cl.paramConn = nil
 	}

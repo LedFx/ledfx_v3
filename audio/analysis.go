@@ -70,23 +70,23 @@ func init() {
 
 	// Create EQ filter. Magic numbers to balance the audio. Boosts the bass and mid, dampens the highs.
 	if Analyzer.eq, err = aubio.NewFilterBiquad(0.85870, -1.71740, 0.85870, -1.71605, 0.71874, framesPerBuffer); err != nil {
-		log.Logger.WithField("category", "Audio Analyzer Init").Fatalf("Error creating new Aubio EQ Filter: %v", err)
+		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio EQ Filter: %v", err)
 	}
 
 	// Create onsets
 	if Analyzer.onsetMono, err = aubio.NewOnset(aubio.HFC, fftSize, framesPerBuffer, sampleRate); err != nil {
-		log.Logger.WithField("category", "Audio Analyzer Init").Fatalf("Error creating new Aubio Onset: %v", err)
+		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Onset: %v", err)
 	}
 	if Analyzer.onsetVocals, err = aubio.NewOnset(aubio.SpecFlux, fftSize, framesPerBuffer, sampleRate); err != nil {
-		log.Logger.WithField("category", "Audio Analyzer Init").Fatalf("Error creating new Aubio Onset: %v", err)
+		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Onset: %v", err)
 	}
 
 	// Create pvocs
 	if Analyzer.pvocMono, err = aubio.NewPhaseVoc(fftSize, framesPerBuffer); err != nil {
-		log.Logger.WithField("category", "Audio Analyzer Init").Fatalf("Error creating new Aubio Pvoc: %v", err)
+		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Pvoc: %v", err)
 	}
 	if Analyzer.pvocVocals, err = aubio.NewPhaseVoc(fftSize, framesPerBuffer); err != nil {
-		log.Logger.WithField("category", "Audio Analyzer Init").Fatalf("Error creating new Aubio Pvoc: %v", err)
+		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Pvoc: %v", err)
 	}
 }
 
@@ -142,7 +142,7 @@ func (a *analyzer) BufferCallback(buf Buffer) {
 	a.OnsetNowVocals = a.onsetVocals.Buffer().Get(uint(0)) != 0
 
 	if a.OnsetNowMono {
-		log.Logger.WithField("category", "Audio Analysis").Info("Onset detected")
+		log.Logger.WithField("context", "Audio Analysis").Info("Onset detected")
 	}
 }
 
@@ -182,7 +182,7 @@ func (a *analyzer) DeleteMelbank(id string) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if mb, ok := a.melbanks[id]; ok {
-		log.Logger.WithField("category", "Audio Analysis").Debugf("Deleted melbank for effect %s", id)
+		log.Logger.WithField("context", "Audio Analysis").Debugf("Deleted melbank for effect %s", id)
 		mb.Free()
 		delete(a.melbanks, id)
 	}
@@ -193,12 +193,12 @@ func (a *analyzer) NewMelbank(id string, audio AudioStream, min_freq, max_freq u
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if _, ok := a.melbanks[id]; ok {
-		log.Logger.WithField("category", "Audio Analysis").Debugf("Effect %s attempted to create a new melbank but already has one registered", id)
+		log.Logger.WithField("context", "Audio Analysis").Debugf("Effect %s attempted to create a new melbank but already has one registered", id)
 		a.DeleteMelbank(id)
 	}
 	mb, err := newMelbank(audio, min_freq, max_freq)
 	if err == nil {
-		log.Logger.WithField("category", "Audio Analysis").Debugf("Registered new melbank for effect %s", id)
+		log.Logger.WithField("context", "Audio Analysis").Debugf("Registered new melbank for effect %s", id)
 		a.melbanks[id] = mb
 	}
 	return err

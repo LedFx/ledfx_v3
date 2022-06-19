@@ -1,11 +1,10 @@
 package effect
 
 import (
+	"encoding/json"
 	"ledfx/color"
 	"strings"
 	"testing"
-
-	"github.com/u2takey/go-utils/json"
 )
 
 func TestSchema(t *testing.T) {

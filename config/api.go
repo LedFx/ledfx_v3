@@ -27,7 +27,11 @@ func NewAPI(mux *http.ServeMux) {
 		switch request.Method {
 		case http.MethodGet:
 			// Get settings
-			b, err := json.Marshal(store.Settings)
+			// NOTE this gets the settings including any command line flags
+			// use store.settings to get the settings saved in config
+			// i think the active settings make most sense here, as long as the frontend sends incremental updates
+			// if the frontend sends all the settings back, then settings modified by command line flags will be saved to config
+			b, err := json.Marshal(GetSettings())
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
 				log.Logger.WithField("context", "Settings API").Errorf("Error generating settings config")

@@ -5,6 +5,8 @@ func GetEffectsGlobal() map[string]interface{} {
 }
 
 func SetGlobalEffects(g map[string]interface{}) {
+	mu.Lock()
+	defer mu.Unlock()
 	store.EffectsGlobal = g
 	saveConfig()
 }

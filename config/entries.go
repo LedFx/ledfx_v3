@@ -39,6 +39,8 @@ type DeviceEntry struct{}
 type VirtualEntry struct{}
 
 func AddEntry(id string, entry interface{}) (err error) {
+	mu.Lock()
+	defer mu.Unlock()
 	switch t := entry.(type) {
 	case EffectEntry:
 		store.Effects[id] = entry.(EffectEntry)
@@ -58,6 +60,8 @@ func AddEntry(id string, entry interface{}) (err error) {
 }
 
 func DeleteEntry(t EntryType, id string) {
+	mu.Lock()
+	defer mu.Unlock()
 	switch t {
 	case Effect:
 		if _, exists := store.Effects[id]; !exists {

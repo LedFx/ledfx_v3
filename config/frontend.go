@@ -15,6 +15,8 @@ func GetFrontend() FrontendConfig {
 }
 
 func SetFrontend(f FrontendConfig) error {
+	mu.Lock()
+	defer mu.Unlock()
 	store.Frontend = f
 	return saveConfig()
 }

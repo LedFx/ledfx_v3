@@ -8,6 +8,7 @@ import (
 	"ledfx/logger"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
@@ -29,6 +30,7 @@ var (
 	logLevelArg int
 )
 
+var mu sync.Mutex = sync.Mutex{}
 var validate *validator.Validate = validator.New()
 var store *config = &config{
 	Settings: SettingsConfig{},

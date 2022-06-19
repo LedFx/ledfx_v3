@@ -76,6 +76,8 @@ func GetSettings() SettingsConfig {
 }
 
 func SetSettings(c map[string]interface{}) error {
+	mu.Lock()
+	defer mu.Unlock()
 	prevSettings := store.Settings
 	err := mapstructure.Decode(c, &store.Settings)
 	if err != nil {

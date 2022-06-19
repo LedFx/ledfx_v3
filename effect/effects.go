@@ -132,6 +132,8 @@ func init() {
 	if err = defaults.Set(&globalConfig); err != nil {
 		log.Fatal(err)
 	}
+	// apply stored global config
+	mapstructure.Decode(config.GetEffectsGlobal(), &globalConfig)
 	// validate global effect settings
 	if err = validate.Struct(&globalConfig); err != nil {
 		log.Fatal(err)

@@ -190,7 +190,16 @@ func SetGlobalSettings(c interface{}) (err error) {
 
 	// assign it
 	globalConfig = newConfig
-	return nil
+
+	// TODO this could be changed so that global config follows incremental updates.
+	// I think this way encourages users to use the global settings.
+	// Globals will be applied as defaults to new effects
+	configMap := make(map[string]interface{})
+	err = mapstructure.Decode(globalConfig, &configMap)
+	if err == nil {
+		config.SetGlobalEffects(configMap)
+	}
+	return err
 }
 
 // Get an existing pixel generator instance by its unique id

@@ -108,4 +108,44 @@ func NewAPI(mux *http.ServeMux) {
 			writer.WriteHeader(http.StatusNotImplemented)
 		}
 	})
+
+	mux.HandleFunc("/api/effects/global", func(writer http.ResponseWriter, request *http.Request) {
+		switch request.Method {
+		case http.MethodGet:
+			// Get effects global settings
+			b, err := json.Marshal(globalConfig)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				log.Logger.WithField("context", "Effects API").Errorf("Error fetching global effects config")
+				return
+			}
+			_, _ = writer.Write(b)
+
+		case http.MethodPut:
+			// Update effects global settings
+			data := make(map[string]interface{})
+			err := json.NewDecoder(request.Body).Decode(&data)
+			if err != nil {
+				writer.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			err = SetGlobalSettings(data)
+			if err != nil {
+				writer.WriteHeader(http.StatusBadRequest)
+				writer.Write([]byte(err.Error()))
+				log.Logger.WithField("context", "Effects API").Error(err)
+				return
+			}
+			c := config.GetEffectsGlobal()
+			b, err := json.Marshal(c)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				writer.Write([]byte(err.Error()))
+				log.Logger.WithField("context", "Effects API").Error(err)
+				return
+			}
+			writer.Write(b)
+			return
+		}
+	})
 }

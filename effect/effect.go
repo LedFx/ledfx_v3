@@ -80,6 +80,7 @@ func (e *Effect) initialize(id string, pixelCount int) error {
 	e.pixelScaler = float64(pixelCount - 1)
 	e.palette = nil
 	e.blurrer = nil
+	e.Config = globalConfig
 	return nil
 }
 

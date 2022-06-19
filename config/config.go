@@ -56,11 +56,12 @@ type AudioConfig struct {
 
 type config struct {
 	//Version  string                  `mapstructure:"version" json:"version"`
-	Settings SettingsConfig          `mapstructure:"core" json:"core"`
-	Frontend FrontendConfig          `mapstructure:"frontend" json:"frontend"`
-	Effects  map[string]EffectEntry  `mapstructure:"effects" json:"effects"`
-	Devices  map[string]DeviceEntry  `mapstructure:"devices" json:"devices"`
-	Virtuals map[string]VirtualEntry `mapstructure:"virtuals" json:"virtuals"`
+	Settings      SettingsConfig          `mapstructure:"core" json:"core"`
+	Frontend      FrontendConfig          `mapstructure:"frontend" json:"frontend"`
+	Effects       map[string]EffectEntry  `mapstructure:"effects" json:"effects"`
+	EffectsGlobal map[string]interface{}  `mapstructure:"global_effects" json:"global_effects"`
+	Devices       map[string]DeviceEntry  `mapstructure:"devices" json:"devices"`
+	Virtuals      map[string]VirtualEntry `mapstructure:"virtuals" json:"virtuals"`
 	// Audio    AudioEntry              `mapstructure:"audio" json:"audio"`
 	// Audio    AudioConfig             `mapstructure:"audio" json:"audio"`
 }

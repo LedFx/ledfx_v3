@@ -7,6 +7,7 @@ import (
 	"ledfx/audio"
 	"ledfx/color"
 	"ledfx/config"
+	"ledfx/event"
 	"math"
 	"sync"
 	"time"
@@ -246,6 +247,7 @@ func (e *Effect) Render(p color.Pixels) {
 	}
 	e.applyBlur(p)
 	e.clamp(p)
+	event.InvokeEffectRender(p)
 }
 
 func (e *Effect) applyBlur(p color.Pixels) {

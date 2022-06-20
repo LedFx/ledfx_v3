@@ -15,11 +15,8 @@ var Logger *logrus.Logger
 
 func init() {
 	Logger = logrus.New()
-	Logger.SetLevel(logrus.InfoLevel)
-	Logger.SetNoLock()
 	Logger.SetOutput(os.Stderr)
 	Logger.SetFormatter(&nested.Formatter{
-		FieldsOrder:     []string{"component", "category"},
 		TimestampFormat: time.StampMilli,
 		HideKeys:        true,
 		ShowFullLevel:   true,

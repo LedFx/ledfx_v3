@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/hex"
 	"math/rand"
 	"time"
 	"unsafe"
@@ -14,6 +15,12 @@ const (
 	letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
 	letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
 )
+
+func RandID() string {
+	b := make([]byte, 32)
+	rand.Read(b)
+	return hex.Dump(b)
+}
 
 func RandString(n int) string {
 	b := make([]byte, n)

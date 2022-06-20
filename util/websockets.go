@@ -1,4 +1,4 @@
-package unstructuredold
+package util
 
 import (
 	"encoding/json"

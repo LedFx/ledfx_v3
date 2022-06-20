@@ -2,6 +2,7 @@ package effect
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"ledfx/audio"
 	"ledfx/color"
@@ -177,17 +178,22 @@ func SetGlobalSettings(c interface{}) (err error) {
 	if err != nil {
 		return err
 	}
-	// validate new config
+	// validate all values
 	err = validate.Struct(&newConfig)
-	if err != nil {
-		return err
+	if errs, ok := validate.Struct(&newConfig).(validator.ValidationErrors); ok {
+		if errs != nil {
+			errString := "Validation Errors: "
+			for _, err := range errs {
+				errString += fmt.Sprintf("Field %s with value %v; ", err.Field(), err.Value())
+			}
+			return errors.New(errString)
+		}
 	}
 	// knowing that it's valid, pass it on to all the effects
 	for _, e := range effectInstances {
-		err = e.UpdateBaseConfig(c)
-	}
-	if err != nil {
-		return err
+		// we'll do this manually rather than calling updateBaseConfig to avoid unnecessary config saves and validation
+		e.updateStoredProperties(newConfig)
+		e.Config = newConfig
 	}
 
 	// assign it

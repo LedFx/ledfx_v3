@@ -125,46 +125,8 @@ func (e *Effect) UpdateBaseConfig(c interface{}) (err error) {
 		}
 	}
 
-	// update any stored properties that are based on the config
-	// creating a new palette is expensive, should only be done if changed
-	if e.palette == nil || e.Config.Palette != newConfig.Palette {
-		e.palette, _ = color.NewPalette(newConfig.Palette)
-	}
-	// parsing a color is cheap, just do it every time
-	e.bkgColor, _ = color.NewColor(e.Config.BkgColor)
-	// blur needs new blurrer if changed
-	if e.blurrer == nil || e.Config.Blur != newConfig.Blur {
-		e.blurrer = color.NewBlurrer(e.pixelCount, newConfig.Blur)
-	}
-
-	// MELBANK
-	// parse vocals bool to an audiostream
-	var as audio.AudioStream
-	if newConfig.Vocals {
-		as = audio.Vocals
-	} else {
-		as = audio.Mono
-	}
-	// make sure min and max are ordered properly. doesn't matter in config, but does for audio processing.
-	if newConfig.FreqMin > newConfig.FreqMax {
-		newConfig.FreqMin, newConfig.FreqMax = newConfig.FreqMax, newConfig.FreqMin
-	}
-	// cant be bothered to write a multi field validator, so i'll just do it silently here
-	// we need to make sure that there is a minimum freq difference between min and max.
-	if newConfig.FreqMax-newConfig.FreqMin < 50 {
-		// our mel max is limited in config to 20000 but can really go as high as 22050.
-		// we'll just add 50 to the max since there's always room there
-		newConfig.FreqMax += 50
-	}
-	// need to register a new melbank if our freqs or audio stream has changed
-	if e.Config.Vocals != newConfig.Vocals || e.Config.FreqMin != newConfig.FreqMin || e.Config.FreqMax != newConfig.FreqMax {
-		audio.Analyzer.DeleteMelbank(e.ID)
-		audio.Analyzer.NewMelbank(e.ID, as, uint(newConfig.FreqMin), uint(newConfig.FreqMax))
-	}
-	// need to register a melbank if the effect doesn't have one yet
-	if _, err := audio.Analyzer.GetMelbank(e.ID); err != nil {
-		audio.Analyzer.NewMelbank(e.ID, as, uint(newConfig.FreqMin), uint(newConfig.FreqMax))
-	}
+	// create stored properties from new config
+	e.updateStoredProperties(newConfig)
 
 	// apply config to effect
 	e.Config = newConfig
@@ -184,6 +146,50 @@ func (e *Effect) UpdateBaseConfig(c interface{}) (err error) {
 		},
 	)
 	return err
+}
+
+// updates properties and objects which are generated from the config
+// eg. melbanks, made using the config frequency range; palette, which is generated from the palette string
+func (e *Effect) updateStoredProperties(newConfig BaseEffectConfig) {
+	// COLOR AND PALETTE
+	// creating a new palette is expensive, should only be done if changed
+	if e.palette == nil || e.Config.Palette != newConfig.Palette {
+		e.palette, _ = color.NewPalette(newConfig.Palette)
+	}
+	// parsing a color is cheap, just do it every time
+	e.bkgColor, _ = color.NewColor(e.Config.BkgColor)
+	// blur needs new blurrer if changed
+	if e.blurrer == nil || e.Config.Blur != newConfig.Blur {
+		e.blurrer = color.NewBlurrer(e.pixelCount, newConfig.Blur)
+	}
+	// MELBANK
+	// parse vocals bool to an audiostream
+	var as audio.AudioStream
+	if newConfig.Vocals {
+		as = audio.Vocals
+	} else {
+		as = audio.Mono
+	}
+	// make sure min and max are ordered properly. doesn't matter in config, but does for audio processing.
+	if newConfig.FreqMin > newConfig.FreqMax {
+		newConfig.FreqMin, newConfig.FreqMax = newConfig.FreqMax, newConfig.FreqMin
+	}
+	// we need to make sure that there is a minimum freq difference between min and max.
+	// cant be bothered to write a multi field validator, so i'll just do it silently here
+	if newConfig.FreqMax-newConfig.FreqMin < 50 {
+		// our mel max is limited in config to 20000 but can really go as high as 22050.
+		// we'll just add 50 to the max since there's always room there
+		newConfig.FreqMax += 50
+	}
+	// need to register a new melbank if our freqs or audio stream has changed
+	if e.Config.Vocals != newConfig.Vocals || e.Config.FreqMin != newConfig.FreqMin || e.Config.FreqMax != newConfig.FreqMax {
+		audio.Analyzer.DeleteMelbank(e.ID)
+		audio.Analyzer.NewMelbank(e.ID, as, uint(newConfig.FreqMin), uint(newConfig.FreqMax))
+	}
+	// need to register a melbank if the effect doesn't have one yet
+	if _, err := audio.Analyzer.GetMelbank(e.ID); err != nil {
+		audio.Analyzer.NewMelbank(e.ID, as, uint(newConfig.FreqMin), uint(newConfig.FreqMax))
+	}
 }
 
 // Effect implementation can implement this method

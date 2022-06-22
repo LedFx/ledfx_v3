@@ -16,24 +16,22 @@ func queryDevice(params ClientDiscoveryParameters) (*airplay.AirplayDevice, erro
 		if ip == nil {
 			return nil, fmt.Errorf("could not parse IP address '%s'", params.DeviceIP)
 		}
-		return queryDeviceByIP(ip, params.Verbose)
+		return queryDeviceByIP(ip)
 	case params.DeviceNameRegex != "":
-		return queryDeviceByName(params.DeviceNameRegex, params.Verbose)
+		return queryDeviceByName(params.DeviceNameRegex)
 	default:
 		return nil, fmt.Errorf("either DeviceNameRegex or DeviceIP must be populated in the client discovery parameters")
 	}
 }
 
-func queryDeviceByIP(ip net.IP, verbose bool) (device *airplay.AirplayDevice, err error) {
+func queryDeviceByIP(ip net.IP) (device *airplay.AirplayDevice, err error) {
 	ch := make(chan []airplay.AirplayDevice)
 	go airplay.Discover(ch)
 
 	for {
 		list := <-ch
 		for _, dev := range list {
-			if verbose {
-				printDevice(&dev)
-			}
+			printDevice(&dev)
 			if dev.IP.Equal(ip) {
 				return &dev, nil
 			}
@@ -41,7 +39,7 @@ func queryDeviceByIP(ip net.IP, verbose bool) (device *airplay.AirplayDevice, er
 	}
 }
 
-func queryDeviceByName(name string, verbose bool) (device *airplay.AirplayDevice, err error) {
+func queryDeviceByName(name string) (device *airplay.AirplayDevice, err error) {
 	rxp, err := regexp.Compile(name)
 	if err != nil {
 		return nil, fmt.Errorf("error compiling regular expression: %w", err)
@@ -53,9 +51,7 @@ func queryDeviceByName(name string, verbose bool) (device *airplay.AirplayDevice
 	for {
 		list := <-ch
 		for _, dev := range list {
-			if verbose {
-				printDevice(&dev)
-			}
+			printDevice(&dev)
 			if dev.IP == nil || dev.Type != "airplay" {
 				continue
 			}
@@ -70,7 +66,7 @@ func queryDeviceByName(name string, verbose bool) (device *airplay.AirplayDevice
 }
 
 func printDevice(device *airplay.AirplayDevice) {
-	log.Logger.WithField("context", "AirPlay Discovery").Infof(
+	log.Logger.WithField("context", "AirPlay Discovery").Debugf(
 		`NAME="%s" SERVER="%s:%d" HOSTNAME="%s" AUDIO="%dch/%dhz/%d-bit" PCM="%v" ALAC="%v"`,
 		device.Name,
 		device.IP,

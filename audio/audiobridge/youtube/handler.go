@@ -28,7 +28,6 @@ type Handler struct {
 	p          *Player
 
 	stopped bool
-	verbose bool
 
 	nowPlaying TrackInfo
 	history    []TrackInfo
@@ -47,14 +46,13 @@ func (h *Handler) Player() *Player {
 	return h.p
 }
 
-func NewHandler(byteWriter *audio.AsyncMultiWriter, verbose bool) *Handler {
+func NewHandler(byteWriter *audio.AsyncMultiWriter) *Handler {
 	h := &Handler{
 		cl: &yt.Client{
 			Debug:      false,
 			HTTPClient: http.DefaultClient,
 		},
 		byteWriter: byteWriter,
-		verbose:    verbose,
 		history:    make([]TrackInfo, 0),
 		p: &Player{
 			mu:              &sync.Mutex{},

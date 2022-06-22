@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"io"
 	"ledfx/audio"
-	"ledfx/config"
 	log "ledfx/logger"
 	"strconv"
 	"strings"
@@ -25,26 +24,26 @@ func TestBridgeMic2Local(t *testing.T) {
 		t.Fatalf("Error getting available audio devices: %v\n", err)
 	}
 
-	var inputDev *config.AudioDevice
+	var deviceId string
 	for i := range devices {
 		if strings.Contains(strings.ToLower(devices[i].Name), "mic") {
-			inputDev = &devices[i]
-			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Device: %s", inputDev.Name)
-			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Input Channels: %d", inputDev.ChannelsIn)
-			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Sample Rate: %f", inputDev.SampleRate)
+			deviceId = devices[i].Id
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Device: %s", devices[i].Name)
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Input Channels: %d", devices[i].ChannelsIn)
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Sample Rate: %f", devices[i].SampleRate)
 			break
 		}
 	}
 
-	if inputDev == nil {
+	if deviceId == "" {
 		t.Fatalf("Could not find input audio device containing string 'mic'\n")
 	}
 
-	if err := br.StartLocalInput(*inputDev, true); err != nil {
+	if err := br.StartLocalInput(deviceId); err != nil {
 		t.Fatalf("Error starting local input: %v\n", err)
 	}
 
-	if err := br.AddLocalOutput(true); err != nil {
+	if err := br.AddLocalOutput(); err != nil {
 		t.Fatalf("Error adding local output: %v\n", err)
 	}
 
@@ -60,11 +59,11 @@ func TestBridgeAirplay2Local(t *testing.T) {
 	}
 	defer br.Stop()
 
-	if err := br.StartAirPlayInput("LedFX-AirPlay", 7000, false); err != nil {
+	if err := br.StartAirPlayInput("LedFX-AirPlay", 7000); err != nil {
 		t.Fatalf("Error initializing AirPlay input: %v\n", err)
 	}
 
-	if err := br.AddLocalOutput(true); err != nil {
+	if err := br.AddLocalOutput(); err != nil {
 		t.Fatalf("Error initializing local output: %v\n", err)
 	}
 
@@ -80,11 +79,11 @@ func TestBridgeAirPlay2AirPlay(t *testing.T) {
 	}
 	defer br.Stop()
 
-	if err := br.StartAirPlayInput("LedFX-Test", 7000, false); err != nil {
+	if err := br.StartAirPlayInput("LedFX-Test", 7000); err != nil {
 		t.Fatalf("Error initializing AirPlay input: %v\n", err)
 	}
 
-	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName, true); err != nil {
+	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName); err != nil {
 		t.Fatalf("Error initializing AirPlay output: %v\n", err)
 	}
 
@@ -100,15 +99,15 @@ func TestBridgeAirPlay2AirPlayAndLocal(t *testing.T) {
 	}
 	defer br.Stop()
 
-	if err := br.StartAirPlayInput("LedFX-Test-Input", 7000, false); err != nil {
+	if err := br.StartAirPlayInput("LedFX-Test-Input", 7000); err != nil {
 		t.Fatalf("Error initializing AirPlay input: %v\n", err)
 	}
 
-	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName, true); err != nil {
+	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName); err != nil {
 		t.Fatalf("Error initializing AirPlay output: %v\n", err)
 	}
 
-	if err := br.AddLocalOutput(true); err != nil {
+	if err := br.AddLocalOutput(); err != nil {
 		t.Fatalf("Error adding local output")
 	}
 
@@ -124,11 +123,11 @@ func TestBridgeAirPlay2AirPlayAsyncWrite(t *testing.T) {
 	}
 	defer br.Stop()
 
-	if err := br.StartAirPlayInput("LedFX-Test", 7000, false); err != nil {
+	if err := br.StartAirPlayInput("LedFX-Test", 7000); err != nil {
 		t.Fatalf("Error initializing AirPlay input: %v\n", err)
 	}
 
-	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName, true); err != nil {
+	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName); err != nil {
 		t.Fatalf("Error initializing AirPlay output: %v\n", err)
 	}
 
@@ -156,26 +155,26 @@ func TestBridgeMic2AirPlay(t *testing.T) {
 		t.Fatalf("Error getting available audio devices: %v\n", err)
 	}
 
-	var inputDev *config.AudioDevice
+	var deviceId string
 	for i := range devices {
 		if strings.Contains(strings.ToLower(devices[i].Name), "mic") {
-			inputDev = &devices[i]
-			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Device: %s", inputDev.Name)
-			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Input Channels: %d", inputDev.ChannelsIn)
-			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Sample Rate: %f", inputDev.SampleRate)
+			deviceId = devices[i].Id
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Device: %s", devices[i].Name)
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Input Channels: %d", devices[i].ChannelsIn)
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Sample Rate: %f", devices[i].SampleRate)
 			break
 		}
 	}
 
-	if inputDev == nil {
+	if deviceId == "" {
 		t.Fatalf("Could not find input audio device containing string 'mic'\n")
 	}
 
-	if err := br.StartLocalInput(*inputDev, true); err != nil {
+	if err := br.StartLocalInput(deviceId); err != nil {
 		t.Fatalf("Error starting local input: %v\n", err)
 	}
 
-	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName, true); err != nil {
+	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName); err != nil {
 		t.Fatalf("Error adding AirPlay output: %v\n", err)
 	}
 

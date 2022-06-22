@@ -3,7 +3,6 @@ package audiobridge
 import (
 	"encoding/json"
 	"fmt"
-	"ledfx/config"
 )
 
 type Wrapper interface {
@@ -13,9 +12,8 @@ type Wrapper interface {
 
 // AirPlayInputJSON configures an AirPlay input (server)
 type AirPlayInputJSON struct {
-	Name    string `json:"name"`
-	Port    int    `json:"port"`
-	Verbose bool   `json:"verbose,omitempty"`
+	Name string `json:"name"`
+	Port int    `json:"port"`
 }
 
 func (a AirPlayInputJSON) AsJSON() ([]byte, error) {
@@ -26,7 +24,6 @@ func (a AirPlayInputJSON) AsJSON() ([]byte, error) {
 type AirPlayOutputJSON struct {
 	SearchKey  string            `json:"search_key"`
 	SearchType AirPlaySearchType `json:"search_type"`
-	Verbose    bool              `json:"verbose,omitempty"`
 }
 
 func (a AirPlayOutputJSON) AsJSON() ([]byte, error) {
@@ -35,8 +32,7 @@ func (a AirPlayOutputJSON) AsJSON() ([]byte, error) {
 
 // LocalInputJSON configures a local input (capture)
 type LocalInputJSON struct {
-	AudioDevice *config.AudioDevice `json:"audio_device,omitempty"`
-	Verbose     bool                `json:"verbose,omitempty"`
+	DeviceID string `json:"device_id,omitempty"`
 }
 
 func (l LocalInputJSON) AsJSON() ([]byte, error) {
@@ -45,7 +41,6 @@ func (l LocalInputJSON) AsJSON() ([]byte, error) {
 
 // LocalOutputJSON configures a local output (playback)
 type LocalOutputJSON struct {
-	Verbose bool `json:"verbose,omitempty"`
 }
 
 func (l LocalOutputJSON) AsJSON() ([]byte, error) {
@@ -53,7 +48,6 @@ func (l LocalOutputJSON) AsJSON() ([]byte, error) {
 }
 
 type YouTubeInputJSON struct {
-	Verbose bool `json:"verbose,omitempty"`
 }
 
 func (y YouTubeInputJSON) AsJSON() ([]byte, error) {
@@ -85,7 +79,7 @@ func (w *BridgeJSONWrapper) StartAirPlayInput(jsonData []byte) (err error) {
 		conf.Port = 7000
 	}
 
-	if err := w.br.StartAirPlayInput(conf.Name, conf.Port, conf.Verbose); err != nil {
+	if err := w.br.StartAirPlayInput(conf.Name, conf.Port); err != nil {
 		return fmt.Errorf("error starting AirPlay Server: %w", err)
 	}
 
@@ -98,7 +92,7 @@ func (w *BridgeJSONWrapper) AddAirPlayOutput(jsonData []byte) (err error) {
 	if err := json.Unmarshal(jsonData, &conf); err != nil {
 		return fmt.Errorf("error unmarshalling JSON: %w", err)
 	}
-	if err := w.br.AddAirPlayOutput(conf.SearchKey, conf.SearchType, conf.Verbose); err != nil {
+	if err := w.br.AddAirPlayOutput(conf.SearchKey, conf.SearchType); err != nil {
 		return fmt.Errorf("error adding AirPlay Client: %w", err)
 	}
 	return nil
@@ -110,7 +104,7 @@ func (w *BridgeJSONWrapper) StartLocalInput(jsonData []byte) (err error) {
 	if err := json.Unmarshal(jsonData, &conf); err != nil {
 		return fmt.Errorf("error unmarshalling JSON: %w", err)
 	}
-	if err := w.br.StartLocalInput(*conf.AudioDevice, conf.Verbose); err != nil {
+	if err := w.br.StartLocalInput(conf.DeviceID); err != nil {
 		return fmt.Errorf("error starting local capture: %w", err)
 	}
 	return nil
@@ -122,7 +116,7 @@ func (w *BridgeJSONWrapper) AddLocalOutput(jsonData []byte) (err error) {
 	if err := json.Unmarshal(jsonData, &conf); err != nil {
 		return fmt.Errorf("error unmarshalling JSON: %w", err)
 	}
-	if err := w.br.AddLocalOutput(conf.Verbose); err != nil {
+	if err := w.br.AddLocalOutput(); err != nil {
 		return fmt.Errorf("error starting local playback: %w", err)
 	}
 	return nil
@@ -134,7 +128,7 @@ func (w *BridgeJSONWrapper) StartYouTubeInput(jsonData []byte) (err error) {
 	if err := json.Unmarshal(jsonData, &conf); err != nil {
 		return fmt.Errorf("error unmarshalling JSON: %w", err)
 	}
-	if err := w.br.StartYoutubeInput(conf.Verbose); err != nil {
+	if err := w.br.StartYoutubeInput(); err != nil {
 		return fmt.Errorf("error starting YouTubeSet input: %w", err)
 	}
 	return nil

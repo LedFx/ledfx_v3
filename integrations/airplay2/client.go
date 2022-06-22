@@ -26,9 +26,6 @@ type ClientDiscoveryParameters struct {
 
 	// DeviceIP takes higher priority than DeviceNameRegex if it is populated.
 	DeviceIP string
-
-	// Verbose, when true, enables the printing of all discovered devices to stderr.
-	Verbose bool
 }
 
 func NewClient(searchParameters ClientDiscoveryParameters) (cl *Client, err error) {

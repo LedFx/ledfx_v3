@@ -120,13 +120,6 @@ func (lc *LocalController) Stop() error {
 	}
 	return fmt.Errorf("local handler is not active")
 }
-func (lc *LocalController) SetVerbose(enabled bool) error {
-	if lc.handler != nil {
-		lc.handler.verbose = enabled
-		return nil
-	}
-	return fmt.Errorf("local handler is not active")
-}
 func (lc *LocalController) QuitPlayback() error {
 	if lc.handler != nil {
 		lc.handler.playback.Quit()

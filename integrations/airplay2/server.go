@@ -29,12 +29,10 @@ func (s *Server) MarshalJSON() (b []byte, err error) {
 	return json.Marshal(&struct {
 		AdvertName string       `json:"advertisement_name"`
 		Port       int          `json:"port"`
-		Verbose    bool         `json:"verbose"`
 		Player     *audioPlayer `json:"player"`
 	}{
 		AdvertName: s.conf.AdvertisementName,
 		Port:       s.conf.Port,
-		Verbose:    s.conf.VerboseLogging,
 		Player:     s.player,
 	})
 }
@@ -75,7 +73,7 @@ func (s *Server) Start() error {
 		defer func() {
 			s.done <- struct{}{}
 		}()
-		err := s.svc.Start(s.conf.VerboseLogging, true)
+		err := s.svc.Start(true)
 		errCh <- err
 		if err != nil {
 			log.Logger.WithField("context", "AirPlay Server").Errorf("Error starting AirPlay server: %v", err)

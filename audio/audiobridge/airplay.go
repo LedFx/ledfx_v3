@@ -6,7 +6,7 @@ import (
 	log "ledfx/logger"
 )
 
-func (br *Bridge) StartAirPlayInput(name string, port int, verbose bool) error {
+func (br *Bridge) StartAirPlayInput(name string, port int) error {
 	if br.inputType != -1 {
 		br.closeInput()
 	}
@@ -19,7 +19,6 @@ func (br *Bridge) StartAirPlayInput(name string, port int, verbose bool) error {
 	br.airplay.server = airplay2.NewServer(airplay2.Config{
 		AdvertisementName: name,
 		Port:              port,
-		VerboseLogging:    verbose,
 	}, br.byteWriter)
 
 	if err := br.airplay.server.Start(); err != nil {
@@ -28,7 +27,7 @@ func (br *Bridge) StartAirPlayInput(name string, port int, verbose bool) error {
 	return nil
 }
 
-func (br *Bridge) AddAirPlayOutput(searchKey string, searchType AirPlaySearchType, verbose bool) error {
+func (br *Bridge) AddAirPlayOutput(searchKey string, searchType AirPlaySearchType) error {
 	if br.inputType == -1 {
 		return fmt.Errorf("an input source is required before an output source can be initialized")
 	}
@@ -41,9 +40,7 @@ func (br *Bridge) AddAirPlayOutput(searchKey string, searchType AirPlaySearchTyp
 		br.airplay.clients = make([]*airplay2.Client, 0)
 	}
 
-	params := airplay2.ClientDiscoveryParameters{
-		Verbose: verbose,
-	}
+	params := airplay2.ClientDiscoveryParameters{}
 
 	switch searchType {
 	case AirPlaySearchByIP:

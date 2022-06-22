@@ -122,7 +122,7 @@ func NewAirplayServer(port int, name string, player player.Player) *AirplayServe
 }
 
 // Start starts the airplay server, broadcasting on bonjour, ready to accept requests
-func (a *AirplayServer) Start(verbose bool, advertise bool) (err error) {
+func (a *AirplayServer) Start(advertise bool) (err error) {
 	if advertise {
 		if err = a.initAdvertise(); err != nil {
 			return err
@@ -141,7 +141,7 @@ func (a *AirplayServer) Start(verbose bool, advertise bool) (err error) {
 	rtspServer.AddHandler(rtsp.Flush, handleFlush)
 	rtspServer.AddHandler(rtsp.Teardown, a.handleTeardown)
 	a.doneCh = make(chan struct{})
-	rtspServer.Start(verbose, a.doneCh)
+	rtspServer.Start(a.doneCh)
 	return nil
 }
 

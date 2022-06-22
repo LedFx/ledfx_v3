@@ -3,7 +3,6 @@ package capture
 import (
 	"fmt"
 	"ledfx/audio"
-	"ledfx/config"
 	log "ledfx/logger"
 
 	"github.com/gordonklaus/portaudio"
@@ -12,14 +11,15 @@ import (
 type Handler struct {
 	*portaudio.Stream
 	byteWriter *audio.AsyncMultiWriter
-	verbose    bool
 	stopped    bool
 }
 
-func NewHandler(audioDevice config.AudioDevice, byteWriter *audio.AsyncMultiWriter, verbose bool) (h *Handler, err error) {
-	if verbose {
-		log.Logger.WithField("context", "Local Capture Init").Infof("Getting info for device '%s'...", audioDevice.Name)
+func NewHandler(id string, byteWriter *audio.AsyncMultiWriter) (h *Handler, err error) {
+	audioDevice, err := audio.GetDeviceByID(id)
+	if err != nil {
+		return nil, err
 	}
+	log.Logger.WithField("context", "Local Capture Init").Debugf("Getting info for device '%s'...", audioDevice.Name)
 	dev, err := audio.GetPaDeviceInfo(audioDevice)
 	if err != nil {
 		return nil, fmt.Errorf("error getting PortAudio device info: %w", err)
@@ -36,21 +36,16 @@ func NewHandler(audioDevice config.AudioDevice, byteWriter *audio.AsyncMultiWrit
 
 	h = &Handler{
 		byteWriter: byteWriter,
-		verbose:    verbose,
 	}
 
 	switch p.Input.Channels {
 	case 1:
-		if verbose {
-			log.Logger.WithField("context", "Local Capture Init").Infof("Opening stream with Mono2Stereo callback...")
-		}
+		log.Logger.WithField("context", "Local Capture Init").Debugf("Opening stream with Mono2Stereo callback...")
 		if h.Stream, err = portaudio.OpenStream(p, h.mono2StereoCallback); err != nil {
 			return nil, fmt.Errorf("error opening mono Portaudio stream: %w", err)
 		}
 	case 2:
-		if verbose {
-			log.Logger.WithField("context", "Local Capture Init").Infof("Opening stream with Stereo callback...")
-		}
+		log.Logger.WithField("context", "Local Capture Init").Debugf("Opening stream with Stereo callback...")
 		if h.Stream, err = portaudio.OpenStream(p, h.stereoCallback); err != nil {
 			return nil, fmt.Errorf("error opening stereo Portaudio stream: %w", err)
 		}
@@ -58,9 +53,7 @@ func NewHandler(audioDevice config.AudioDevice, byteWriter *audio.AsyncMultiWrit
 		return nil, fmt.Errorf("%d channel audio is unsupported (LedFX only supports stereo/mono)", p.Input.Channels)
 	}
 
-	if verbose {
-		log.Logger.WithField("context", "Local Capture Init").Infof("Starting stream...")
-	}
+	log.Logger.WithField("context", "Local Capture Init").Debugf("Starting stream...")
 	if err = h.Stream.Start(); err != nil {
 		return nil, fmt.Errorf("error starting capture stream: %w", err)
 	}

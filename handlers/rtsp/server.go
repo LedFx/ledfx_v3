@@ -44,7 +44,7 @@ func (r *Server) Stop() {
 }
 
 // Start creates listening socket for the RTSP connection
-func (r *Server) Start(verbose bool, doneCh chan struct{}) {
+func (r *Server) Start(doneCh chan struct{}) {
 	// Get the default outbound interface address
 	_, myIP, ok := interfaces.LikelyHomeRouterIP()
 	if !ok {
@@ -71,7 +71,7 @@ func (r *Server) Start(verbose bool, doneCh chan struct{}) {
 				}
 				return
 			}
-			go r.read(conn, r.handlers, verbose)
+			go r.read(conn, r.handlers)
 		}
 	}()
 
@@ -82,7 +82,7 @@ func (r *Server) Start(verbose bool, doneCh chan struct{}) {
 	}()
 }
 
-func (r *Server) read(conn net.Conn, handlers map[Method]RequestHandler, verbose bool) {
+func (r *Server) read(conn net.Conn, handlers map[Method]RequestHandler) {
 	defer conn.Close()
 	localAddr := conn.LocalAddr().(*net.TCPAddr).IP.String()
 	remoteAddr := conn.RemoteAddr().(*net.TCPAddr).IP.String()
@@ -98,9 +98,7 @@ func (r *Server) read(conn net.Conn, handlers map[Method]RequestHandler, verbose
 			return
 		}
 
-		if verbose {
-			log.Logger.WithField("context", "RTSP Server - REQUEST").Println(request.String())
-		}
+		log.Logger.WithField("context", "RTSP Server - REQUEST").Debug(request.String())
 
 		handler, exists := handlers[request.Method]
 		if !exists {
@@ -114,9 +112,7 @@ func (r *Server) read(conn net.Conn, handlers map[Method]RequestHandler, verbose
 		resp.Headers["CSeq"] = request.Headers["CSeq"]
 		// invokes the client specified handler to build the response
 		handler(request, resp, localAddr, remoteAddr)
-		if verbose {
-			log.Logger.WithField("context", "RTSP Server - RESPONSE").Println(resp.String())
-		}
+		log.Logger.WithField("context", "RTSP Server - RESPONSE").Debug(resp.String())
 		_, _ = writeResponse(conn, resp)
 	}
 }

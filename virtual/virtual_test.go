@@ -60,11 +60,7 @@ func TestVirtual(t *testing.T) {
 	}
 	defer br.Stop()
 
-	audiodevice, err := audio.GetDeviceByID("9f012a5ef29af5e7b226bae734a8cb2ad229f063") // get from config
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := br.StartLocalInput(audiodevice, true); err != nil {
+	if err := br.StartLocalInput("9f012a5ef29af5e7b226bae734a8cb2ad229f063"); err != nil { // get from config
 		log.Fatalf("Error starting local input: %v\n", err)
 	}
 

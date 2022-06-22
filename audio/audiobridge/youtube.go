@@ -8,7 +8,7 @@ type YoutubeHandler struct {
 	handler *youtube.Handler
 }
 
-func (br *Bridge) StartYoutubeInput(verbose bool) error {
+func (br *Bridge) StartYoutubeInput() error {
 	if br.inputType != -1 {
 		br.closeInput()
 	}
@@ -17,7 +17,7 @@ func (br *Bridge) StartYoutubeInput(verbose bool) error {
 
 	if br.youtube == nil {
 		br.youtube = &YoutubeHandler{
-			handler: youtube.NewHandler(br.byteWriter, verbose),
+			handler: youtube.NewHandler(br.byteWriter),
 		}
 	}
 	return nil

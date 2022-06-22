@@ -3,7 +3,6 @@ package audiobridge
 import (
 	"fmt"
 	"ledfx/audio"
-	"ledfx/config"
 	log "ledfx/logger"
 	"strings"
 	"testing"
@@ -23,18 +22,18 @@ func TestBridgeMic2LocalJSON(t *testing.T) {
 		t.Fatalf("Error getting available audio devices: %v\n", err)
 	}
 
-	var inputDev *config.AudioDevice
+	var deviceId string
 	for i := range devices {
 		if strings.Contains(strings.ToLower(devices[i].Name), "mic") {
-			inputDev = &devices[i]
-			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Device: %s", inputDev.Name)
-			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Input Channels: %d", inputDev.ChannelsIn)
-			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Sample Rate: %f", inputDev.SampleRate)
+			deviceId = devices[i].Id
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Device: %s", devices[i].Name)
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Input Channels: %d", devices[i].ChannelsIn)
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Sample Rate: %f", devices[i].SampleRate)
 			break
 		}
 	}
 
-	if inputDev == nil {
+	if deviceId == "" {
 		t.Fatalf("Could not find input audio device containing string 'mic'\n")
 	}
 
@@ -42,8 +41,7 @@ func TestBridgeMic2LocalJSON(t *testing.T) {
 
 	// BEGIN INPUT CONFIG
 	inConf := LocalInputJSON{
-		AudioDevice: inputDev,
-		Verbose:     true,
+		DeviceID: deviceId,
 	}
 	inConfBytes, err := inConf.AsJSON()
 	if err != nil {
@@ -55,9 +53,7 @@ func TestBridgeMic2LocalJSON(t *testing.T) {
 	// END INPUT CONFIG
 
 	// BEGIN OUTPUT CONFIG
-	outConf := LocalOutputJSON{
-		Verbose: true,
-	}
+	outConf := LocalOutputJSON{}
 	outConfBytes, err := outConf.AsJSON()
 	if err != nil {
 		t.Fatalf("Error marshalling output config JSON: %v\n", err)
@@ -88,9 +84,8 @@ func TestBridgeAirPlay2LocalJSON(t *testing.T) {
 
 	// BEGIN INPUT CONFIG
 	inConf := AirPlayInputJSON{
-		Name:    "AirPlay2Local",
-		Port:    7000,
-		Verbose: false,
+		Name: "AirPlay2Local",
+		Port: 7000,
 	}
 	inConfBytes, err := inConf.AsJSON()
 	if err != nil {
@@ -102,9 +97,7 @@ func TestBridgeAirPlay2LocalJSON(t *testing.T) {
 	// END INPUT CONFIG
 
 	// BEGIN OUTPUT CONFIG
-	outConf := LocalOutputJSON{
-		Verbose: true,
-	}
+	outConf := LocalOutputJSON{}
 	outConfBytes, err := outConf.AsJSON()
 	if err != nil {
 		t.Fatalf("Error marshalling output config JSON: %v\n", err)
@@ -134,9 +127,7 @@ func TestBridgeYouTube2LocalJSON(t *testing.T) {
 	wrapper := br.JSONWrapper()
 
 	// BEGIN INPUT CONFIG
-	inConf := YouTubeInputJSON{
-		Verbose: true,
-	}
+	inConf := YouTubeInputJSON{}
 	inConfBytes, err := inConf.AsJSON()
 	if err != nil {
 		t.Fatalf("Error marshalling input config JSON: %v\n", err)
@@ -148,9 +139,7 @@ func TestBridgeYouTube2LocalJSON(t *testing.T) {
 	// END INPUT CONFIG
 
 	// BEGIN OUTPUT CONFIG
-	outConf := LocalOutputJSON{
-		Verbose: true,
-	}
+	outConf := LocalOutputJSON{}
 	outConfBytes, err := outConf.AsJSON()
 	if err != nil {
 		t.Fatalf("Error marshalling output config JSON: %v\n", err)

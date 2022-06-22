@@ -15,7 +15,6 @@ type WindowsHandler struct {
 	stream     *portaudio.Stream
 	outDev     *portaudio.DeviceInfo
 	buf        audio.Buffer
-	verbose    bool
 	done       bool
 }
 
@@ -35,10 +34,9 @@ func (wh *WindowsHandler) CurrentBufferSize() int {
 	return len(wh.buf)
 }
 
-func NewHandler(verbose bool) (h *WindowsHandler, err error) {
+func NewHandler() (h *WindowsHandler, err error) {
 	h = &WindowsHandler{
 		identifier: util.RandString(8),
-		verbose:    verbose,
 		buf:        make([]int16, 1408/2),
 	}
 
@@ -47,10 +45,8 @@ func NewHandler(verbose bool) (h *WindowsHandler, err error) {
 		return nil, fmt.Errorf("error getting default output device: %w", err)
 	}
 
-	if verbose {
-		log.Logger.WithField("context", "Local Playback Init").Infof("Default output device: %s", h.outDev.Name)
-		log.Logger.WithField("context", "Local Capture Init").Infof("Opening stream... (%dCH/16-bit @%vhz)", h.outDev.MaxOutputChannels, h.outDev.DefaultSampleRate)
-	}
+	log.Logger.WithField("context", "Local Playback Init").Debugf("Default output device: %s", h.outDev.Name)
+	log.Logger.WithField("context", "Local Capture Init").Debugf("Opening stream... (%dCH/16-bit @%vhz)", h.outDev.MaxOutputChannels, h.outDev.DefaultSampleRate)
 
 	// Ensure format compatibility with the data sent over Player.Write()
 	h.outDev.DefaultSampleRate = 44100
@@ -65,9 +61,7 @@ func NewHandler(verbose bool) (h *WindowsHandler, err error) {
 	); err != nil {
 		return nil, fmt.Errorf("error opening PortAudio stream: %w", err)
 	}
-	if verbose {
-		log.Logger.WithField("context", "Local Capture Init").Infof("Starting stream...")
-	}
+	log.Logger.WithField("context", "Local Capture Init").Debug("Starting stream...")
 	if err = h.stream.Start(); err != nil {
 		return nil, fmt.Errorf("error starting stream: %w", err)
 	}

@@ -9,8 +9,6 @@ type PlaybackAction int
 
 const (
 	PlaybackActionStop PlaybackAction = iota
-	PlaybackActionEnableVerbose
-	PlayBackActionDisableVerbose
 )
 
 type PlaybackCTLJSON struct {
@@ -30,10 +28,6 @@ func (j *JsonCTL) Playback(jsonData []byte) (err error) {
 	switch conf.Action {
 	case PlaybackActionStop:
 		return j.w.br.Controller().Local().QuitPlayback()
-	case PlaybackActionEnableVerbose:
-		return j.w.br.Controller().Local().SetVerbose(true)
-	case PlayBackActionDisableVerbose:
-		return j.w.br.Controller().Local().SetVerbose(false)
 	}
 
 	return fmt.Errorf("unknown action '%d'", conf.Action)

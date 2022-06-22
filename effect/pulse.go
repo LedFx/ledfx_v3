@@ -5,8 +5,7 @@ import (
 	"math"
 )
 
-type Pulse struct {
-}
+type Pulse struct{}
 
 // Apply new pixels to an existing pixel array.
 func (e *Pulse) assembleFrame(base *Effect, p color.Pixels) {

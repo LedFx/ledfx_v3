@@ -22,34 +22,6 @@ var Upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-func Serve(mux *http.ServeMux) {
-	mux.HandleFunc("/websocket", New)
-}
-
-func New(w http.ResponseWriter, r *http.Request) {
-	// upgrade this connection to a WebSocket
-	// connection
-	logger.Logger.WithField("context", "Websocket").Debugf("Creating connection with %s", r.RemoteAddr)
-	conn, err := Upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		logger.Logger.WithField("context", "Websocket").Error(err)
-		return
-	}
-	ws := webSocket{
-		conn: conn,
-	}
-	logger.Logger.WithField("context", "Websocket").Debugf("Connection established with %s", r.RemoteAddr)
-	// subscribe to the events we want
-	unsubLog := event.Subscribe(event.Log, ws.handleEvent)
-	unsubRender := event.Subscribe(event.EffectRender, ws.handleEvent)
-	defer unsubLog()
-	defer unsubRender()
-	// listen indefinitely for new messages coming
-	// through on our WebSocket connection
-	ws.Read()
-	logger.Logger.WithField("context", "Websocket").Debugf("Closed connection with %s", r.RemoteAddr)
-}
-
 type webSocket struct {
 	conn *websocket.Conn
 }
@@ -82,18 +54,34 @@ func (w *webSocket) Read() {
 		}
 		// print out that message for clarity
 		logger.Logger.WithField("context", "Websocket").Debug(string(p))
-		// var msg Msg
-		// err = json.Unmarshal([]byte(p), &msg)
-		// if err != nil {
-		// 	logger.Logger.WithField("context", "Websocket").Warn(err)
-		// }
+		// TODO websockets API
 	}
 }
 
-// // SendWs will send a message to our WebSocket client
-// func SendWs(conn *websocket.Conn, msgType string, msg string) {
-// 	if err := conn.WriteMessage(1, []byte(`{"type":"`+msgType+`","message":"`+msg+`" }`)); err != nil {
-// 		logger.Logger.WithField("context", "Websocket").Warn(err)
-// 		return
-// 	}
-// }
+func Serve(mux *http.ServeMux) {
+	mux.HandleFunc("/websocket", New)
+}
+
+func New(w http.ResponseWriter, r *http.Request) {
+	// upgrade this connection to a WebSocket connection
+	logger.Logger.WithField("context", "Websocket").Debugf("Creating connection with %s", r.RemoteAddr)
+	conn, err := Upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		logger.Logger.WithField("context", "Websocket").Error(err)
+		return
+	}
+	ws := webSocket{
+		conn: conn,
+	}
+	logger.Logger.WithField("context", "Websocket").Debugf("Connection established with %s", r.RemoteAddr)
+	// subscribe to the events we want
+	unsubLog := event.Subscribe(event.Log, ws.handleEvent)
+	unsubEffectRender := event.Subscribe(event.EffectRender, ws.handleEvent)
+	unsubEffectUpdate := event.Subscribe(event.EffectUpdate, ws.handleEvent)
+	defer unsubLog()
+	defer unsubEffectRender()
+	defer unsubEffectUpdate()
+	// listen indefinitely for new messages coming through on our WebSocket connection
+	ws.Read()
+	logger.Logger.WithField("context", "Websocket").Debugf("Closed connection with %s", r.RemoteAddr)
+}

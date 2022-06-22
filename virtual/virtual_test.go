@@ -66,7 +66,6 @@ func TestVirtual(t *testing.T) {
 	}
 	if err := br.StartLocalInput(audiodevice, true); err != nil {
 		log.Fatalf("Error starting local input: %v\n", err)
-
 	}
 
 	ticker := time.NewTicker(16 * time.Millisecond)

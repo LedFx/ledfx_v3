@@ -79,8 +79,6 @@ func Invoke(et EventType, data map[string]interface{}) {
 	}
 
 	// Do not invoke the event if it's missing keys
-	// This is done silently (no logging) so that an infinite loop
-	// of event -> log -> event -> log isnt started!
 	if err != nil {
 		return
 	}

@@ -35,6 +35,7 @@ type LogEventHook struct{}
 
 func (l *LogEventHook) Levels() []logrus.Level {
 	// everything up to info level (not debug or trace) should emit a logging event
+	// MUST NOT include debug messages or events will go crazy in an infinite loop
 	return []logrus.Level{0, 1, 2, 3, 4}
 }
 

@@ -4,12 +4,12 @@ import (
 	"testing"
 )
 
-func TestLog(t *testing.T) {
-	handleLogEvent := func(e *LogEvent) {
-		t.Log(e.Level, e.Msg)
+func TestEvents(t *testing.T) {
+	handleLogEvent := func(e *Event) {
+		t.Log(e.Data["level"], e.Data["msg"])
 	}
-	id := SubscribeLog(handleLogEvent)
-	InvokeLog("testLevel", "helloooo")
-	UnsubscribeLog(id)
-	InvokeLog("testAgain", "all is quiet")
+	unsub := Subscribe(Log, handleLogEvent)
+	Invoke(Log, map[string]interface{}{"level": "testing level", "msg": "testing message"})
+	unsub()
+	Invoke(Log, map[string]interface{}{"level": "testing level", "msg": "testing message again"})
 }

@@ -247,7 +247,12 @@ func (e *Effect) Render(p color.Pixels) {
 	}
 	e.applyBlur(p)
 	e.clamp(p)
-	event.InvokeEffectRender(p)
+	event.Invoke(
+		event.EffectRender,
+		map[string]interface{}{
+			"pixels": p,
+		},
+	)
 }
 
 func (e *Effect) applyBlur(p color.Pixels) {

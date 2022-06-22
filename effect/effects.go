@@ -179,7 +179,6 @@ func SetGlobalSettings(c interface{}) (err error) {
 		return err
 	}
 	// validate all values
-	err = validate.Struct(&newConfig)
 	if errs, ok := validate.Struct(&newConfig).(validator.ValidationErrors); ok {
 		if errs != nil {
 			errString := "Validation Errors: "

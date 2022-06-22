@@ -10,6 +10,7 @@ import (
 	"ledfx/frontend"
 	"ledfx/logger"
 	"ledfx/util"
+	"ledfx/websocket"
 	"net/http"
 	"os"
 	"os/signal"
@@ -104,6 +105,7 @@ func main() {
 	effect.NewAPI(mux)
 	config.NewAPI(mux)
 	frontend.NewServer(mux)
+	websocket.Serve(mux)
 	if err := bridgeapi.NewServer(audio.Analyzer.BufferCallback, mux); err != nil {
 		logger.Logger.WithField("context", "AudioBridge").Fatalf("Error initializing audio bridge server: %v", err)
 	} else {

@@ -29,14 +29,16 @@ func Serve(mux *http.ServeMux) {
 func New(w http.ResponseWriter, r *http.Request) {
 	// upgrade this connection to a WebSocket
 	// connection
-	logger.Logger.WithField("context", "Websocket").Debug("Creating websocket connection")
+	logger.Logger.WithField("context", "Websocket").Debugf("Creating connection with %s", r.RemoteAddr)
 	conn, err := Upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logger.Logger.WithField("context", "Websocket").Warn(err)
+		logger.Logger.WithField("context", "Websocket").Error(err)
+		return
 	}
 	ws := webSocket{
 		conn: conn,
 	}
+	logger.Logger.WithField("context", "Websocket").Debugf("Connection established with %s", r.RemoteAddr)
 	// subscribe to the events we want
 	unsubLog := event.Subscribe(event.Log, ws.handleEvent)
 	unsubRender := event.Subscribe(event.EffectRender, ws.handleEvent)
@@ -45,6 +47,7 @@ func New(w http.ResponseWriter, r *http.Request) {
 	// listen indefinitely for new messages coming
 	// through on our WebSocket connection
 	ws.Read()
+	logger.Logger.WithField("context", "Websocket").Debugf("Closed connection with %s", r.RemoteAddr)
 }
 
 type webSocket struct {
@@ -78,7 +81,7 @@ func (w *webSocket) Read() {
 			return
 		}
 		// print out that message for clarity
-		logger.Logger.Debug(string(p))
+		logger.Logger.WithField("context", "Websocket").Debug(string(p))
 		// var msg Msg
 		// err = json.Unmarshal([]byte(p), &msg)
 		// if err != nil {

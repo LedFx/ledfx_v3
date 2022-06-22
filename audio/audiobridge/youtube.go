@@ -16,9 +16,7 @@ func (br *Bridge) StartYoutubeInput() error {
 	br.inputType = inputTypeYoutube
 
 	if br.youtube == nil {
-		br.youtube = &YoutubeHandler{
-			handler: youtube.NewHandler(br.byteWriter),
-		}
+		br.youtube = youtube.NewHandler(br.byteWriter)
 	}
 	return nil
 }

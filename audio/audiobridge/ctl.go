@@ -44,60 +44,46 @@ func (c *Controller) YouTube() *YoutubeController {
 
 func (ytc *YoutubeController) CheckErr() error {
 	if ytc.handler != nil {
-		if ytc.handler.handler != nil {
-			return nil
-		}
+		return nil
 	}
 	return fmt.Errorf("YouTube handler is not active")
 }
 
 func (ytc *YoutubeController) NowPlaying() (info youtube.TrackInfo, err error) {
 	if ytc.handler != nil {
-		if ytc.handler.handler != nil {
-			return ytc.handler.handler.Player().NowPlaying(), nil
-		}
+		return ytc.handler.Player().NowPlaying(), nil
 	}
 	return info, fmt.Errorf("YouTube handler is not active")
 }
 func (ytc *YoutubeController) QueuedTracks() ([]youtube.TrackInfo, error) {
 	if ytc.handler != nil {
-		if ytc.handler.handler != nil {
-			return ytc.handler.handler.Player().QueuedTracks(), nil
-		}
+		return ytc.handler.Player().QueuedTracks(), nil
 	}
 	return nil, fmt.Errorf("YouTube handler is not active")
 }
 
 func (ytc *YoutubeController) TimeElapsed() (time.Duration, error) {
 	if ytc.handler != nil {
-		if ytc.handler.handler != nil {
-			return ytc.handler.handler.Player().TimeElapsed(), nil
-		}
+		return ytc.handler.Player().TimeElapsed(), nil
 	}
 	return -1, errors.New("YouTube handler is not active")
 }
 
 func (ytc *YoutubeController) IsPaused() (bool, error) {
 	if ytc.handler != nil {
-		if ytc.handler.handler != nil {
-			return ytc.handler.handler.Player().IsPaused(), nil
-		}
+		return ytc.handler.Player().IsPaused(), nil
 	}
 	return false, fmt.Errorf("YouTube handler is not active")
 }
 func (ytc *YoutubeController) TrackIndex() (int, error) {
 	if ytc.handler != nil {
-		if ytc.handler.handler != nil {
-			return ytc.handler.handler.Player().TrackIndex(), nil
-		}
+		return ytc.handler.Player().TrackIndex(), nil
 	}
 	return -1, fmt.Errorf("YouTube handler is not active")
 }
 func (ytc *YoutubeController) IsPlaying() (bool, error) {
 	if ytc.handler != nil {
-		if ytc.handler.handler != nil {
-			return ytc.handler.handler.Player().IsPlaying(), nil
-		}
+		return ytc.handler.Player().IsPlaying(), nil
 	}
 	return false, fmt.Errorf("YouTube handler is not active")
 }
@@ -179,7 +165,7 @@ func (apc *AirPlayController) Server() *airplay2.Server {
 // --- END AIRPLAY CTL ---
 
 type YoutubeController struct {
-	handler *YoutubeHandler
+	handler *youtube.Handler
 }
 type LocalController struct {
 	handler *LocalHandler

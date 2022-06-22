@@ -81,8 +81,8 @@ func (br *Bridge) closeInput() {
 			br.local.capture.Quit()
 		}
 	case inputTypeYoutube:
-		if !br.youtube.handler.Stopped() {
-			br.youtube.handler.Quit()
+		if !br.youtube.Stopped() {
+			br.youtube.Quit()
 
 		}
 	}

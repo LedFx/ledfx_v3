@@ -4,10 +4,6 @@ import (
 	"ledfx/audio/audiobridge/youtube"
 )
 
-type YoutubeHandler struct {
-	handler *youtube.Handler
-}
-
 func (br *Bridge) StartYoutubeInput() error {
 	if br.inputType != -1 {
 		br.closeInput()

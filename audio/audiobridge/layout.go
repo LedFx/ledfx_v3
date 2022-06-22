@@ -3,6 +3,7 @@ package audiobridge
 import (
 	"fmt"
 	"ledfx/audio"
+	"ledfx/audio/audiobridge/youtube"
 )
 
 // Bridge can wire up an audio source to multiple destinations
@@ -15,7 +16,7 @@ type Bridge struct {
 
 	airplay *AirPlayHandler
 	local   *LocalHandler
-	youtube *YoutubeHandler
+	youtube *youtube.Handler
 
 	ctl *Controller
 

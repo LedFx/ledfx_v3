@@ -68,10 +68,10 @@ func (j *JsonCTL) YouTubeSet(jsonData []byte) (respBytes []byte, err error) {
 	switch {
 	case j.w.br.youtube == nil:
 		fallthrough
-	case j.w.br.youtube.handler == nil:
+	case j.w.br.youtube == nil:
 		return nil, errors.New("YouTube handler is nil")
 	default:
-		j.curYouTubePlayer = j.w.br.youtube.handler.Player()
+		j.curYouTubePlayer = j.w.br.youtube.Player()
 	}
 
 	switch conf.Action {

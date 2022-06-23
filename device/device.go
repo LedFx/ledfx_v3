@@ -3,11 +3,14 @@ package device
 import (
 	"errors"
 	"ledfx/color"
+	"ledfx/config"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 // All devices take pixels and send them somewhere
 type PixelPusher interface {
-	initialize(base *Device, config interface{}) error
+	initialize(base *Device, config map[string]interface{}) error
 	send(p color.Pixels) error
 	connect() error
 	disconnect() error
@@ -15,20 +18,40 @@ type PixelPusher interface {
 
 type Device struct {
 	ID          string
+	Type        string
 	pixelPusher PixelPusher
 	State       State
-	Config      BaseDeviceConfig
+	Config      config.BaseDeviceConfig
 }
 
-type BaseDeviceConfig struct {
-	PixelCount int
-	Name       string
-}
-
-func (d *Device) Initialize(id string, baseConfig BaseDeviceConfig, implConfig interface{}) (err error) {
+func (d *Device) Initialize(id string, baseConfig config.BaseDeviceConfig, implConfig map[string]interface{}) (err error) {
+	// validate base config
+	err = validate.Struct(&baseConfig)
+	if err != nil {
+		return err
+	}
 	d.ID = id
 	d.Config = baseConfig
-	return d.pixelPusher.initialize(d, implConfig)
+	err = d.pixelPusher.initialize(d, implConfig)
+	if err != nil {
+		return err
+	}
+	// save to config store
+	mapConfig := map[string]interface{}{}
+	err = mapstructure.Decode(implConfig, &mapConfig)
+	if err != nil {
+		return err
+	}
+	err = config.AddEntry(
+		d.ID,
+		config.DeviceEntry{
+			ID:         d.ID,
+			Type:       d.Type,
+			BaseConfig: baseConfig,
+			ImplConfig: mapConfig,
+		},
+	)
+	return err
 }
 
 func (d *Device) Connect() (err error) {

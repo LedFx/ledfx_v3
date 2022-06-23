@@ -6,6 +6,7 @@ import (
 	"ledfx/bridgeapi"
 	"ledfx/config"
 	"ledfx/constants"
+	"ledfx/device"
 	"ledfx/effect"
 	"ledfx/frontend"
 	"ledfx/logger"
@@ -92,6 +93,10 @@ func main() {
 	if err != nil {
 		logger.Logger.WithField("context", "Load Effects from Config").Fatal(err)
 	}
+	err = device.LoadFromConfig()
+	if err != nil {
+		logger.Logger.WithField("context", "Load Devices from Config").Fatal(err)
+	}
 
 	// Handle WLED scanning
 	if !settings.NoScan {
@@ -103,6 +108,7 @@ func main() {
 	// Add routes
 	mux := http.DefaultServeMux
 	effect.NewAPI(mux)
+	device.NewAPI(mux)
 	config.NewAPI(mux)
 	frontend.NewServer(mux)
 	websocket.Serve(mux)

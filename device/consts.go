@@ -30,37 +30,29 @@ func (s State) String() string {
 	return "unknown" // this wont happen
 }
 
-type UDPProtocol byte
+type UDPProtocol string
 
 const (
-	WARLS UDPProtocol = 1
-	DRGB  UDPProtocol = 2
-	DRGBW UDPProtocol = 3
-	DNRGB UDPProtocol = 4
-	DDP   UDPProtocol = 5
+	WARLS UDPProtocol = "WARLS"
+	DRGB  UDPProtocol = "DRGB"
+	DRGBW UDPProtocol = "DRGBW"
+	DNRGB UDPProtocol = "DNRGB"
+	DDP   UDPProtocol = "DDP"
 )
 
-func (u UDPProtocol) String() string {
+func (u UDPProtocol) Byte() byte {
 	switch u {
 	case WARLS:
-		return "WARLS"
+		return byte(1)
 	case DRGB:
-		return "DRGB"
+		return byte(2)
 	case DRGBW:
-		return "DRGBW"
+		return byte(3)
 	case DNRGB:
-		return "DNRGB"
+		return byte(4)
 	case DDP:
-		return "DDP"
+		return byte(5)
 	default:
-		return ""
+		return byte(0)
 	}
-}
-
-var UDPProtocols = map[string]UDPProtocol{
-	"WARLS": WARLS,
-	"DRGB":  DRGB,
-	"DRGBW": DRGBW,
-	"DNRGB": DNRGB,
-	"DDP":   DDP,
 }

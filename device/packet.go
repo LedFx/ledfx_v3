@@ -29,7 +29,7 @@ func NewPacketBuilder(pixelCount int, protocol UDPProtocol, timeout byte) (pb *p
 			return pb, errTooManyPx
 		}
 		pb.packets[0] = make([]byte, 2+pixelCount*4)
-		pb.packets[0][0] = byte(protocol)
+		pb.packets[0][0] = protocol.Byte()
 		pb.packets[0][1] = timeout
 	case DRGB:
 		pb.packets = make([][]byte, 1)
@@ -37,7 +37,7 @@ func NewPacketBuilder(pixelCount int, protocol UDPProtocol, timeout byte) (pb *p
 			return pb, errTooManyPx
 		}
 		pb.packets[0] = make([]byte, 2+pixelCount*3)
-		pb.packets[0][0] = byte(protocol)
+		pb.packets[0][0] = protocol.Byte()
 		pb.packets[0][1] = timeout
 	case DRGBW:
 		pb.packets = make([][]byte, 1)
@@ -46,7 +46,7 @@ func NewPacketBuilder(pixelCount int, protocol UDPProtocol, timeout byte) (pb *p
 		}
 		pb.rgbw = make(color.PixelsRGBW, pixelCount)
 		pb.packets[0] = make([]byte, 2+pixelCount*4)
-		pb.packets[0][0] = byte(protocol)
+		pb.packets[0][0] = protocol.Byte()
 		pb.packets[0][1] = timeout
 	case DNRGB:
 		if pixelCount > 65536 {
@@ -63,7 +63,7 @@ func NewPacketBuilder(pixelCount int, protocol UDPProtocol, timeout byte) (pb *p
 
 		for i := 0; i <= full_packets; i++ {
 			start := uint16(i * 489)
-			pb.packets[i][0] = byte(protocol)
+			pb.packets[i][0] = protocol.Byte()
 			pb.packets[i][1] = timeout
 			pb.packets[i][2] = byte(start >> 8)
 			pb.packets[i][3] = byte(start)

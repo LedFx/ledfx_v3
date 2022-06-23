@@ -56,6 +56,9 @@ func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (err error) 
 	s.mux.HandleFunc("/api/bridge/ctl/youtube/set", s.handleCtlYouTube)
 	s.mux.HandleFunc("/api/bridge/ctl/airplay/set", s.handleCtlAirPlaySet)
 
+	// Info handlers
+	s.mux.HandleFunc("/api/bridge/get/local/inputs", s.handleGetLocalInputs)
+
 	/* TODO statpoll for these endpoints
 	s.mux.HandleFunc("/api/bridge/ctl/airplay/clients", s.handleCtlAirPlayGetClients)
 	s.mux.HandleFunc("/api/bridge/ctl/airplay/info", s.handleCtlAirPlayGetInfo) */
@@ -255,6 +258,25 @@ func (s *Server) handleAddOutputLocal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) handleGetLocalInputs(w http.ResponseWriter, r *http.Request) {
+	infos, err := audio.GetAudioDevices()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Logger.WithField("context", "AudioBridge").Errorf("Error generating input devices: %v", err)
+		w.Write(errToJson(err))
+		return
+	}
+	infoBytes, err := json.Marshal(infos)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Logger.WithField("context", "AudioBridge").Errorf("Error marshalling input devices: %v", err)
+		w.Write(errToJson(err))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(infoBytes)
 }
 
 // ############### END LOCAL ###############

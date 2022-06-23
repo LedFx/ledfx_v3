@@ -5,6 +5,9 @@ import (
 	"ledfx/logger"
 	"net"
 	"strconv"
+
+	"github.com/creasty/defaults"
+	"github.com/mitchellh/mapstructure"
 )
 
 type UDP struct {
@@ -15,13 +18,27 @@ type UDP struct {
 
 type UDPConfig struct {
 	NetworkerConfig
-	Protocol UDPProtocol
-	Timeout  int
+	Protocol string `mapstructure:"protocol" json:"protocol" description:"UDP packet type" default:"DRGB" validate:"oneof=WARLS DRGB DRGBW DNRGB DDP"`
+	Timeout  int    `mapstructure:"timeout" json:"timeout" description:"How long between it takes the device to return to normal state after LedFx stops sending data to it" default:"2" validate:"gte=0,lte=255"`
 }
 
-func (d *UDP) initialize(base *Device, config interface{}) (err error) {
-	d.Config = config.(UDPConfig)
-	d.pb, err = NewPacketBuilder(base.Config.PixelCount, d.Config.Protocol, byte(d.Config.Timeout))
+func (d *UDP) initialize(base *Device, config map[string]interface{}) (err error) {
+	//d.Config = config.(UDPConfig)
+	defaults.Set(&d.Config)
+	err = mapstructure.Decode(&config, &d.Config)
+	if err != nil {
+		return err
+	}
+	err = mapstructure.Decode(&config, &d.Config.NetworkerConfig)
+	if err != nil {
+		return err
+	}
+	err = validate.Struct(&d.Config)
+	if err != nil {
+		return err
+	}
+	protocol := UDPProtocol(d.Config.Protocol)
+	d.pb, err = NewPacketBuilder(base.Config.PixelCount, protocol, byte(d.Config.Timeout))
 	return err
 }
 

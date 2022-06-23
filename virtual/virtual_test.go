@@ -5,6 +5,7 @@ import (
 	"ledfx/audio"
 	"ledfx/audio/audiobridge"
 	"ledfx/color"
+	"ledfx/config"
 	"ledfx/device"
 	"ledfx/effect"
 	"log"
@@ -14,7 +15,7 @@ import (
 
 func TestVirtual(t *testing.T) {
 
-	bdc := device.BaseDeviceConfig{
+	bdc := config.BaseDeviceConfig{
 		PixelCount: 64,
 		Name:       "Spotlight",
 	}
@@ -23,10 +24,10 @@ func TestVirtual(t *testing.T) {
 			IP:   "192.168.0.104",
 			Port: 21324,
 		},
-		Protocol: device.DRGB,
+		Protocol: "DRGB",
 		Timeout:  60,
 	}
-	d, _, err := device.New("udp", bdc, udpc)
+	d, _, err := device.New("", "udp", bdc, udpc)
 	if err != nil {
 		t.Error(err)
 	}
@@ -89,7 +90,7 @@ func TestVirtual(t *testing.T) {
 
 func BenchmarkVirtual(t *testing.B) {
 
-	bdc := device.BaseDeviceConfig{
+	bdc := config.BaseDeviceConfig{
 		PixelCount: 64,
 		Name:       "Spotlight",
 	}
@@ -98,10 +99,10 @@ func BenchmarkVirtual(t *testing.B) {
 			IP:   "192.168.0.72",
 			Port: 21324,
 		},
-		Protocol: device.DRGB,
+		Protocol: "DRGB",
 		Timeout:  60,
 	}
-	d, _, err := device.New("udp", bdc, udpc)
+	d, _, err := device.New("", "udp", bdc, udpc)
 	if err != nil {
 		t.Error(err)
 	}

@@ -3,6 +3,7 @@ package effect
 import (
 	"encoding/json"
 	"ledfx/config"
+	"ledfx/logger"
 	log "ledfx/logger"
 	"net/http"
 )
@@ -41,6 +42,7 @@ func NewAPI(mux *http.ServeMux) {
 			data := config.EffectEntry{}
 			err := json.NewDecoder(request.Body).Decode(&data)
 			if err != nil {
+				writer.Write([]byte(err.Error()))
 				writer.WriteHeader(http.StatusBadRequest)
 				return
 			}
@@ -74,6 +76,7 @@ func NewAPI(mux *http.ServeMux) {
 			data := config.EffectEntry{}
 			err := json.NewDecoder(request.Body).Decode(&data)
 			if err != nil {
+				writer.Write([]byte(err.Error()))
 				writer.WriteHeader(http.StatusBadRequest)
 				return
 			}
@@ -84,7 +87,13 @@ func NewAPI(mux *http.ServeMux) {
 				log.Logger.WithField("context", "Effects API").Error(err)
 				return
 			}
-			c, _ := config.GetEffect(id)
+			c, err := config.GetEffect(id)
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				writer.Write([]byte(err.Error()))
+				logger.Logger.WithField("context", "Effects API").Error(err)
+				return
+			}
 			b, err := json.Marshal(c)
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
@@ -100,6 +109,7 @@ func NewAPI(mux *http.ServeMux) {
 			data := config.EffectEntry{}
 			err := json.NewDecoder(request.Body).Decode(&data)
 			if err != nil {
+				writer.Write([]byte(err.Error()))
 				writer.WriteHeader(http.StatusBadRequest)
 			}
 			Destroy(data.ID)

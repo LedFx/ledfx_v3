@@ -27,6 +27,11 @@ func (e EntryType) String() string {
 	}
 }
 
+type BaseDeviceConfig struct {
+	PixelCount int    `mapstructure:"pixel_count" json:"pixel_count" description:"Number of pixels on the device" validate:"required,gte=10,lte=255"` // TODO be smarter about this
+	Name       string `mapstructure:"name" json:"name" description:"Display name for the device" validate:"required"`
+}
+
 // the saved config entry for an effect
 type EffectEntry struct {
 	ID          string                 `mapstructure:"id" json:"id"`
@@ -35,7 +40,12 @@ type EffectEntry struct {
 	ExtraConfig map[string]interface{} `mapstructure:"extra_config" json:"extra_config"`
 }
 
-type DeviceEntry struct{}
+type DeviceEntry struct {
+	ID         string                 `mapstructure:"id" json:"id"`
+	Type       string                 `mapstructure:"type" json:"type"`
+	BaseConfig BaseDeviceConfig       `mapstructure:"base_config" json:"base_config"`
+	ImplConfig map[string]interface{} `mapstructure:"impl_config" json:"impl_config"`
+}
 type VirtualEntry struct{}
 
 func AddEntry(id string, entry interface{}) (err error) {
@@ -44,10 +54,8 @@ func AddEntry(id string, entry interface{}) (err error) {
 	switch t := entry.(type) {
 	case EffectEntry:
 		store.Effects[id] = entry.(EffectEntry)
-		logger.Logger.WithField("context", "Config").Debugf("Saved %s to config", id)
-		logger.Logger.WithField("context", "Config").Debug(entry)
 	case DeviceEntry:
-		err = errors.New("device config entry not yet implemented")
+		store.Devices[id] = entry.(DeviceEntry)
 	case VirtualEntry:
 		err = errors.New("virtual config entry not yet implemented")
 	default:
@@ -56,6 +64,8 @@ func AddEntry(id string, entry interface{}) (err error) {
 	if err != nil {
 		return err
 	}
+	logger.Logger.WithField("context", "Config").Debugf("Saved %s to config", id)
+	logger.Logger.WithField("context", "Config").Debug(entry)
 	return saveConfig()
 }
 
@@ -93,7 +103,18 @@ func GetEffect(id string) (EffectEntry, error) {
 	} else {
 		return entry, fmt.Errorf("cannot retrieve effect config of id: %s", id)
 	}
+}
 
+func GetDevices() map[string]DeviceEntry {
+	return store.Devices
+}
+
+func GetDevice(id string) (DeviceEntry, error) {
+	if entry, ok := store.Devices[id]; ok {
+		return entry, nil
+	} else {
+		return entry, fmt.Errorf("cannot retrieve device config of id: %s", id)
+	}
 }
 
 // func GetDevices() map[string]DeviceEntry {

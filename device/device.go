@@ -33,7 +33,7 @@ func (d *Device) Initialize(id string, baseConfig map[string]interface{}, implCo
 	if err != nil {
 		return err
 	}
-	err = validate.Struct(&baseConfig)
+	err = validate.Struct(&d.Config)
 	if err != nil {
 		return err
 	}

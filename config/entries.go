@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"fmt"
 	"ledfx/logger"
 )
@@ -27,11 +26,6 @@ func (e EntryType) String() string {
 	}
 }
 
-type BaseDeviceConfig struct {
-	PixelCount int    `mapstructure:"pixel_count" json:"pixel_count" description:"Number of pixels on the device" validate:"required,gte=10,lte=255"` // TODO be smarter about this
-	Name       string `mapstructure:"name" json:"name" description:"Display name for the device" validate:"required"`
-}
-
 // the saved config entry for an effect
 type EffectEntry struct {
 	ID          string                 `mapstructure:"id" json:"id"`
@@ -43,10 +37,14 @@ type EffectEntry struct {
 type DeviceEntry struct {
 	ID         string                 `mapstructure:"id" json:"id"`
 	Type       string                 `mapstructure:"type" json:"type"`
-	BaseConfig BaseDeviceConfig       `mapstructure:"base_config" json:"base_config"`
+	BaseConfig map[string]interface{} `mapstructure:"base_config" json:"base_config"`
 	ImplConfig map[string]interface{} `mapstructure:"impl_config" json:"impl_config"`
 }
-type VirtualEntry struct{}
+
+type VirtualEntry struct {
+	ID     string                 `mapstructure:"id" json:"id"`
+	Config map[string]interface{} `mapstructure:"base_config" json:"base_config"`
+}
 
 func AddEntry(id string, entry interface{}) (err error) {
 	mu.Lock()
@@ -57,7 +55,7 @@ func AddEntry(id string, entry interface{}) (err error) {
 	case DeviceEntry:
 		store.Devices[id] = entry.(DeviceEntry)
 	case VirtualEntry:
-		err = errors.New("virtual config entry not yet implemented")
+		store.Virtuals[id] = entry.(VirtualEntry)
 	default:
 		err = fmt.Errorf("unknown config entry type: %v", t)
 	}
@@ -117,10 +115,14 @@ func GetDevice(id string) (DeviceEntry, error) {
 	}
 }
 
-// func GetDevices() map[string]DeviceEntry {
-// 	return GlobalConfig.Devices
-// }
+func GetVirtuals() map[string]VirtualEntry {
+	return store.Virtuals
+}
 
-// func GetVirtuals() map[string]VirtualEntry {
-// 	return GlobalConfig.Virtuals
-// }
+func GetVirtual(id string) (VirtualEntry, error) {
+	if entry, ok := store.Virtuals[id]; ok {
+		return entry, nil
+	} else {
+		return entry, fmt.Errorf("cannot retrieve virtual config of id: %s", id)
+	}
+}

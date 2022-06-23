@@ -3,6 +3,7 @@ package util
 import (
 	"encoding/json"
 	"fmt"
+	"ledfx/logger"
 	"log"
 	"reflect"
 	"regexp"
@@ -63,6 +64,7 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 
 	err := CheckConfigTags(t)
 	if err != nil {
+		logger.Logger.WithField("context", "Schema Generator").Error(err)
 		return schema, fmt.Errorf("invalid config: %v", err)
 	}
 

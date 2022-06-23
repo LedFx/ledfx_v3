@@ -5,6 +5,7 @@ import (
 	"ledfx/color"
 	"ledfx/config"
 
+	"github.com/creasty/defaults"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -24,14 +25,18 @@ type Device struct {
 	Config      config.BaseDeviceConfig
 }
 
-func (d *Device) Initialize(id string, baseConfig config.BaseDeviceConfig, implConfig map[string]interface{}) (err error) {
-	// validate base config
+func (d *Device) Initialize(id string, baseConfig map[string]interface{}, implConfig map[string]interface{}) (err error) {
+	d.ID = id
+	// set and validate base config
+	defaults.Set(&d.Config)
+	err = mapstructure.Decode(baseConfig, &d.Config)
+	if err != nil {
+		return err
+	}
 	err = validate.Struct(&baseConfig)
 	if err != nil {
 		return err
 	}
-	d.ID = id
-	d.Config = baseConfig
 	err = d.pixelPusher.initialize(d, implConfig)
 	if err != nil {
 		return err

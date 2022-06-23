@@ -39,6 +39,19 @@ var store *config = &config{
 	Virtuals: map[string]VirtualEntry{},
 }
 
+type BaseDeviceConfig struct {
+	PixelCount int    `mapstructure:"pixel_count" json:"pixel_count" description:"Number of pixels on the device" validate:"required,gte=10,lte=255"` // TODO be smarter about this
+	Name       string `mapstructure:"name" json:"name" description:"Display name for the device" validate:"required"`
+}
+
+type VirtualConfig struct {
+	Name      string `mapstructure:"name" json:"name" description:"Display name for the virtual" validate:"required"`
+	IconName  string `mapstructure:"icon_name" json:"icon_name" description:"Icon name to identify this virtual" default:"alert-circle-outline" validate:""`
+	FrameRate int    `mapstructure:"framerate" json:"framerate" description:"Target framerate" default:"60" validate:"gte=1,lte=120"`
+	// Span      bool            `mapstructure:"span" json:"span"`
+	// Outputs   []VirtualOutput `mapstructure:"outputs" json:"outputs"`
+}
+
 type AudioDevice struct {
 	Id          string  `mapstructure:"id" json:"id"`
 	HostApi     string  `mapstructure:"hostapi" json:"hostapi"`

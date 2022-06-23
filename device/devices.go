@@ -12,7 +12,7 @@ import (
 )
 
 // Creates a new device and returns its unique id
-func New(new_id, device_type string, baseConfig config.BaseDeviceConfig, implConfig map[string]interface{}) (device *Device, id string, err error) {
+func New(new_id, device_type string, baseConfig map[string]interface{}, implConfig map[string]interface{}) (device *Device, id string, err error) {
 	switch device_type {
 	case "udp":
 		device = &Device{

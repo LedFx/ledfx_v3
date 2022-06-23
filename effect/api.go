@@ -42,8 +42,8 @@ func NewAPI(mux *http.ServeMux) {
 			data := config.EffectEntry{}
 			err := json.NewDecoder(request.Body).Decode(&data)
 			if err != nil {
-				writer.Write([]byte(err.Error()))
 				writer.WriteHeader(http.StatusBadRequest)
+				writer.Write([]byte(err.Error()))
 				return
 			}
 			effect, err := Get(data.ID)
@@ -109,8 +109,8 @@ func NewAPI(mux *http.ServeMux) {
 			data := config.EffectEntry{}
 			err := json.NewDecoder(request.Body).Decode(&data)
 			if err != nil {
-				writer.Write([]byte(err.Error()))
 				writer.WriteHeader(http.StatusBadRequest)
+				writer.Write([]byte(err.Error()))
 			}
 			Destroy(data.ID)
 			return

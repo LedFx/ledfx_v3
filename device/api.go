@@ -31,7 +31,8 @@ func NewAPI(mux *http.ServeMux) {
 			b, err := json.Marshal(config.GetDevices())
 			if err != nil {
 				writer.WriteHeader(http.StatusInternalServerError)
-				logger.Logger.WithField("context", "Devices API").Errorf("Error generating effects config")
+				writer.Write([]byte(err.Error()))
+				logger.Logger.WithField("context", "Devices API").Errorf("Error generating devices config")
 				return
 			}
 			_, _ = writer.Write(b)
@@ -41,8 +42,8 @@ func NewAPI(mux *http.ServeMux) {
 			data := config.DeviceEntry{}
 			err := json.NewDecoder(request.Body).Decode(&data)
 			if err != nil {
-				writer.Write([]byte(err.Error()))
 				writer.WriteHeader(http.StatusBadRequest)
+				writer.Write([]byte(err.Error()))
 				return
 			}
 			_, id, err := New(data.ID, data.Type, data.BaseConfig, data.ImplConfig)

@@ -72,7 +72,7 @@ func (e *Effect) GetID() string {
 	return e.ID
 }
 
-func (e *Effect) initialize(id string, pixelCount int) error {
+func (e *Effect) initialize(id string, pixelCount int) {
 	e.ID = id
 	e.startTime = time.Now()
 	e.pixelCount = pixelCount
@@ -82,11 +82,11 @@ func (e *Effect) initialize(id string, pixelCount int) error {
 	e.palette = nil
 	e.blurrer = nil
 	e.Config = globalConfig
-	return nil
 }
 
 func (e *Effect) UpdatePixelCount(pixelCount int) error {
-	return e.initialize(e.ID, pixelCount)
+	e.initialize(e.ID, pixelCount)
+	return e.UpdateBaseConfig(e.Config)
 }
 
 /*

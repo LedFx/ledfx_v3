@@ -94,10 +94,7 @@ func New(new_id, effect_type string, pixelCount int, new_config interface{}) (ef
 	logger.Logger.WithField("context", "Effects").Debugf("Creating %s effect with id %s", effect_type, id)
 
 	// initialise the new effect with its id and config
-	if err = effect.initialize(id, pixelCount); err != nil {
-		Destroy(id)
-		return effect, id, nil
-	}
+	effect.initialize(id, pixelCount)
 	// Set effect's config to defaults
 	if err = defaults.Set(&effect.Config); err != nil {
 		Destroy(id)

@@ -1,6 +1,7 @@
 package virtual
 
 import (
+	"errors"
 	"fmt"
 	"ledfx/config"
 	"ledfx/logger"
@@ -55,6 +56,41 @@ func Get(id string) (*Virtual, error) {
 // Kill a virtual instance
 func Destroy(id string) {
 	delete(virtualInstances, id)
+}
+
+// get activity status of all virtuals
+func GetStates() map[string]bool {
+	states := make(map[string]bool)
+	for _, v := range virtualInstances {
+		states[v.ID] = v.Active
+	}
+	return states
+}
+
+// set activity status of all virtuals
+func SetStates(states map[string]bool) (err error) {
+	msg := ""
+	for _, v := range virtualInstances {
+		state, ok := states[v.ID]
+		if !ok {
+			continue
+		}
+		if v.Active == state {
+			continue
+		}
+		if state {
+			err = v.Start()
+		} else {
+			v.Stop()
+		}
+		if err != nil {
+			msg += err.Error()
+		}
+	}
+	if msg != "" {
+		return errors.New(msg)
+	}
+	return nil
 }
 
 func GetIDs() []string {

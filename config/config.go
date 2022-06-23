@@ -77,6 +77,8 @@ type config struct {
 	EffectsGlobal map[string]interface{}  `mapstructure:"global_effects" json:"global_effects"`
 	Devices       map[string]DeviceEntry  `mapstructure:"devices" json:"devices"`
 	Virtuals      map[string]VirtualEntry `mapstructure:"virtuals" json:"virtuals"`
+	ConnEffect    map[string]string       `mapstructure:"connections_effect" json:"connections_effect"`
+	ConnDevice    map[string]string       `mapstructure:"connections_device" json:"connections_device"`
 	// Audio    AudioEntry              `mapstructure:"audio" json:"audio"`
 	// Audio    AudioConfig             `mapstructure:"audio" json:"audio"`
 }

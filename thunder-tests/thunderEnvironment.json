@@ -6,11 +6,15 @@
     "global": true,
     "sortNum": -1,
     "created": "2022-06-24T09:10:57.617Z",
-    "modified": "2022-06-24T09:11:42.783Z",
+    "modified": "2022-06-24T09:25:19.595Z",
     "data": [
       {
         "name": "host",
-        "value": ""
+        "value": "localhost"
+      },
+      {
+        "name": "port",
+        "value": "8080"
       }
     ]
   }

@@ -43,7 +43,6 @@ func main() {
 	logger.Logger.SetLevel(logrus.Level(5 - settings.LogLevel))
 	hostport := fmt.Sprintf("%s:%d", settings.Host, settings.Port)
 	url := fmt.Sprintf("http://%s", hostport)
-
 	logger.Logger.Info("Info message logging enabled")
 	logger.Logger.Debug("Debug message logging enabled")
 

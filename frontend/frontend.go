@@ -9,6 +9,7 @@ import (
 	"ledfx/util"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 func NewServer(mux *http.ServeMux) {
@@ -52,9 +53,19 @@ func Update() {
 	}
 	defer resp2.Body.Close()
 
+	// get absolute location of executable, where we will install frontend files
+	ex, err := util.ExecDir()
+	if err != nil {
+		logger.Logger.WithField("context", "Frontend Updater").Error(err)
+		return
+	} else {
+		logger.Logger.WithField("context", "Frontend Updater").Debugf("Extracting to %s", ex)
+	}
+
 	// Create the new file
-	out, err := os.Create("new_frontend.zip")
-	defer os.RemoveAll("new_frontend.zip")
+	zipPath := filepath.Join(ex, "new_frontend.zip")
+	out, err := os.Create(zipPath)
+	defer os.RemoveAll(zipPath)
 	defer out.Close()
 	if err != nil {
 		logger.Logger.WithField("context", "Frontend Updater").Error(err)
@@ -69,14 +80,14 @@ func Update() {
 	}
 
 	// Delete old files
-	if _, err := os.Stat("frontend/files"); err == nil {
-		os.RemoveAll("frontend/files")
+	filesPath := filepath.Join(ex, "frontend", "files")
+	if _, err := os.Stat(filesPath); err == nil {
+		os.RemoveAll(filesPath)
 		logger.Logger.WithField("context", "Frontend Updater").Debug("Deleted old frontend")
 	}
 
 	// Extract frontend
-	util.Unzip("new_frontend.zip", "frontend/files")
-	defer os.RemoveAll("new_frontend.zip")
+	util.Unzip(zipPath, filesPath)
 
 	// Save this version to config
 	config.SetFrontend(latestFrontend)

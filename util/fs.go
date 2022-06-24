@@ -9,6 +9,33 @@ import (
 	"strings"
 )
 
+// ExecDir returns the absolute path of given relative path to the current executable dir.
+// If relPath is "", it just returns the absolute path of current executable dir.
+func ExecDir() (string, error) {
+	// os.Executable requires Go 1.18+
+	ex, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	ex, err = filepath.EvalSymlinks(ex)
+	if err != nil {
+		return "", err
+	}
+	ex, err = filepath.Abs(ex)
+
+	// little check for developers. This should detect if we're running in a dev environment
+	if !strings.HasPrefix(ex, "/tmp/go-build") {
+		return filepath.Dir(ex), err
+	}
+
+	// for devs, extract to cwd
+	ex, err = os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Abs(ex)
+}
+
 func FileExists(location string) bool {
 	_, err := os.Stat(location)
 	return err == nil
@@ -21,7 +48,11 @@ func Unzip(path, dest string) error {
 	}
 	defer archive.Close()
 
-	tempDir := "temp"
+	ex, err := ExecDir()
+	if err != nil {
+		return err
+	}
+	tempDir := filepath.Join(ex, "temp")
 	defer os.RemoveAll(tempDir)
 
 	for _, f := range archive.File {

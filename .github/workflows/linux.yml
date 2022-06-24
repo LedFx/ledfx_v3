@@ -11,17 +11,15 @@ defaults:
 
 jobs:
   build:
-    name: Build Binaries
+    name: Build Linux Binaries
     runs-on: 'ubuntu-latest'
     strategy:
       fail-fast: false
       matrix:
         goosarch:
           - 'linux/amd64'
-          - 'linux/arm'
-          - 'linux/arm64'
-          - 'windows/amd64'
-          - 'windows/arm'
+          #- 'linux/arm'
+          #- 'linux/arm64'
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -42,9 +40,6 @@ jobs:
           echo "GOOS=$GOOS" >> $GITHUB_ENV
           echo "GOARCH=$GOARCH" >> $GITHUB_ENV
 
-          if [ $GOOS = "windows" ]; then
-            BINARY_NAME+='.exe'
-          fi
 
       - name: Install Dependencies
         run: |
@@ -64,11 +59,9 @@ jobs:
             libaubio-doc:$GOARCH \
       - name: Build
         run: |
-          if [ $env.GOOs = "windows" ]; then
-            go build -o "$BINARY_NAME" -v -ldflags "-H=windowsgui"
-          else
-            go build -o "$BINARY_NAME" -v
-          fi
+
+          go build -o "$BINARY_NAME" -v
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
         with:

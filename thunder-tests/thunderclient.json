@@ -60,12 +60,15 @@
     "method": "POST",
     "sortNum": 20000,
     "created": "2022-06-24T09:10:21.428Z",
-    "modified": "2022-06-24T09:19:49.634Z",
+    "modified": "2022-06-24T09:28:59.732Z",
     "headers": [],
+    "params": [],
     "body": {
       "type": "json",
-      "raw": "{\r\n    \"virtual0\": true\r\n}"
-    }
+      "raw": "{\n    \"virtual0\": true\n}",
+      "form": []
+    },
+    "tests": []
   },
   {
     "_id": "21e7d090-9a8a-4fd7-85b0-227a1282be43",
@@ -176,12 +179,14 @@
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "2e83502f-f3d6-4cc6-afc8-6f8edfc2ca85",
     "name": "Get Connections",
-    "url": "{{host}}:8080/api/virtuals/connect",
+    "url": "{{host}}:{{port}}/api/virtuals/connect",
     "method": "GET",
     "sortNum": 60000,
     "created": "2022-06-24T09:10:21.436Z",
-    "modified": "2022-06-24T09:20:11.914Z",
-    "headers": []
+    "modified": "2022-06-24T09:28:33.619Z",
+    "headers": [],
+    "params": [],
+    "tests": []
   },
   {
     "_id": "3ea2ecb8-d52d-46b3-aadc-74e47a720899",
@@ -240,24 +245,19 @@
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "2f9ef081-c722-4734-9acb-64b34e765324",
     "name": "Get Settings",
-    "url": "localhost:8080/api/effects/global",
+    "url": "{{host}}:{{port}}/api/effects/global",
     "method": "GET",
     "sortNum": 10000,
     "created": "2022-06-24T09:10:21.439Z",
-    "modified": "2022-06-24T09:21:22.626Z",
+    "modified": "2022-06-24T09:28:26.590Z",
     "headers": [
       {
         "name": "Content-Type",
         "value": "application/json"
       }
     ],
-    "params": [
-      {
-        "name": "",
-        "value": null,
-        "isDisabled": true
-      }
-    ]
+    "params": [],
+    "tests": []
   },
   {
     "_id": "bb69dde2-64c5-40f2-b826-71c90537d3a9",

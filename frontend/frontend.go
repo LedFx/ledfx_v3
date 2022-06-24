@@ -81,13 +81,18 @@ func Update() {
 
 	// Delete old files
 	filesPath := filepath.Join(ex, "frontend", "files")
+	os.MkdirAll(filesPath, os.ModePerm)
 	if _, err := os.Stat(filesPath); err == nil {
 		os.RemoveAll(filesPath)
 		logger.Logger.WithField("context", "Frontend Updater").Debug("Deleted old frontend")
 	}
 
 	// Extract frontend
-	util.Unzip(zipPath, filesPath)
+	err = util.Unzip(zipPath, filesPath)
+	if err != nil {
+		logger.Logger.WithField("context", "Frontend Updater").Error(err)
+		return
+	}
 
 	// Save this version to config
 	config.SetFrontend(latestFrontend)

@@ -168,20 +168,15 @@
     "method": "GET",
     "sortNum": 10000,
     "created": "2022-06-24T09:10:21.435Z",
-    "modified": "2022-06-24T09:21:04.618Z",
+    "modified": "2022-06-24T15:34:08.653Z",
     "headers": [
       {
         "name": "Content-Type",
         "value": "application/json"
       }
     ],
-    "params": [
-      {
-        "name": "",
-        "value": null,
-        "isDisabled": true
-      }
-    ]
+    "params": [],
+    "tests": []
   },
   {
     "_id": "96131e7b-7904-4100-99bc-900c3662d38d",
@@ -348,7 +343,7 @@
     "method": "PUT",
     "sortNum": 5000,
     "created": "2022-06-24T09:10:21.443Z",
-    "modified": "2022-06-24T15:15:49.328Z",
+    "modified": "2022-06-24T16:30:32.177Z",
     "headers": [
       {
         "name": "Content-Type",
@@ -358,7 +353,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"id\": \"energy0\",\n    \"base_config\": {\"blur\": 1, \"decay\": 0.8, \"freq_min\": 3000, \"palette\": \"rainbow\", \"mirror\": true}\n}",
+      "raw": "{\n    \"id\": \"energy0\",\n    \"base_config\":{\n    \"bkg_brightness\": 0.2,\n    \"bkg_color\": \"#000000\",\n    \"blur\": 1,\n    \"brightness\": 1,\n    \"decay\": 0,\n    \"flip\": false,\n    \"freq_max\": 200,\n    \"freq_min\": 20,\n    \"hue_shift\": 0.5,\n    \"intensity\": 1,\n    \"mirror\": true,\n    \"palette\": \"rgb\",\n    \"saturation\": 1,\n    \"vocals\": false\n  }\n}",
       "form": []
     },
     "tests": []
@@ -478,11 +473,13 @@
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "82b59193-2a32-4c02-8bfd-2e055fdeea68",
     "name": "Get local inputs",
-    "url": "{{host}}:8080/api/bridge/get/local/inputs",
+    "url": "{{host}}:{{port}}/api/bridge/get/local/inputs",
     "method": "GET",
     "sortNum": 10000,
     "created": "2022-06-24T09:10:21.453Z",
-    "modified": "2022-06-24T09:22:38.072Z",
-    "headers": []
+    "modified": "2022-06-24T15:35:44.745Z",
+    "headers": [],
+    "params": [],
+    "tests": []
   }
 ]

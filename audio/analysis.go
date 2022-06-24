@@ -68,8 +68,12 @@ func init() {
 	}
 	var err error
 
+
 	// Create EQ filter. Magic numbers to balance the audio. Boosts the bass and mid, dampens the highs.
-	if Analyzer.eq, err = aubio.NewFilterBiquad(0.85870, -1.71740, 0.85870, -1.71605, 0.71874, framesPerBuffer); err != nil {
+	// 0.85870, -1.71740, 0.85870, -1.71605, 0.71874
+	// 0.9926, -1.985, 0.9926, -1.9852, 0.9853
+	// GOOD 0.99756, -1.99512, 0.99756, -1.99511, 0.99512,
+	if Analyzer.eq, err = aubio.NewFilterBiquad(1, -2,1, -2,1,  framesPerBuffer); err != nil {
 		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio EQ Filter: %v", err)
 	}
 

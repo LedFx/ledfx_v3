@@ -20,6 +20,7 @@ type melbank struct {
 	Audio        AudioStream
 	Min          int
 	Max          int
+	Intensity    float64
 	Freqs        []float64
 	Data         []float64
 	GainFilter   *math_utils.ExpFilter
@@ -34,10 +35,11 @@ func newMelbank(audio AudioStream, min, max uint, intensity float64) (*melbank, 
 		Audio:        audio,
 		Min:          int(min),
 		Max:          int(max),
+		Intensity:    intensity,
 		Freqs:        make([]float64, melBins+2),
 		Data:         make([]float64, melBins),
 		GainFilter:   math_utils.NewExpFilter(0.99, 0.01),
-		SmoothFilter: math_utils.NewExpFilterSlice(0.99, 0.5+intensity/2, int(melBins)),
+		SmoothFilter: math_utils.NewExpFilterSlice(intensity, intensity, int(melBins)),
 	}
 
 	if min < melMin || max > melMax {
@@ -66,6 +68,7 @@ func newMelbank(audio AudioStream, min, max uint, intensity float64) (*melbank, 
 // Perform mel binning on fft
 func (mb *melbank) Do(fft *aubio.ComplexBuffer) {
 	mb.fb.Do(fft)
+	mb.fb.Buffer().Pow(1+mb.Intensity)
 	copy(mb.Data, mb.fb.Buffer().Slice())
 	// Normalise the melbank gain
 	// first smooth the values out to soften peaks
@@ -87,7 +90,6 @@ func (mb *melbank) Do(fft *aubio.ComplexBuffer) {
 			mb.Data[i] = val / mb.GainFilter.Value
 		}
 	}
-	// TODO this should be controlled by the effect's "intensity" config
 	// Apply temporal filtering to melbank so it's not jumping around like crazy
 	mb.SmoothFilter.Update(mb.Data)
 	mb.Data = mb.SmoothFilter.Value

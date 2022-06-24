@@ -59,7 +59,7 @@ type BaseEffectConfig struct {
 	Blur          float64 `mapstructure:"blur" json:"blur"  description:"Gaussian blur to smoothly blend colors" default:"0.5" validate:"gte=0,lte=1"`
 	Flip          bool    `mapstructure:"flip" json:"flip" description:"Reverse the pixels" default:"false" validate:""`
 	Mirror        bool    `mapstructure:"mirror" json:"mirror" description:"Mirror the pixels across the center" default:"false" validate:""`
-	Decay         float64 `mapstructure:"decay" json:"decay" description:"Apply temporal filtering" default:"0" validate:"gte=0,lte=1"`
+	Decay         float64 `mapstructure:"decay" json:"decay" description:"Apply temporal filtering" default:"0.5" validate:"gte=0,lte=1"`
 	HueShift      float64 `mapstructure:"hue_shift" json:"hue_shift" description:"Cycle the colors through time" default:"0" validate:"gte=0,lte=1"`
 	BkgBrightness float64 `mapstructure:"bkg_brightness" json:"bkg_brightness" description:"Brightness modifier applied to the background color" default:"0.2" validate:"gte=0,lte=1"`
 	BkgColor      string  `mapstructure:"bkg_color" json:"bkg_color" description:"Apply a background color" default:"#000000" validate:"color"`

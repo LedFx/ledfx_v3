@@ -1,0 +1,58 @@
+[
+  {
+    "_id": "ef1a9cfb-89cc-44d8-9271-e53790f44f4a",
+    "colName": "Virtuals",
+    "created": "2022-06-24T09:10:07.875Z",
+    "sortNum": 10000,
+    "folders": []
+  },
+  {
+    "_id": "0926612c-3bad-44ea-bc49-48d12582238c",
+    "colName": "Virtual States",
+    "created": "2022-06-24T09:10:21.424Z",
+    "sortNum": 20000,
+    "folders": []
+  },
+  {
+    "_id": "ead9faa8-f55e-440b-a076-87b1e25796d5",
+    "colName": "Virtual Connections",
+    "created": "2022-06-24T09:10:21.429Z",
+    "sortNum": 30000,
+    "folders": []
+  },
+  {
+    "_id": "172ab28c-3877-4e7f-8ac1-2f45c86bda9e",
+    "colName": "Settings",
+    "created": "2022-06-24T09:10:21.433Z",
+    "sortNum": 40000,
+    "folders": []
+  },
+  {
+    "_id": "2679f28c-5e2b-4905-b995-65b9737c449f",
+    "colName": "Effects Global",
+    "created": "2022-06-24T09:10:21.437Z",
+    "sortNum": 50000,
+    "folders": []
+  },
+  {
+    "_id": "89d2a85c-c92a-4bb1-83d7-b108febf4515",
+    "colName": "Effects",
+    "created": "2022-06-24T09:10:21.440Z",
+    "sortNum": 60000,
+    "folders": []
+  },
+  {
+    "_id": "0b373ba5-6e61-4ee5-84f0-e590e9b56bbf",
+    "colName": "Devices",
+    "created": "2022-06-24T09:10:21.444Z",
+    "sortNum": 70000,
+    "folders": []
+  },
+  {
+    "_id": "d4d47269-8ae2-489b-a8cd-02bdb824794c",
+    "colName": "Bridge",
+    "created": "2022-06-24T09:10:21.451Z",
+    "sortNum": 80000,
+    "folders": []
+  }
+]

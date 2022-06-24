@@ -1,0 +1,498 @@
+[
+  {
+    "_id": "3ada5bd1-4636-4a63-b0fa-d0f16dc573bd",
+    "colId": "ef1a9cfb-89cc-44d8-9271-e53790f44f4a",
+    "containerId": "",
+    "name": "Get Schema",
+    "url": "{{host}}:8080/api/virtuals/schema",
+    "method": "GET",
+    "sortNum": 10000,
+    "created": "2022-06-24T09:10:07.878Z",
+    "modified": "2022-06-24T09:10:07.878Z",
+    "headers": []
+  },
+  {
+    "_id": "680dcec1-8ae2-4468-a338-a6d06fef884b",
+    "colId": "ef1a9cfb-89cc-44d8-9271-e53790f44f4a",
+    "containerId": "",
+    "name": "Get Virtuals",
+    "url": "{{host}}:8080/api/virtuals",
+    "method": "GET",
+    "sortNum": 20000,
+    "created": "2022-06-24T09:10:07.879Z",
+    "modified": "2022-06-24T09:10:07.879Z",
+    "headers": []
+  },
+  {
+    "_id": "73f6fa86-3d8e-482a-ab45-9da149f40c1e",
+    "colId": "ef1a9cfb-89cc-44d8-9271-e53790f44f4a",
+    "containerId": "",
+    "name": "Create Virtual",
+    "url": "{{host}}:8080/api/virtuals",
+    "method": "POST",
+    "sortNum": 30000,
+    "created": "2022-06-24T09:10:07.880Z",
+    "modified": "2022-06-24T09:10:07.880Z",
+    "headers": [],
+    "body": {
+      "type": "json",
+      "raw": "{\r\n    \"base_config\": {\r\n        \"name\": \"test virtual\"\r\n    }\r\n}"
+    }
+  },
+  {
+    "_id": "92cce4b8-19d5-4e48-b3fa-6e365474fa27",
+    "colId": "0926612c-3bad-44ea-bc49-48d12582238c",
+    "containerId": "",
+    "name": "Get States",
+    "url": "{{host}}:8080/api/virtuals/state",
+    "method": "GET",
+    "sortNum": 10000,
+    "created": "2022-06-24T09:10:21.426Z",
+    "modified": "2022-06-24T09:10:21.426Z",
+    "headers": []
+  },
+  {
+    "_id": "66ccb7a9-1732-4edc-bc01-4428e9c43003",
+    "colId": "0926612c-3bad-44ea-bc49-48d12582238c",
+    "containerId": "",
+    "name": "Set States",
+    "url": "{{host}}:8080/api/virtuals/state",
+    "method": "POST",
+    "sortNum": 20000,
+    "created": "2022-06-24T09:10:21.428Z",
+    "modified": "2022-06-24T09:10:21.428Z",
+    "headers": [],
+    "body": {
+      "type": "json",
+      "raw": "{\r\n    \"virtual0\": true\r\n}"
+    }
+  },
+  {
+    "_id": "21e7d090-9a8a-4fd7-85b0-227a1282be43",
+    "colId": "ead9faa8-f55e-440b-a076-87b1e25796d5",
+    "containerId": "",
+    "name": "Connect Effect",
+    "url": "{{host}}:8080/api/virtuals/connect",
+    "method": "POST",
+    "sortNum": 10000,
+    "created": "2022-06-24T09:10:21.431Z",
+    "modified": "2022-06-24T09:10:21.431Z",
+    "headers": [],
+    "body": {
+      "type": "json",
+      "raw": "{\r\n    \"effect_id\": \"energy0\",\r\n    \"virtual_id\": \"virtual0\"\r\n}"
+    }
+  },
+  {
+    "_id": "c2effccb-906b-45e8-9d6d-189badaee73e",
+    "colId": "ead9faa8-f55e-440b-a076-87b1e25796d5",
+    "containerId": "",
+    "name": "Connect Device",
+    "url": "{{host}}:8080/api/virtuals/connect",
+    "method": "POST",
+    "sortNum": 20000,
+    "created": "2022-06-24T09:10:21.432Z",
+    "modified": "2022-06-24T09:10:21.432Z",
+    "headers": [],
+    "body": {
+      "type": "json",
+      "raw": "{\r\n    \"device_id\": \"udp0\",\r\n    \"virtual_id\": \"virtual0\"\r\n}"
+    }
+  },
+  {
+    "_id": "035c8910-3de2-482c-8134-17a85d478e71",
+    "colId": "ead9faa8-f55e-440b-a076-87b1e25796d5",
+    "containerId": "",
+    "name": "Connect Effect and Device",
+    "url": "{{host}}:8080/api/virtuals/connect",
+    "method": "POST",
+    "sortNum": 30000,
+    "created": "2022-06-24T09:10:21.433Z",
+    "modified": "2022-06-24T09:10:21.433Z",
+    "headers": [],
+    "body": {
+      "type": "json",
+      "raw": "{\r\n    \"effect_id\": \"palette0\",\r\n    \"virtual_id\": \"virtual0\",\r\n    \"device_id\": \"udp0\"\r\n}"
+    }
+  },
+  {
+    "_id": "35b72dff-9b49-4c5b-a494-b0347a5bc6d9",
+    "colId": "ead9faa8-f55e-440b-a076-87b1e25796d5",
+    "containerId": "",
+    "name": "Disconnect Effect",
+    "url": "{{host}}:8080/api/virtuals/disconnect",
+    "method": "POST",
+    "sortNum": 40000,
+    "created": "2022-06-24T09:10:21.434Z",
+    "modified": "2022-06-24T09:10:21.434Z",
+    "headers": [],
+    "body": {
+      "type": "json",
+      "raw": "{\r\n    \"effect_id\": \"energy0\",\r\n    \"virtual_id\": \"virtual0\"\r\n}"
+    }
+  },
+  {
+    "_id": "dd445b8d-e143-4282-95bd-9721ce6de090",
+    "colId": "ead9faa8-f55e-440b-a076-87b1e25796d5",
+    "containerId": "",
+    "name": "Disconnect Effect and Device",
+    "url": "{{host}}:8080/api/virtuals/disconnect",
+    "method": "POST",
+    "sortNum": 50000,
+    "created": "2022-06-24T09:10:21.435Z",
+    "modified": "2022-06-24T09:10:21.435Z",
+    "headers": [],
+    "body": {
+      "type": "json",
+      "raw": "{\r\n    \"effect_id\": \"energy0\",\r\n    \"virtual_id\": \"virtual0\",\r\n    \"device_id\": \"udp0\"\r\n}"
+    }
+  },
+  {
+    "_id": "df235082-ce60-42d0-9713-5e9912764b30",
+    "colId": "172ab28c-3877-4e7f-8ac1-2f45c86bda9e",
+    "containerId": "",
+    "name": "Get Settings",
+    "url": "{{host}}:8080/api/settings",
+    "method": "GET",
+    "sortNum": 10000,
+    "created": "2022-06-24T09:10:21.435Z",
+    "modified": "2022-06-24T09:10:21.435Z",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "params": [
+      {
+        "name": "",
+        "value": null,
+        "isDisabled": true
+      }
+    ]
+  },
+  {
+    "_id": "96131e7b-7904-4100-99bc-900c3662d38d",
+    "colId": "ead9faa8-f55e-440b-a076-87b1e25796d5",
+    "containerId": "",
+    "name": "Get Connections",
+    "url": "{{host}}:8080/api/virtuals/connect",
+    "method": "GET",
+    "sortNum": 60000,
+    "created": "2022-06-24T09:10:21.436Z",
+    "modified": "2022-06-24T09:10:21.436Z",
+    "headers": []
+  },
+  {
+    "_id": "3ea2ecb8-d52d-46b3-aadc-74e47a720899",
+    "colId": "172ab28c-3877-4e7f-8ac1-2f45c86bda9e",
+    "containerId": "",
+    "name": "Update Settings",
+    "url": "{{host}}:8080/api/settings",
+    "method": "PUT",
+    "sortNum": 20000,
+    "created": "2022-06-24T09:10:21.436Z",
+    "modified": "2022-06-24T09:10:21.436Z",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "params": [
+      {
+        "name": "",
+        "value": null,
+        "isDisabled": true
+      }
+    ],
+    "body": {
+      "type": "json",
+      "raw": "{\n    \"no_scan\": false\n}"
+    }
+  },
+  {
+    "_id": "3b02ab6c-ddc5-48dd-ae7e-21e7536b115e",
+    "colId": "172ab28c-3877-4e7f-8ac1-2f45c86bda9e",
+    "containerId": "",
+    "name": "Get Settings Schema",
+    "url": "{{host}}:8080/api/settings/schema",
+    "method": "GET",
+    "sortNum": 30000,
+    "created": "2022-06-24T09:10:21.437Z",
+    "modified": "2022-06-24T09:10:21.437Z",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "params": [
+      {
+        "name": "",
+        "value": null,
+        "isDisabled": true
+      }
+    ]
+  },
+  {
+    "_id": "0c895a3f-3bdf-4136-9cc6-826834bfc001",
+    "colId": "2679f28c-5e2b-4905-b995-65b9737c449f",
+    "containerId": "",
+    "name": "Get Settings",
+    "url": "localhost:8080/api/effects/global",
+    "method": "GET",
+    "sortNum": 10000,
+    "created": "2022-06-24T09:10:21.439Z",
+    "modified": "2022-06-24T09:10:21.439Z",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "params": [
+      {
+        "name": "",
+        "value": null,
+        "isDisabled": true
+      }
+    ]
+  },
+  {
+    "_id": "bb69dde2-64c5-40f2-b826-71c90537d3a9",
+    "colId": "2679f28c-5e2b-4905-b995-65b9737c449f",
+    "containerId": "",
+    "name": "Update Settings",
+    "url": "{{host}}:8080/api/effects/global",
+    "method": "PUT",
+    "sortNum": 20000,
+    "created": "2022-06-24T09:10:21.440Z",
+    "modified": "2022-06-24T09:10:21.440Z",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "params": [
+      {
+        "name": "",
+        "value": null,
+        "isDisabled": true
+      }
+    ],
+    "body": {
+      "type": "json",
+      "raw": "{\n    \"intensity\": 0.5,\n    \"hue_shift\": 1,\n    \"palette\": \"RGB\"\n}"
+    }
+  },
+  {
+    "_id": "0e8d86a0-7fbc-4d42-a99f-dce416b5dca5",
+    "colId": "2679f28c-5e2b-4905-b995-65b9737c449f",
+    "containerId": "",
+    "name": "Get Settings Schema",
+    "url": "/api/settings/schema",
+    "method": "GET",
+    "sortNum": 30000,
+    "created": "2022-06-24T09:10:21.441Z",
+    "modified": "2022-06-24T09:10:21.441Z",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "params": [
+      {
+        "name": "",
+        "value": null,
+        "isDisabled": true
+      }
+    ]
+  },
+  {
+    "_id": "5967cb97-3b22-4598-9bd5-f0ebdecf7f15",
+    "colId": "89d2a85c-c92a-4bb1-83d7-b108febf4515",
+    "containerId": "",
+    "name": "Get Effects",
+    "url": "{{host}}:8080/api/effects",
+    "method": "GET",
+    "sortNum": 10000,
+    "created": "2022-06-24T09:10:21.442Z",
+    "modified": "2022-06-24T09:10:21.442Z",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "params": [
+      {
+        "name": "",
+        "value": null,
+        "isDisabled": true
+      }
+    ]
+  },
+  {
+    "_id": "e081187b-4ae7-4bce-8b7c-d38c2078aad5",
+    "colId": "89d2a85c-c92a-4bb1-83d7-b108febf4515",
+    "containerId": "",
+    "name": "Update Config",
+    "url": "{{host}}:8080/api/effects",
+    "method": "PUT",
+    "sortNum": 20000,
+    "created": "2022-06-24T09:10:21.443Z",
+    "modified": "2022-06-24T09:10:21.443Z",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "params": [
+      {
+        "name": "",
+        "value": null,
+        "isDisabled": true
+      }
+    ],
+    "body": {
+      "type": "json",
+      "raw": "{\n    \"id\": \"palette0\",\n    \"base_config\": {\"blur\": 0.4, \"hue_shift\": 1}\n}"
+    }
+  },
+  {
+    "_id": "bdafa6e1-621b-43bf-a0f2-23d21c7ad406",
+    "colId": "89d2a85c-c92a-4bb1-83d7-b108febf4515",
+    "containerId": "",
+    "name": "Create Effect",
+    "url": "{{host}}:8080/api/effects",
+    "method": "POST",
+    "sortNum": 30000,
+    "created": "2022-06-24T09:10:21.444Z",
+    "modified": "2022-06-24T09:10:21.444Z",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "params": [
+      {
+        "name": "",
+        "value": null,
+        "isDisabled": true
+      }
+    ],
+    "body": {
+      "type": "json",
+      "raw": "{\n    \"type\": \"palette\",\n    \"base_config\": {\"blur\": 0.4}\n}"
+    }
+  },
+  {
+    "_id": "92189648-1fa5-4ad3-9888-da9551b76e04",
+    "colId": "89d2a85c-c92a-4bb1-83d7-b108febf4515",
+    "containerId": "",
+    "name": "Delete Effect",
+    "url": "{{host}}:8080/api/effects",
+    "method": "DELETE",
+    "sortNum": 40000,
+    "created": "2022-06-24T09:10:21.445Z",
+    "modified": "2022-06-24T09:10:21.445Z",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "params": [
+      {
+        "name": "",
+        "value": null,
+        "isDisabled": true
+      }
+    ],
+    "body": {
+      "type": "json",
+      "raw": "{\n    \"id\": \"fade0\"\n}"
+    }
+  },
+  {
+    "_id": "11922058-4a32-41cf-bdb2-a8b5bf3147fe",
+    "colId": "89d2a85c-c92a-4bb1-83d7-b108febf4515",
+    "containerId": "",
+    "name": "Get Effects Schema",
+    "url": "{{host}}:8080/api/effects/schema",
+    "method": "GET",
+    "sortNum": 50000,
+    "created": "2022-06-24T09:10:21.446Z",
+    "modified": "2022-06-24T09:10:21.446Z",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "params": [
+      {
+        "name": "",
+        "value": null,
+        "isDisabled": true
+      }
+    ]
+  },
+  {
+    "_id": "83b2a537-2ce5-417f-b8ef-65006de7779e",
+    "colId": "0b373ba5-6e61-4ee5-84f0-e590e9b56bbf",
+    "containerId": "",
+    "name": "Get Schema",
+    "url": "{{host}}:8080/api/devices/schema",
+    "method": "GET",
+    "sortNum": 10000,
+    "created": "2022-06-24T09:10:21.449Z",
+    "modified": "2022-06-24T09:10:21.449Z",
+    "headers": []
+  },
+  {
+    "_id": "e719919b-0981-421a-b311-5cc2f45ab5e4",
+    "colId": "0b373ba5-6e61-4ee5-84f0-e590e9b56bbf",
+    "containerId": "",
+    "name": "Get Devices",
+    "url": "{{host}}:8080/api/devices",
+    "method": "GET",
+    "sortNum": 20000,
+    "created": "2022-06-24T09:10:21.450Z",
+    "modified": "2022-06-24T09:10:21.450Z",
+    "headers": []
+  },
+  {
+    "_id": "42cfea74-a3a6-4386-a246-1173c3b52b78",
+    "colId": "0b373ba5-6e61-4ee5-84f0-e590e9b56bbf",
+    "containerId": "",
+    "name": "Create Device",
+    "url": "{{host}}:8080/api/devices",
+    "method": "POST",
+    "sortNum": 30000,
+    "created": "2022-06-24T09:10:21.451Z",
+    "modified": "2022-06-24T09:10:21.451Z",
+    "headers": [],
+    "body": {
+      "type": "json",
+      "raw": "{\r\n    \"type\": \"udp\",\r\n    \"base_config\": {\r\n        \"name\": \"test device udp\",\r\n        \"pixel_count\": 64\r\n    },\r\n    \"impl_config\": {\r\n        \"ip\": \"192.168.0.49\"\r\n    }\r\n}"
+    }
+  },
+  {
+    "_id": "d4d12184-b98e-4091-850e-4f1b421f1d7f",
+    "colId": "d4d47269-8ae2-489b-a8cd-02bdb824794c",
+    "containerId": "",
+    "name": "Get local inputs",
+    "url": "{{host}}:8080/api/bridge/get/local/inputs",
+    "method": "GET",
+    "sortNum": 10000,
+    "created": "2022-06-24T09:10:21.453Z",
+    "modified": "2022-06-24T09:10:21.453Z",
+    "headers": []
+  }
+]

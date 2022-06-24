@@ -68,7 +68,7 @@ func newMelbank(audio AudioStream, min, max uint, intensity float64) (*melbank, 
 // Perform mel binning on fft
 func (mb *melbank) Do(fft *aubio.ComplexBuffer) {
 	mb.fb.Do(fft)
-	mb.fb.Buffer().Pow(1+mb.Intensity)
+	mb.fb.Buffer().Pow(1 + mb.Intensity)
 	copy(mb.Data, mb.fb.Buffer().Slice())
 	// Normalise the melbank gain
 	// first smooth the values out to soften peaks

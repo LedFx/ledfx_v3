@@ -24,42 +24,42 @@
         "name": "Virtual Connections",
         "containerId": "",
         "created": "2022-06-24T09:19:59.985Z",
-        "sortNum": 30000
+        "sortNum": 15000
       },
       {
         "_id": "395287b2-856a-41f3-b53f-efa800d8dfb6",
         "name": "Settings",
         "containerId": "",
         "created": "2022-06-24T09:21:01.502Z",
-        "sortNum": 40000
+        "sortNum": 9687.5
       },
       {
         "_id": "2f9ef081-c722-4734-9acb-64b34e765324",
         "name": "Effects Global",
         "containerId": "",
         "created": "2022-06-24T09:21:19.888Z",
-        "sortNum": 50000
+        "sortNum": 9375
       },
       {
         "_id": "ee7c8679-fbaa-414c-b72e-9bab0a089755",
         "name": "Effects",
         "containerId": "",
         "created": "2022-06-24T09:21:34.739Z",
-        "sortNum": 60000
+        "sortNum": 8750
       },
       {
         "_id": "b981d0c6-9449-4c60-972b-7322b3826e8c",
         "name": "Devices",
         "containerId": "",
         "created": "2022-06-24T09:21:53.183Z",
-        "sortNum": 70000
+        "sortNum": 7500
       },
       {
         "_id": "82b59193-2a32-4c02-8bfd-2e055fdeea68",
         "name": "Bridge",
         "containerId": "",
         "created": "2022-06-24T09:22:34.938Z",
-        "sortNum": 80000
+        "sortNum": 5000
       }
     ]
   }

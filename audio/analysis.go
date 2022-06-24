@@ -140,10 +140,6 @@ func (a *analyzer) BufferCallback(buf Buffer) {
 	a.OnsetNowMono = a.onsetMono.Buffer().Get(uint(0)) != 0
 	a.onsetVocals.Do(a.bufVocals)
 	a.OnsetNowVocals = a.onsetVocals.Buffer().Get(uint(0)) != 0
-
-	if a.OnsetNowMono {
-		log.Logger.WithField("context", "Audio Analysis").Info("Onset detected")
-	}
 }
 
 func (a *analyzer) Cleanup() {

@@ -183,13 +183,13 @@ func (e *Effect) updateStoredProperties(newConfig BaseEffectConfig) {
 		newConfig.FreqMax += 50
 	}
 	// need to register a new melbank if our freqs or audio stream has changed
-	if e.Config.Vocals != newConfig.Vocals || e.Config.FreqMin != newConfig.FreqMin || e.Config.FreqMax != newConfig.FreqMax {
+	if e.Config.Vocals != newConfig.Vocals || e.Config.FreqMin != newConfig.FreqMin || e.Config.FreqMax != newConfig.FreqMax || e.Config.Intensity != newConfig.Intensity {
 		audio.Analyzer.DeleteMelbank(e.ID)
-		audio.Analyzer.NewMelbank(e.ID, as, uint(newConfig.FreqMin), uint(newConfig.FreqMax))
+		audio.Analyzer.NewMelbank(e.ID, as, uint(newConfig.FreqMin), uint(newConfig.FreqMax), newConfig.Intensity)
 	}
 	// need to register a melbank if the effect doesn't have one yet
 	if _, err := audio.Analyzer.GetMelbank(e.ID); err != nil {
-		audio.Analyzer.NewMelbank(e.ID, as, uint(newConfig.FreqMin), uint(newConfig.FreqMax))
+		audio.Analyzer.NewMelbank(e.ID, as, uint(newConfig.FreqMin), uint(newConfig.FreqMax), newConfig.Intensity)
 	}
 }
 

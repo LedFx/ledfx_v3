@@ -117,12 +117,12 @@
     "method": "POST",
     "sortNum": 30000,
     "created": "2022-06-24T09:10:21.433Z",
-    "modified": "2022-06-24T11:45:33.398Z",
+    "modified": "2022-06-24T13:59:46.082Z",
     "headers": [],
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"effect_id\": \"weave0\",\n    \"virtual_id\": \"virtual0\",\n    \"device_id\": \"udp0\"\n}",
+      "raw": "{\n    \"effect_id\": \"energy0\",\n    \"virtual_id\": \"virtual0\",\n    \"device_id\": \"udp0\"\n}",
       "form": []
     },
     "tests": []
@@ -348,7 +348,7 @@
     "method": "PUT",
     "sortNum": 5000,
     "created": "2022-06-24T09:10:21.443Z",
-    "modified": "2022-06-24T12:18:42.468Z",
+    "modified": "2022-06-24T14:09:08.034Z",
     "headers": [
       {
         "name": "Content-Type",
@@ -358,7 +358,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"id\": \"pulse0\",\n    \"base_config\": {\"decay\": 0.5}\n}",
+      "raw": "{\n    \"id\": \"energy0\",\n    \"base_config\": {\"decay\": 0.8, \"vocals\": true, \"freq_max\": 5000, \"freq_min\": 500}\n}",
       "form": []
     },
     "tests": []
@@ -372,7 +372,7 @@
     "method": "POST",
     "sortNum": 20000,
     "created": "2022-06-24T09:10:21.444Z",
-    "modified": "2022-06-24T12:02:12.696Z",
+    "modified": "2022-06-24T13:59:25.645Z",
     "headers": [
       {
         "name": "Content-Type",
@@ -382,7 +382,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"type\": \"pulse\",\n    \"base_config\": {\"blur\": 0.4}\n}",
+      "raw": "{\n    \"type\": \"energy\",\n    \"base_config\": {\"blur\": 0.4}\n}",
       "form": []
     },
     "tests": []

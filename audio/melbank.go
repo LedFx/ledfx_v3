@@ -27,7 +27,7 @@ type melbank struct {
 }
 
 // Specify the min and max frequencies
-func newMelbank(audio AudioStream, min, max uint) (*melbank, error) {
+func newMelbank(audio AudioStream, min, max uint, intensity float64) (*melbank, error) {
 
 	mb := &melbank{
 		fb:           aubio.NewFilterBank(melBins, framesPerBuffer),
@@ -37,7 +37,7 @@ func newMelbank(audio AudioStream, min, max uint) (*melbank, error) {
 		Freqs:        make([]float64, melBins+2),
 		Data:         make([]float64, melBins),
 		GainFilter:   math_utils.NewExpFilter(0.99, 0.01),
-		SmoothFilter: math_utils.NewExpFilterSlice(0.99, 0.7, int(melBins)),
+		SmoothFilter: math_utils.NewExpFilterSlice(0.99, 0.5+intensity/2, int(melBins)),
 	}
 
 	if min < melMin || max > melMax {

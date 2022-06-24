@@ -188,7 +188,7 @@ func (a *analyzer) DeleteMelbank(id string) {
 	}
 }
 
-func (a *analyzer) NewMelbank(id string, audio AudioStream, min_freq, max_freq uint) error {
+func (a *analyzer) NewMelbank(id string, audio AudioStream, min_freq, max_freq uint, intensity float64) error {
 	// if a melbank is already registered to this effect id, kill it and warn
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -196,7 +196,7 @@ func (a *analyzer) NewMelbank(id string, audio AudioStream, min_freq, max_freq u
 		log.Logger.WithField("context", "Audio Analysis").Debugf("Effect %s attempted to create a new melbank but already has one registered", id)
 		a.DeleteMelbank(id)
 	}
-	mb, err := newMelbank(audio, min_freq, max_freq)
+	mb, err := newMelbank(audio, min_freq, max_freq, intensity)
 	if err == nil {
 		log.Logger.WithField("context", "Audio Analysis").Debugf("Registered new melbank for effect %s", id)
 		a.melbanks[id] = mb

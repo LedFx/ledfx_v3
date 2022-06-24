@@ -56,7 +56,7 @@ func (bw *AsyncMultiWriter) checkAsyncThreshold() {
 // AddWriter adds a writer and ties the writer index to the provided name.
 func (bw *AsyncMultiWriter) AddWriter(writer io.Writer, name string) error {
 	if name == "" {
-		return NameCannotBeOmitted
+		return ErrNameCannotBeOmitted
 	}
 	bw.mu.Lock()
 	defer bw.mu.Unlock()
@@ -73,14 +73,14 @@ func (bw *AsyncMultiWriter) AddWriter(writer io.Writer, name string) error {
 // Name cannot be omitted.
 func (bw *AsyncMultiWriter) RemoveWriter(id string) error {
 	if id == "" {
-		return NameCannotBeOmitted
+		return ErrNameCannotBeOmitted
 	}
 	bw.mu.Lock()
 	defer bw.mu.Unlock()
 
 	index, ok := bw.indexMap[id]
 	if !ok {
-		return WriterNotFound
+		return ErrWriterNotFound
 	}
 
 	bw.writers = append(bw.writers[:index], bw.writers[index+1:]...)
@@ -110,7 +110,7 @@ func (bw *AsyncMultiWriter) removeByIndex(index int) error {
 	}
 
 	if id == "" {
-		return WriterNotFound
+		return ErrWriterNotFound
 	}
 
 	bw.writers = append(bw.writers[:index], bw.writers[index+1:]...)

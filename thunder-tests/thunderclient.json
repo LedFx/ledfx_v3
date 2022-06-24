@@ -32,12 +32,15 @@
     "method": "POST",
     "sortNum": 30000,
     "created": "2022-06-24T09:10:07.880Z",
-    "modified": "2022-06-24T09:19:12.107Z",
+    "modified": "2022-06-24T11:45:24.782Z",
     "headers": [],
+    "params": [],
     "body": {
       "type": "json",
-      "raw": "{\r\n    \"base_config\": {\r\n        \"name\": \"test virtual\"\r\n    }\r\n}"
-    }
+      "raw": "{\n    \"base_config\": {\n        \"name\": \"test virtual\"\n    }\n}",
+      "form": []
+    },
+    "tests": []
   },
   {
     "_id": "92cce4b8-19d5-4e48-b3fa-6e365474fa27",
@@ -60,7 +63,7 @@
     "method": "POST",
     "sortNum": 20000,
     "created": "2022-06-24T09:10:21.428Z",
-    "modified": "2022-06-24T09:28:59.732Z",
+    "modified": "2022-06-24T12:02:30.892Z",
     "headers": [],
     "params": [],
     "body": {
@@ -79,12 +82,15 @@
     "method": "POST",
     "sortNum": 10000,
     "created": "2022-06-24T09:10:21.431Z",
-    "modified": "2022-06-24T09:20:03.661Z",
+    "modified": "2022-06-24T12:02:22.439Z",
     "headers": [],
+    "params": [],
     "body": {
       "type": "json",
-      "raw": "{\r\n    \"effect_id\": \"energy0\",\r\n    \"virtual_id\": \"virtual0\"\r\n}"
-    }
+      "raw": "{\n    \"effect_id\": \"pulse0\",\n    \"virtual_id\": \"virtual0\"\n}",
+      "form": []
+    },
+    "tests": []
   },
   {
     "_id": "c2effccb-906b-45e8-9d6d-189badaee73e",
@@ -111,12 +117,15 @@
     "method": "POST",
     "sortNum": 30000,
     "created": "2022-06-24T09:10:21.433Z",
-    "modified": "2022-06-24T09:20:07.372Z",
+    "modified": "2022-06-24T11:45:33.398Z",
     "headers": [],
+    "params": [],
     "body": {
       "type": "json",
-      "raw": "{\r\n    \"effect_id\": \"palette0\",\r\n    \"virtual_id\": \"virtual0\",\r\n    \"device_id\": \"udp0\"\r\n}"
-    }
+      "raw": "{\n    \"effect_id\": \"weave0\",\n    \"virtual_id\": \"virtual0\",\n    \"device_id\": \"udp0\"\n}",
+      "form": []
+    },
+    "tests": []
   },
   {
     "_id": "35b72dff-9b49-4c5b-a494-b0347a5bc6d9",
@@ -339,24 +348,20 @@
     "method": "PUT",
     "sortNum": 5000,
     "created": "2022-06-24T09:10:21.443Z",
-    "modified": "2022-06-24T09:21:40.224Z",
+    "modified": "2022-06-24T12:18:42.468Z",
     "headers": [
       {
         "name": "Content-Type",
         "value": "application/json"
       }
     ],
-    "params": [
-      {
-        "name": "",
-        "value": null,
-        "isDisabled": true
-      }
-    ],
+    "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"id\": \"palette0\",\n    \"base_config\": {\"blur\": 0.4, \"hue_shift\": 1}\n}"
-    }
+      "raw": "{\n    \"id\": \"pulse0\",\n    \"base_config\": {\"decay\": 0.5}\n}",
+      "form": []
+    },
+    "tests": []
   },
   {
     "_id": "bdafa6e1-621b-43bf-a0f2-23d21c7ad406",
@@ -367,24 +372,20 @@
     "method": "POST",
     "sortNum": 20000,
     "created": "2022-06-24T09:10:21.444Z",
-    "modified": "2022-06-24T09:21:42.041Z",
+    "modified": "2022-06-24T12:02:12.696Z",
     "headers": [
       {
         "name": "Content-Type",
         "value": "application/json"
       }
     ],
-    "params": [
-      {
-        "name": "",
-        "value": null,
-        "isDisabled": true
-      }
-    ],
+    "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"type\": \"palette\",\n    \"base_config\": {\"blur\": 0.4}\n}"
-    }
+      "raw": "{\n    \"type\": \"pulse\",\n    \"base_config\": {\"blur\": 0.4}\n}",
+      "form": []
+    },
+    "tests": []
   },
   {
     "_id": "92189648-1fa5-4ad3-9888-da9551b76e04",
@@ -395,24 +396,20 @@
     "method": "DELETE",
     "sortNum": 30000,
     "created": "2022-06-24T09:10:21.445Z",
-    "modified": "2022-06-24T09:21:44.219Z",
+    "modified": "2022-06-24T12:01:36.344Z",
     "headers": [
       {
         "name": "Content-Type",
         "value": "application/json"
       }
     ],
-    "params": [
-      {
-        "name": "",
-        "value": null,
-        "isDisabled": true
-      }
-    ],
+    "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"id\": \"fade0\"\n}"
-    }
+      "raw": "{\n    \"id\": \"weave0\"\n}",
+      "form": []
+    },
+    "tests": []
   },
   {
     "_id": "11922058-4a32-41cf-bdb2-a8b5bf3147fe",
@@ -466,12 +463,12 @@
     "method": "POST",
     "sortNum": 30000,
     "created": "2022-06-24T09:10:21.451Z",
-    "modified": "2022-06-24T09:22:02.002Z",
+    "modified": "2022-06-24T11:45:06.463Z",
     "headers": [],
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"type\": \"e131\",\n    \"base_config\": {\n        \"name\": \"test device e131\",\n        \"pixel_count\": 500\n    },\n    \"impl_config\": {\n        \"ip\": \"192.168.1.166\"\n    }\n}",
+      "raw": "{\n    \"type\": \"udp\",\n    \"base_config\": {\n        \"name\": \"test device udp\",\n        \"pixel_count\": 64\n    },\n    \"impl_config\": {\n        \"ip\": \"192.168.0.49\"\n    }\n}",
       "form": []
     },
     "tests": []

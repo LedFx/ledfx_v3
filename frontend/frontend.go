@@ -13,7 +13,8 @@ import (
 )
 
 func NewServer(mux *http.ServeMux) {
-	serveFrontend := http.FileServer(http.Dir("frontend/files"))
+	path := filepath.Join("frontend", "files")
+	serveFrontend := http.FileServer(http.Dir(path))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		logger.Logger.WithField("context", "Frontend").Debugf("Serving HTTP for path: %s", r.URL.Path)
 		serveFrontend.ServeHTTP(w, r)

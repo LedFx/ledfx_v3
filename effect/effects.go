@@ -37,6 +37,7 @@ func Schema() (schema map[string]interface{}, err error) {
 	if err != nil {
 		return schema, err
 	}
+	schema["types"] = effectTypes
 	extraSchema := make(map[string]interface{})
 	// Copypaste for new effect types, IF YOUR EFFECT HAS EXTRA CONFIG
 	extraSchema["energy"], err = util.CreateSchema(reflect.TypeOf((*EnergyConfig)(nil)).Elem())

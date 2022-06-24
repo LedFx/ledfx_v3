@@ -31,21 +31,21 @@
         "name": "Settings",
         "containerId": "",
         "created": "2022-06-24T09:21:01.502Z",
-        "sortNum": 9687.5
+        "sortNum": 2500
       },
       {
         "_id": "2f9ef081-c722-4734-9acb-64b34e765324",
         "name": "Effects Global",
         "containerId": "",
         "created": "2022-06-24T09:21:19.888Z",
-        "sortNum": 9375
+        "sortNum": 6250
       },
       {
         "_id": "ee7c8679-fbaa-414c-b72e-9bab0a089755",
         "name": "Effects",
         "containerId": "",
         "created": "2022-06-24T09:21:34.739Z",
-        "sortNum": 8750
+        "sortNum": 6875
       },
       {
         "_id": "b981d0c6-9449-4c60-972b-7322b3826e8c",

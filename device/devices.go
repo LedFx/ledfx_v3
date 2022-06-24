@@ -11,6 +11,10 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+var deviceTypes = []string{
+	"udp",
+}
+
 // Creates a new device and returns its unique id
 func New(new_id, device_type string, baseConfig map[string]interface{}, implConfig map[string]interface{}) (device *Device, id string, err error) {
 	switch device_type {
@@ -91,6 +95,7 @@ func Schema() (schema map[string]interface{}, err error) {
 	if err != nil {
 		return schema, err
 	}
+	schema["types"] = deviceTypes
 	implSchema := make(map[string]interface{})
 	// Copypaste for new effect types, IF YOUR EFFECT HAS EXTRA CONFIG
 	implSchema["udp"], err = util.CreateSchema(reflect.TypeOf((*UDPConfig)(nil)).Elem())

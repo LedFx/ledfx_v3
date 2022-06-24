@@ -74,9 +74,9 @@ type config struct {
 	Settings      SettingsConfig          `mapstructure:"core" json:"core"`
 	Frontend      FrontendConfig          `mapstructure:"frontend" json:"frontend"`
 	Effects       map[string]EffectEntry  `mapstructure:"effects" json:"effects"`
-	EffectsGlobal map[string]interface{}  `mapstructure:"global_effects" json:"global_effects"`
 	Devices       map[string]DeviceEntry  `mapstructure:"devices" json:"devices"`
 	Virtuals      map[string]VirtualEntry `mapstructure:"virtuals" json:"virtuals"`
+	EffectsGlobal map[string]interface{}  `mapstructure:"global_effects" json:"global_effects"`
 	ConnEffect    map[string]string       `mapstructure:"connections_effect" json:"connections_effect"`
 	ConnDevice    map[string]string       `mapstructure:"connections_device" json:"connections_device"`
 	// Audio    AudioEntry              `mapstructure:"audio" json:"audio"`

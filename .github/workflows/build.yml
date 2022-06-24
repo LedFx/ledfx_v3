@@ -17,8 +17,6 @@ jobs:
       fail-fast: false
       matrix:
         goosarch:
-          - 'darwin/amd64'
-          - 'darwin/arm64'
           - 'linux/amd64'
           - 'linux/arm'
           - 'linux/arm64'

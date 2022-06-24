@@ -129,7 +129,7 @@ func main() {
 		logger.Logger.WithField("context", "AudioBridge").Fatalf("Error initializing new bridge: %v\n", err)
 	}
 	defer br.Stop()
-	if err := br.StartLocalInput("9f012a5ef29af5e7b226bae734a8cb2ad229f063"); err != nil { // get from config
+	if err := br.StartLocalInput("f4185a940d2963464c8b1e331433d85709b71cb6"); err != nil { // get from config
 		logger.Logger.WithField("context", "AudioBridge").Fatalf("Error starting local input: %v\n", err)
 	}
 

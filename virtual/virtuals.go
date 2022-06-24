@@ -90,6 +90,7 @@ func SetStates(states map[string]bool) (err error) {
 	if msg != "" {
 		return errors.New(msg)
 	}
+	config.SetStates(GetStates())
 	return nil
 }
 
@@ -110,6 +111,10 @@ func LoadFromConfig() error {
 		}
 	}
 	return nil
+}
+
+func LoadStatesFromConfig() {
+	SetStates(config.GetStates())
 }
 
 // Generate a map schema for all virtuals

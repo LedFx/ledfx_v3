@@ -102,6 +102,7 @@ func main() {
 		logger.Logger.WithField("context", "Load Virtuals from Config").Fatal(err)
 	}
 	virtual.LoadConnectionsFromConfig()
+	virtual.LoadStatesFromConfig()
 
 	// Handle WLED scanning
 	if !settings.NoScan {

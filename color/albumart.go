@@ -3,12 +3,12 @@ package color
 import (
 	"bytes"
 	"crypto/sha256"
-	"errors"
 	"fmt"
 	"image"
 	"image/color"
 	"image/gif"
 	"image/png"
+	"ledfx/config"
 	log "ledfx/logger"
 	"math"
 	"net/http"
@@ -18,7 +18,6 @@ import (
 	"github.com/mazznoer/colorgrad"
 	"github.com/ojrac/opensimplex-go"
 	"github.com/ritchie46/GOPHY/img2gif"
-	"tailscale.com/net/interfaces"
 )
 
 /*func init() {
@@ -53,14 +52,10 @@ func (g *Palette) WebServe() (link *url.URL, err error) {
 	hasher := sha256.New()
 	hasher.Write([]byte(g.rawCSS))
 
-	_, myIP, ok := interfaces.LikelyHomeRouterIP()
-	if !ok {
-		return nil, errors.New("could not get default outbound IP address")
-	}
-
+	myIP := config.GetSettings().Host
 	path := fmt.Sprintf("/palettes/%x", hasher.Sum(nil))
 
-	if link, err = url.Parse(fmt.Sprintf("http://%s:8740%s", myIP.String(), path)); err != nil {
+	if link, err = url.Parse(fmt.Sprintf("http://%s:8740%s", myIP, path)); err != nil {
 		return nil, err
 	}
 

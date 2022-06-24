@@ -4,10 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"ledfx/config"
 	log "ledfx/logger"
 	"net"
-
-	"tailscale.com/net/interfaces"
 )
 
 // RequestHandler callback function that gets invoked when a request is received
@@ -45,13 +44,7 @@ func (r *Server) Stop() {
 
 // Start creates listening socket for the RTSP connection
 func (r *Server) Start(doneCh chan struct{}) {
-	// Get the default outbound interface address
-	_, myIP, ok := interfaces.LikelyHomeRouterIP()
-	if !ok {
-		log.Logger.WithField("context", "RTSP Server").Errorf("Error getting local outbound IP address: ok=%v", ok)
-		return
-	}
-	r.ip = myIP.String()
+	r.ip = config.GetSettings().Host
 	log.Logger.WithField("context", "RTSP Server").Printf("Starting RTSP server on address: %s:%d", r.ip, r.port)
 
 	tcpListen, err := net.Listen("tcp", fmt.Sprintf("%s:%d", r.ip, r.port))

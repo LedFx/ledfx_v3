@@ -44,16 +44,16 @@ jobs:
          export CGO_LDFLAGS='-LC:/Users/RUNNER~1/AppData/Local/Temp/lib' 
          export CGO_ENABLED=1
          go env
-         go build -o 'windows-amd64-${{ github.sha }}.exe' -v
+         go build -o 'LedFx-windows-amd64-${{ github.sha }}.exe' -v
     - name: Package LedFx
       run: |
          export CYGPATH=$(cygpath -m /)
          mkdir LedFx_Builds/
-         mv windows-amd64-${{ github.sha }}.exe LedFx_Builds/
+         mv LedFx-windows-amd64-${{ github.sha }}.exe LedFx_Builds/
          cp C:/Users/RUNNER~1/AppData/Local/Temp/bin/libaubio-5.dll LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libportaudio.dll LedFx_Builds/
     - name: Upload LedFx Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: windows-amd64-latest
+        name: LedFx-windows-amd64-latest
         path: LedFx_Builds/

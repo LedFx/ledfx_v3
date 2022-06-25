@@ -473,13 +473,32 @@
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "82b59193-2a32-4c02-8bfd-2e055fdeea68",
     "name": "Get local inputs",
-    "url": "{{host}}:{{port}}/api/bridge/get/local/inputs",
+    "url": "{{host}}:{{port}}/api/bridge/get/inputs/local",
     "method": "GET",
     "sortNum": 10000,
     "created": "2022-06-24T09:10:21.453Z",
-    "modified": "2022-06-24T15:35:44.745Z",
+    "modified": "2022-06-25T11:18:17.074Z",
     "headers": [],
     "params": [],
+    "tests": []
+  },
+  {
+    "_id": "31827165-0c98-494d-90fa-1c4e48c45962",
+    "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
+    "containerId": "82b59193-2a32-4c02-8bfd-2e055fdeea68",
+    "name": "Set local input",
+    "url": "{{host}}:{{port}}/api/bridge/set/input/local",
+    "method": "POST",
+    "sortNum": 20000,
+    "created": "2022-06-25T11:18:48.008Z",
+    "modified": "2022-06-25T11:36:33.714Z",
+    "headers": [],
+    "params": [],
+    "body": {
+      "type": "json",
+      "raw": "{\n    \"device_id\": \"2fb34793a593ebe3d8230f119ea136ef3fd5cec1\"\n}",
+      "form": []
+    },
     "tests": []
   }
 ]

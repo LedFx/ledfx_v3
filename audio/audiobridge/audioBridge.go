@@ -77,6 +77,9 @@ func (br *Bridge) closeInput() {
 			br.airplay.server.Stop()
 		}
 	case inputTypeLocal:
+		if br.local.capture == nil {
+			return
+		}
 		if !br.local.capture.Stopped() {
 			br.local.capture.Quit()
 		}

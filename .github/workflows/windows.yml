@@ -41,6 +41,10 @@ jobs:
          mv LedFx-windows-amd64-${{ github.sha }}.exe LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libaubio-5.dll LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libportaudio.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/avcodec-58.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/avutil-56.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/avformat-58.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libfftw3-3.dll LedFx_Builds/
     - name: Upload LedFx Artifact
       uses: actions/upload-artifact@v3
       with:

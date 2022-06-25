@@ -45,6 +45,9 @@ jobs:
          cp $CYGPATH/mingw64/bin/avutil-56.dll LedFx_Builds/
          cp $CYGPATH/mingw64/bin/avformat-58.dll LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libfftw3-3.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libfftw3f-3.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libwinpthread-1.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libsamplerate-0.dll LedFx_Builds/
     - name: Upload LedFx Artifact
       uses: actions/upload-artifact@v3
       with:

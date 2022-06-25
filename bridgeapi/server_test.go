@@ -8,7 +8,7 @@ import (
 
 func TestServer(t *testing.T) {
 	mux := http.DefaultServeMux
-	if err := NewServer(func(buf audio.Buffer) {
+	if _, err := NewServer(func(buf audio.Buffer) {
 		// Do nothing
 	}, mux); err != nil {
 		t.Fatalf("Error creating new server: %s", err)

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"ledfx/audio"
-	"ledfx/audio/audiobridge"
+	"ledfx/bridgeapi"
 	"ledfx/config"
 	"ledfx/constants"
 	"ledfx/device"
@@ -13,7 +13,6 @@ import (
 	"ledfx/util"
 	"ledfx/virtual"
 	"ledfx/websocket"
-	"ledfx/bridgeapi"
 	"net/http"
 	"os"
 	"os/signal"
@@ -120,19 +119,17 @@ func main() {
 	config.NewAPI(mux)
 	frontend.NewServer(mux)
 	websocket.Serve(mux)
-	if err := bridgeapi.NewServer(audio.Analyzer.BufferCallback, mux); err != nil {
-		logger.Logger.WithField("context", "AudioBridge").Fatalf("Error initializing audio bridge server: %v", err)
-	} else {
-		logger.Logger.WithField("context", "AudioBridge").Info("Initialised AudioBridge")
-	}
-	br, err := audiobridge.NewBridge(audio.Analyzer.BufferCallback)
+	bridgeServer, err := bridgeapi.NewServer(audio.Analyzer.BufferCallback, mux)
+
+	// Start audio bridge
 	if err != nil {
-		logger.Logger.WithField("context", "AudioBridge").Fatalf("Error initializing new bridge: %v\n", err)
+		logger.Logger.WithField("context", "AudioBridge").Fatalf("Error initializing AudioBridge server: %v", err)
+	} else {
+		logger.Logger.WithField("context", "AudioBridge").Info("Initialised AudioBridge server")
 	}
-	defer br.Stop()
-	if err := br.StartLocalInput("2fb34793a593ebe3d8230f119ea136ef3fd5cec1"); err != nil { // get from config
-	//if err := br.StartLocalInput("f4185a940d2963464c8b1e331433d85709b71cb6"); err != nil { // get from config
-		logger.Logger.WithField("context", "AudioBridge").Fatalf("Error starting local input: %v\n", err)
+	defer bridgeServer.Br.Stop()
+	if err := bridgeServer.Br.StartLocalInput(config.GetLocalInput()); err != nil {
+		logger.Logger.WithField("context", "AudioBridge").Errorf("Error starting local input: %v\n", err)
 	}
 
 	// Start web server

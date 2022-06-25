@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"ledfx/audio/audiobridge/capture"
 	"ledfx/audio/audiobridge/playback"
+	"ledfx/config"
 	log "ledfx/logger"
 )
 
@@ -35,6 +36,7 @@ func (br *Bridge) StartLocalInput(id string) (err error) {
 	if br.local.capture, err = capture.NewHandler(id, br.byteWriter); err != nil {
 		return fmt.Errorf("error initializing new capture handler: %w", err)
 	}
+	config.SetLocalInput(id)
 
 	return nil
 }

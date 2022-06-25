@@ -22,13 +22,13 @@ const (
 
 type Server struct {
 	mux        *http.ServeMux
-	br         *audiobridge.Bridge
+	Br         *audiobridge.Bridge
 	statPoller *statpoll.StatPoller
 	upgrader   *websocket.Upgrader
 }
 
-func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (err error) {
-	s := &Server{
+func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (s *Server, err error) {
+	s = &Server{
 		mux: mux,
 		upgrader: &websocket.Upgrader{
 			ReadBufferSize:  1024,
@@ -37,16 +37,16 @@ func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (err error) 
 		},
 	}
 
-	if s.br, err = audiobridge.NewBridge(callback); err != nil {
-		return fmt.Errorf("error initializing new bridge: %w", err)
+	if s.Br, err = audiobridge.NewBridge(callback); err != nil {
+		return s, fmt.Errorf("error initializing new bridge: %w", err)
 	}
 
-	s.statPoller = statpoll.New(s.br)
+	s.statPoller = statpoll.New(s.Br)
 
 	// Input setter handlers
 	s.mux.HandleFunc("/api/bridge/set/input/airplay", s.handleSetInputAirPlay)
 	s.mux.HandleFunc("/api/bridge/set/input/youtube", s.handleSetInputYouTube)
-	s.mux.HandleFunc("/api/bridge/set/input/capture", s.handleSetInputCapture)
+	s.mux.HandleFunc("/api/bridge/set/input/local", s.handleSetInputLocal)
 
 	// Output adder handlers
 	s.mux.HandleFunc("/api/bridge/add/output/airplay", s.handleAddOutputAirPlay)
@@ -57,7 +57,7 @@ func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (err error) 
 	s.mux.HandleFunc("/api/bridge/ctl/airplay/set", s.handleCtlAirPlaySet)
 
 	// Info handlers
-	s.mux.HandleFunc("/api/bridge/get/local/inputs", s.handleGetLocalInputs)
+	s.mux.HandleFunc("/api/bridge/get/inputs/local", s.handleGetLocalInputs)
 
 	/* TODO statpoll for these endpoints
 	s.mux.HandleFunc("/api/bridge/ctl/airplay/clients", s.handleCtlAirPlayGetClients)
@@ -69,7 +69,7 @@ func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (err error) 
 	// Artwork handler
 	s.mux.HandleFunc(ArtworkURLPath, s.handleArtwork)
 
-	return nil
+	return s, nil
 }
 
 func (s *Server) handleStatPollInitWs(w http.ResponseWriter, r *http.Request) {
@@ -96,7 +96,7 @@ func (s *Server) handleSetInputAirPlay(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.Logger.WithField("context", "AudioBridge").Infoln("Setting input source to AirPlay server....")
-	if err := s.br.JSONWrapper().StartAirPlayInput(bodyBytes); err != nil {
+	if err := s.Br.JSONWrapper().StartAirPlayInput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Logger.WithField("context", "AudioBridge").Errorf("Error starting AirPlay input: %v", err)
 		w.Write(errToJson(err))
@@ -113,7 +113,7 @@ func (s *Server) handleAddOutputAirPlay(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	logger.Logger.WithField("context", "AudioBridge").Infoln("Adding AirPlay audio output...")
-	if err := s.br.JSONWrapper().AddAirPlayOutput(bodyBytes); err != nil {
+	if err := s.Br.JSONWrapper().AddAirPlayOutput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Logger.WithField("context", "AudioBridge").Errorf("Error starting AirPlay output: %v", err)
 		w.Write(errToJson(err))
@@ -137,7 +137,7 @@ func (s *Server) handleCtlAirPlaySet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.br.JSONWrapper().CTL().AirPlaySet(bodyBytes); err != nil {
+	if err := s.Br.JSONWrapper().CTL().AirPlaySet(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Logger.WithField("context", "AudioBridge").Errorf("Error getting return JSON from AirPlay CTL: %v", err)
 		w.Write(errToJson(err))
@@ -153,7 +153,7 @@ func (s *Server) handleCtlAirPlayGetClients(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	clientBytes, err := s.br.JSONWrapper().CTL().AirPlayGetClients()
+	clientBytes, err := s.Br.JSONWrapper().CTL().AirPlayGetClients()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf("error getting clients: %v", err)))
@@ -180,7 +180,7 @@ func (s *Server) handleSetInputYouTube(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.Logger.WithField("context", "AudioBridge").Infoln("Setting input source to YouTube...")
-	if err := s.br.JSONWrapper().StartYouTubeInput(bodyBytes); err != nil {
+	if err := s.Br.JSONWrapper().StartYouTubeInput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Logger.WithField("context", "AudioBridge").Errorf("Error starting YouTubeSet input: %v", err)
 		w.Write(errToJson(err))
@@ -197,7 +197,7 @@ func (s *Server) handleCtlYouTube(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respBytes, err := s.br.JSONWrapper().CTL().YouTubeSet(bodyBytes)
+	respBytes, err := s.Br.JSONWrapper().CTL().YouTubeSet(bodyBytes)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Logger.WithField("context", "AudioBridge").Errorf("Error running YouTubeSet CTL action: %v", err)
@@ -212,7 +212,7 @@ func (s *Server) handleCtlYouTube(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleCtlYouTubeGetInfo(w http.ResponseWriter, r *http.Request) {
-	ret, err := s.br.JSONWrapper().CTL().YouTubeGetInfo()
+	ret, err := s.Br.JSONWrapper().CTL().YouTubeGetInfo()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Logger.WithField("context", "AudioBridge").Errorf("Error running YouTubeGet CTL action: %v", err)
@@ -226,7 +226,7 @@ func (s *Server) handleCtlYouTubeGetInfo(w http.ResponseWriter, r *http.Request)
 // ############### END YOUTUBE ###############
 
 // ############## BEGIN LOCAL ##############
-func (s *Server) handleSetInputCapture(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleSetInputLocal(w http.ResponseWriter, r *http.Request) {
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -235,7 +235,7 @@ func (s *Server) handleSetInputCapture(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.Logger.WithField("context", "AudioBridge").Infoln("Setting input source to local capture...")
-	if err := s.br.JSONWrapper().StartLocalInput(bodyBytes); err != nil {
+	if err := s.Br.JSONWrapper().StartLocalInput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Logger.WithField("context", "AudioBridge").Errorf("Error starting local capture input: %v", err)
 		w.Write(errToJson(err))
@@ -251,7 +251,7 @@ func (s *Server) handleAddOutputLocal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logger.Logger.WithField("context", "AudioBridge").Infoln("Adding local audio output...")
-	if err := s.br.JSONWrapper().AddLocalOutput(bodyBytes); err != nil {
+	if err := s.Br.JSONWrapper().AddLocalOutput(bodyBytes); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Logger.WithField("context", "AudioBridge").Errorf("Error starting local output: %v", err)
 		w.Write(errToJson(err))
@@ -284,7 +284,7 @@ func (s *Server) handleGetLocalInputs(w http.ResponseWriter, r *http.Request) {
 // ############## BEGIN MISC ##############
 func (s *Server) handleArtwork(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "image/png")
-	io.Copy(w, bytes.NewReader(s.br.Artwork()))
+	io.Copy(w, bytes.NewReader(s.Br.Artwork()))
 }
 
 // ############### END MISC ###############

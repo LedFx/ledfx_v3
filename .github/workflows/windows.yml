@@ -17,40 +17,29 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         msystem: MINGW64
-
         update: true
         install: |
             git
             make
             base-devel
-            unzip
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-go
             mingw-w64-x86_64-pkg-config
             mingw-w64-x86_64-portaudio
-            
-    - name: Grab Aubio
-      run: |
-        curl -o aubio.zip https://www.ledfx.app/downloads/aubio-0.5.0-alpha-win64.zip
-        unzip aubio.zip
-        mv aubio-0.5.0-alpha-win64/* C:/Users/RUNNER~1/AppData/Local/Temp/
+            mingw-w64-x86_64-aubio
     - name: Checkout Code
       uses: actions/checkout@v3
       with:
         submodules: true
     - name: Build LedFx
       run: |
-         export CGO_CFLAGS='-IC:/Users/RUNNER~1/AppData/Local/Temp/include'
-         export CGO_LDFLAGS='-LC:/Users/RUNNER~1/AppData/Local/Temp/lib' 
-         export CGO_ENABLED=1
-         go env
          go build -o 'LedFx-windows-amd64-${{ github.sha }}.exe' -v
     - name: Package LedFx
       run: |
          export CYGPATH=$(cygpath -m /)
          mkdir LedFx_Builds/
          mv LedFx-windows-amd64-${{ github.sha }}.exe LedFx_Builds/
-         cp C:/Users/RUNNER~1/AppData/Local/Temp/bin/libaubio-5.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libaubio-5.dll LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libportaudio.dll LedFx_Builds/
     - name: Upload LedFx Artifact
       uses: actions/upload-artifact@v3

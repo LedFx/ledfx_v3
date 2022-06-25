@@ -127,7 +127,6 @@ jobs:
          cp $CYGPATH/mingw64/bin/libgmodule-2.0-0.dll LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libpangowin32-1.0-0.dll LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libpangoft2-1.0-0.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/binlibgraphite2.dll LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libbrotlicommon.dll LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libdatrie-1.dll LedFx_Builds/       
     - name: Upload LedFx Artifact

@@ -117,7 +117,7 @@
     "method": "POST",
     "sortNum": 30000,
     "created": "2022-06-24T09:10:21.433Z",
-    "modified": "2022-06-24T13:59:46.082Z",
+    "modified": "2022-06-24T14:53:53.819Z",
     "headers": [],
     "params": [],
     "body": {
@@ -343,7 +343,7 @@
     "method": "PUT",
     "sortNum": 5000,
     "created": "2022-06-24T09:10:21.443Z",
-    "modified": "2022-06-24T14:09:08.034Z",
+    "modified": "2022-06-24T22:11:46.187Z",
     "headers": [
       {
         "name": "Content-Type",
@@ -353,7 +353,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"id\": \"energy0\",\n    \"base_config\":{\n    \"bkg_brightness\": 0.2,\n    \"bkg_color\": \"#000000\",\n    \"blur\": 1,\n    \"brightness\": 1,\n    \"decay\": 0,\n    \"flip\": false,\n    \"freq_max\": 200,\n    \"freq_min\": 20,\n    \"hue_shift\": 0.5,\n    \"intensity\": 1,\n    \"mirror\": true,\n    \"palette\": \"rgb\",\n    \"saturation\": 1,\n    \"vocals\": false\n  }\n}",
+      "raw": "{\n    \"id\": \"energy0\",\n    \"base_config\":{\n    \"bkg_brightness\": 0.2,\n    \"bkg_color\": \"#000000\",\n    \"blur\": 1,\n    \"brightness\": 1,\n    \"decay\": 1,\n    \"flip\": false,\n    \"freq_max\": 20000,\n    \"freq_min\": 20,\n    \"hue_shift\": 0,\n    \"intensity\":1,\n    \"mirror\": true,\n    \"palette\": \"rgb\",\n    \"saturation\": 1,\n    \"vocals\": false\n  }\n}",
       "form": []
     },
     "tests": []
@@ -367,7 +367,7 @@
     "method": "POST",
     "sortNum": 20000,
     "created": "2022-06-24T09:10:21.444Z",
-    "modified": "2022-06-24T13:59:25.645Z",
+    "modified": "2022-06-24T14:53:27.188Z",
     "headers": [
       {
         "name": "Content-Type",

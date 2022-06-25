@@ -43,8 +43,9 @@ func (e *Energy) assembleFrame(base *Effect, p color.Pixels) {
 		mids = i < midsAmplitude
 		high = i < highAmplitude
 		switch {
-		case !lows && !mids && !high: // none, black colour
-			p[i] = color.Color{0, 0, 0}
+		// case !lows && !mids && !high: // none, dont update colour
+		// 	// p[i] = color.Color{0, 0, 0}
+
 		case lows && mids && high: // bass mids and high, white colour
 			p[i] = color.Color{0, 0, 1}
 		case lows && !mids && !high: // bass

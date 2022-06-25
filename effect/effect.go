@@ -220,15 +220,15 @@ func (e *Effect) Render(p color.Pixels) {
 	// Assemble new pixels onto the frame
 	e.pixelGenerator.assembleFrame(e, p)
 
-	// HSV processes
-	e.applyFlip(p)
-	e.applyMirror(p)
-	color.HueShiftPixels(p, e.Config.HueShift*e.deltaStart.Seconds())
-
 	// save the frame to prevFrame
 	for i := 0; i < e.pixelCount; i++ {
 		e.prevFrame[i] = p[i]
 	}
+
+	// HSV processes
+	e.applyFlip(p)
+	e.applyMirror(p)
+	color.HueShiftPixels(p, e.Config.HueShift*e.deltaStart.Seconds())
 
 	// convert p from HSV to RGB using the palette
 	for i := 0; i < e.pixelCount; i++ {

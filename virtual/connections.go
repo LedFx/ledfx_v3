@@ -49,10 +49,13 @@ func ConnectEffect(effectID, virtualID string) error {
 	if v.Effect != nil && v.Effect.ID == effectID {
 		return nil
 	}
-	// effect can only output to one virtual.
-	// if it's already assigned to a virtual, disconnect it first
+
 	for eID, vID := range connectionsEffect {
-		if eID == effectID {
+		// -> virtual can only have one effect.
+		// if there's already an effect connected to the virtual, disconnect it
+		// -> effect can only output to one virtual.
+		// if it's already assigned to a virtual, disconnect it first
+		if eID == effectID || vID == virtualID {
 			delete(connectionsEffect, eID)
 			otherv, _ := Get(vID)
 			otherv.Effect = nil
@@ -61,8 +64,8 @@ func ConnectEffect(effectID, virtualID string) error {
 	connectionsEffect[effectID] = virtualID
 	v.Effect = e
 	// if the virtual has a device, initialise the effect with the pixel count
-	if v.Device != nil {
-		v.Effect.UpdatePixelCount(v.Device.Config.PixelCount)
+	if len(v.Devices) != 0 {
+		v.Effect.UpdatePixelCount(v.PixelCount())
 	}
 	if !dontSave {
 		config.SetConnections(connectionsEffect, connectionsDevice)
@@ -72,7 +75,7 @@ func ConnectEffect(effectID, virtualID string) error {
 
 func ConnectDevice(deviceID, virtualID string) error {
 	// make sure device exists
-	d, err := device.Get(deviceID)
+	dev, err := device.Get(deviceID)
 	if err != nil {
 		return err
 	}
@@ -82,32 +85,19 @@ func ConnectDevice(deviceID, virtualID string) error {
 		return err
 	}
 	// if already connected, don't continue
-	if v.Device != nil && v.Device.ID == deviceID {
-		return nil
-	}
-	// virtual can only output to one device.
-	// if it's already assigned to a virtual, disconnect it first
-	for dID, vID := range connectionsDevice {
-		if dID == deviceID {
-			delete(connectionsDevice, dID)
-			otherv, _ := Get(vID)
-			if d.State == device.Connected {
-				err = otherv.Device.Disconnect()
-			}
-			otherv.Device = nil
-			if err != nil {
-				return err
-			}
+	for _, d := range v.Devices {
+		if d.ID == deviceID {
+			return nil
 		}
 	}
 	connectionsDevice[deviceID] = virtualID
-	v.Device = d
-	if d.State != device.Connected {
-		err = d.Connect()
+	v.Devices[dev.ID] = dev
+	if dev.State != device.Connected {
+		err = dev.Connect()
 	}
 	// if the virtual has an effect, initialise it with the pixel count
 	if v.Effect != nil {
-		v.Effect.UpdatePixelCount(d.Config.PixelCount)
+		v.Effect.UpdatePixelCount(v.PixelCount())
 	}
 	if !dontSave {
 		config.SetConnections(connectionsEffect, connectionsDevice)
@@ -144,20 +134,23 @@ func DisconnectDevice(deviceID, virtualID string) error {
 	if err != nil {
 		return err
 	}
+	// delete it from connections
 	vID, connected := connectionsDevice[deviceID]
 	if !connected || virtualID != vID {
 		err = fmt.Errorf("device %s and virtual %s are not connected", deviceID, virtualID)
 		return err
 	}
+	delete(connectionsDevice, deviceID)
+	// delete it from virtual
 	v, _ := Get(vID)
-	if v.Device == nil {
+	d, exists := v.Devices[deviceID]
+	if !exists {
 		return nil
 	}
-	delete(connectionsDevice, deviceID)
-	if v.Device.State == device.Connected {
-		err = v.Device.Disconnect()
+	if d.State == device.Connected {
+		err = d.Disconnect()
 	}
-	v.Device = nil
+	delete(v.Devices, deviceID)
 	if !dontSave {
 		config.SetConnections(connectionsEffect, connectionsDevice)
 	}

@@ -24,6 +24,22 @@ func NewAPI(mux *http.ServeMux) {
 		}
 	})
 
+	mux.HandleFunc("/api/devices/state", func(writer http.ResponseWriter, request *http.Request) {
+		switch request.Method {
+		case http.MethodGet:
+			// Get schema
+			s, err := json.Marshal(GetStates())
+			if err != nil {
+				writer.WriteHeader(http.StatusInternalServerError)
+				logger.Logger.WithField("context", "Devices API").Errorf("Error generating device states")
+				return
+			}
+			_, _ = writer.Write(s)
+		default:
+			writer.WriteHeader(http.StatusNotImplemented)
+		}
+	})
+
 	mux.HandleFunc("/api/devices", func(writer http.ResponseWriter, request *http.Request) {
 		switch request.Method {
 		case http.MethodGet:

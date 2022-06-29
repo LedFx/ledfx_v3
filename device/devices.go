@@ -13,6 +13,7 @@ import (
 
 var deviceTypes = []string{
 	"udp",
+	"serial",
 }
 
 // Creates a new device and returns its unique id
@@ -21,6 +22,10 @@ func New(new_id, device_type string, baseConfig map[string]interface{}, implConf
 	case "udp":
 		device = &Device{
 			pixelPusher: &UDP{},
+		}
+	case "serial":
+		device = &Device{
+			pixelPusher: &Serial{},
 		}
 	default:
 		return device, id, fmt.Errorf("%s is not a known device type", device_type)
@@ -77,6 +82,16 @@ func GetIDs() []string {
 	return ids
 }
 
+func GetStates() []State {
+	s := make([]State, len(deviceInstances))
+	var i = 0
+	for _, d := range deviceInstances {
+		s[i] = d.State
+		i++
+	}
+	return s
+}
+
 func LoadFromConfig() error {
 	storedDevices := config.GetDevices()
 	for id, entry := range storedDevices {
@@ -97,8 +112,11 @@ func Schema() (schema map[string]interface{}, err error) {
 	}
 	schema["types"] = deviceTypes
 	implSchema := make(map[string]interface{})
-	// Copypaste for new effect types, IF YOUR EFFECT HAS EXTRA CONFIG
 	implSchema["udp"], err = util.CreateSchema(reflect.TypeOf((*UDPConfig)(nil)).Elem())
+	if err != nil {
+		return schema, err
+	}
+	implSchema["serial"], err = util.CreateSchema(reflect.TypeOf((*SerialConfig)(nil)).Elem())
 	if err != nil {
 		return schema, err
 	}

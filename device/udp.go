@@ -37,7 +37,7 @@ func (d *UDP) initialize(base *Device, config map[string]interface{}) (err error
 	if err != nil {
 		return err
 	}
-	protocol := UDPProtocol(d.Config.Protocol)
+	protocol := Protocol(d.Config.Protocol)
 	d.pb, err = NewPacketBuilder(base.Config.PixelCount, protocol, byte(d.Config.Timeout))
 	return err
 }

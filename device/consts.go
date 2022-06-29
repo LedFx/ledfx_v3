@@ -30,29 +30,14 @@ func (s State) String() string {
 	return "unknown" // this wont happen
 }
 
-type UDPProtocol string
+type Protocol string
 
 const (
-	WARLS UDPProtocol = "WARLS"
-	DRGB  UDPProtocol = "DRGB"
-	DRGBW UDPProtocol = "DRGBW"
-	DNRGB UDPProtocol = "DNRGB"
-	DDP   UDPProtocol = "DDP"
+	WARLS Protocol = "WARLS" // https://github.com/Aircoookie/WLED/wiki/UDP-Realtime-Control
+	DRGB  Protocol = "DRGB"
+	DRGBW Protocol = "DRGBW"
+	DNRGB Protocol = "DNRGB"
+	DDP   Protocol = "DDP"      // http://www.3waylabs.com/ddp/
+	ADA   Protocol = "Adalight" // https://gist.github.com/tvdzwan/9008833#file-adalightws2812-ino
+	TPM2  Protocol = "TPM2"     // https://gist.github.com/jblang/89e24e2655be6c463c56
 )
-
-func (u UDPProtocol) Byte() byte {
-	switch u {
-	case WARLS:
-		return byte(1)
-	case DRGB:
-		return byte(2)
-	case DRGBW:
-		return byte(3)
-	case DNRGB:
-		return byte(4)
-	case DDP:
-		return byte(5)
-	default:
-		return byte(0)
-	}
-}

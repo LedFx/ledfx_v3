@@ -153,7 +153,23 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 			case "ip":
 				validation["special"] = "ip"
 			case "oneof":
-				validation["oneof"] = strings.Split(value, " ")
+				opts := strings.Split(value, " ")
+				switch dataType {
+				case "int":
+					intOpts := make([]int, len(opts))
+					for i, x := range opts {
+						d, err := strconv.Atoi(x)
+						if err != nil {
+							log.Fatal(err)
+						}
+						intOpts[i] = d
+					}
+					validation["oneof"] = intOpts
+				case "string":
+					validation["oneof"] = opts
+				default:
+					log.Fatalf("unimplemented oneof type: %s", dataType)
+				}
 			default:
 				log.Fatalf("unimplemented validation tag: %s", tag)
 			}

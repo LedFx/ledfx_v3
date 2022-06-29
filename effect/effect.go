@@ -9,7 +9,6 @@ import (
 	"ledfx/config"
 	"ledfx/event"
 	"math"
-	"sync"
 	"time"
 
 	"github.com/creasty/defaults"
@@ -48,7 +47,7 @@ type Effect struct {
 	prevFrame      color.Pixels     // the previous frame, in hsv
 	bkgColor       color.Color      // parsed background color
 	mirror         color.Pixels     // scratch array used by mirror function
-	mu             sync.Mutex
+	Ready          bool
 }
 
 type BaseEffectConfig struct {
@@ -73,6 +72,7 @@ func (e *Effect) GetID() string {
 }
 
 func (e *Effect) initialize(id string, pixelCount int) {
+	e.Ready = false
 	e.ID = id
 	e.startTime = time.Now()
 	e.pixelCount = pixelCount
@@ -95,8 +95,8 @@ as EnergyConfig, map[string]interface{}, or raw json.
 You can also use a nil to set config to defaults
 */
 func (e *Effect) UpdateBaseConfig(c interface{}) (err error) {
-	e.mu.Lock()
-	defer e.mu.Unlock()
+	e.Ready = false
+	defer func() { e.Ready = true }()
 	newConfig := e.Config
 	switch t := c.(type) {
 	case BaseEffectConfig: // No conversion necessary
@@ -195,14 +195,17 @@ func (e *Effect) updateStoredProperties(newConfig BaseEffectConfig) {
 
 // Effect implementation can implement this method
 func (e *Effect) UpdateExtraConfig(c interface{}) error {
-	e.mu.Lock()
-	defer e.mu.Unlock()
+	e.Ready = false
+	defer func() { e.Ready = true }()
 	return e.pixelGenerator.UpdateExtraConfig(c)
 }
 
 // Render a new frame of pixels. Give the previous frame as argument.
 // This handles assembling a new frame, then applying mirrors, blur, filters, etc
 func (e *Effect) Render(p color.Pixels) {
+	if !e.Ready {
+		return
+	}
 	// These timing variables ensure that temporal effects and filters run at constant
 	// speed, irrespective of the effect framerate.
 	now := time.Now()

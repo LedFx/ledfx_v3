@@ -1,7 +1,6 @@
 package device
 
 import (
-	"fmt"
 	"log"
 	"testing"
 
@@ -17,6 +16,7 @@ func TestSerial(t *testing.T) {
 		log.Fatal("No serial ports found!")
 	}
 	for _, port := range ports {
-		fmt.Printf("Found port: %v\n", port)
+		t.Logf("Found port: %v\n", port)
 	}
+	t.Fail()
 }

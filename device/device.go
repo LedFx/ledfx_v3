@@ -4,6 +4,7 @@ import (
 	"errors"
 	"ledfx/color"
 	"ledfx/config"
+	"ledfx/logger"
 
 	"github.com/creasty/defaults"
 	"github.com/mitchellh/mapstructure"
@@ -64,6 +65,8 @@ func (d *Device) Connect() (err error) {
 	err = d.pixelPusher.connect()
 	if err == nil {
 		d.State = Connected
+	} else {
+		logger.Logger.WithField("context", "Device").Errorf("Device %s failed to connect: %s", d.ID, err.Error())
 	}
 	return err
 }
@@ -73,6 +76,8 @@ func (d *Device) Disconnect() (err error) {
 	err = d.pixelPusher.disconnect()
 	if err == nil {
 		d.State = Disconnected
+	} else {
+		logger.Logger.WithField("context", "Device").Errorf("Device %s failed to disconnect: %s", d.ID, err.Error())
 	}
 	return err
 }

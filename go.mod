@@ -29,6 +29,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.28 // indirect
 	github.com/bitly/go-simplejson v0.5.0 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
+	github.com/creack/goselect v0.1.2 // indirect
 	github.com/dlclark/regexp2 v1.4.1-0.20201116162257-a2a8dda75c91 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
@@ -74,4 +75,5 @@ require (
 	github.com/maghul/go.alac v0.0.0-20161106215514-129591bceef4 // indirect
 	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d // indirect
 	github.com/sirupsen/logrus v1.8.1
+	go.bug.st/serial v1.3.5
 )

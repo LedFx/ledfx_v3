@@ -68,12 +68,11 @@ func init() {
 	}
 	var err error
 
-
 	// Create EQ filter. Magic numbers to balance the audio. Boosts the bass and mid, dampens the highs.
 	// 0.85870, -1.71740, 0.85870, -1.71605, 0.71874
 	// 0.9926, -1.985, 0.9926, -1.9852, 0.9853
 	// GOOD 0.99756, -1.99512, 0.99756, -1.99511, 0.99512,
-	if Analyzer.eq, err = aubio.NewFilterBiquad(1, -2,1, -2,1,  framesPerBuffer); err != nil {
+	if Analyzer.eq, err = aubio.NewFilterBiquad(1, -2, 1, -2, 1, framesPerBuffer); err != nil {
 		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio EQ Filter: %v", err)
 	}
 
@@ -111,8 +110,8 @@ func (a *analyzer) BufferCallback(buf Buffer) {
 	// see: https://www.youtube.com/watch?v=-KfGwz1Zg6I
 	// might need to divide each value by two. not sure..
 	for i := 0; i < fpbint; i++ {
-		a.dataMono[i] = (a.dataLeft[i] + a.dataRight[i]) / 2                   // mix left and right to get mono
-		a.dataVocals[i] = (a.dataMono[i] - a.dataLeft[i] + a.dataRight[i]) / 3 // remove non centre pan (instruments) from mono to get vocals
+		a.dataMono[i] = (a.dataLeft[i] + a.dataRight[i]) / 2 // mix left and right to get mono
+		// a.dataVocals[i] = (a.dataMono[i] - a.dataLeft[i] + a.dataRight[i]) / 3 // remove non centre pan (instruments) from mono to get vocals
 	}
 
 	// CGo calls are slow. I've optimised this as best I can.
@@ -120,14 +119,14 @@ func (a *analyzer) BufferCallback(buf Buffer) {
 	// could try directly operating on the C memory in aubio-go.
 	// Would be fast but also dangerous..
 	// https://copyninja.info/blog/workaround-gotypesystems.html
-	a.bufMono.SetData(a.dataMono)
-	a.bufVocals.SetData(a.dataVocals)
+	a.bufMono.SetDataFast(a.dataMono)
+	// a.bufVocals.SetDataFast(a.dataVocals)
 
 	// Perform FFT of each audio stream
 	a.eq.DoOutplace(a.bufMono)
 	a.pvocMono.Do(a.eq.Buffer())
-	a.eq.DoOutplace(a.bufVocals)
-	a.pvocVocals.Do(a.eq.Buffer())
+	// a.eq.DoOutplace(a.bufVocals)
+	// a.pvocVocals.Do(a.eq.Buffer())
 
 	// Perform melbank frequency analysis
 	for _, mb := range a.melbanks {
@@ -135,15 +134,15 @@ func (a *analyzer) BufferCallback(buf Buffer) {
 		case Mono:
 			mb.Do(a.pvocMono.Grain())
 		case Vocals:
-			mb.Do(a.pvocVocals.Grain())
+			// mb.Do(a.pvocVocals.Grain())
 		}
 	}
 
 	// do onset analysis
 	a.onsetMono.Do(a.bufMono)
-	a.OnsetNowMono = a.onsetMono.Buffer().Get(uint(0)) != 0
-	a.onsetVocals.Do(a.bufVocals)
-	a.OnsetNowVocals = a.onsetVocals.Buffer().Get(uint(0)) != 0
+	a.OnsetNowMono = a.onsetMono.OnsetNow()
+	// a.onsetVocals.Do(a.bufVocals)
+	// a.OnsetNowVocals = a.onsetVocals.OnsetNow()
 }
 
 func (a *analyzer) Cleanup() {

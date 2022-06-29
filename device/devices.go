@@ -33,7 +33,10 @@ func New(new_id, device_type string, baseConfig map[string]interface{}, implConf
 	device.Type = device_type
 
 	// if the id exists and has already been registered, overwrite the existing device with that id
-	if _, exists := deviceInstances[new_id]; exists && new_id != "" {
+	var prev_state State = Disconnected
+	if old_d, exists := deviceInstances[new_id]; exists && new_id != "" {
+		// save the state so we can restore it
+		prev_state = old_d.State
 		id = new_id
 		Destroy(id)
 		deviceInstances[id] = device
@@ -53,6 +56,10 @@ func New(new_id, device_type string, baseConfig map[string]interface{}, implConf
 	if err = device.Initialize(id, baseConfig, implConfig); err != nil {
 		Destroy(id)
 	}
+	// restore its state
+	if prev_state == Connected || prev_state == Connecting {
+		go device.Connect()
+	}
 	return device, id, err
 }
 
@@ -71,6 +78,7 @@ func Get(id string) (*Device, error) {
 
 // Kill a device instance
 func Destroy(id string) {
+	deviceInstances[id].Disconnect()
 	delete(deviceInstances, id)
 }
 

@@ -16,29 +16,6 @@ type Serial struct {
 	pb     *packetBuilder
 }
 
-func baudrateToByte(rate int) byte {
-	switch rate {
-	case 115200:
-		return 0xB0
-	case 230400:
-		return 0xB1
-	case 460800:
-		return 0xB2
-	case 500000:
-		return 0xB3
-	case 576000:
-		return 0xB4
-	case 921600:
-		return 0xB5
-	case 1000000:
-		return 0xB6
-	case 1500000:
-		return 0xB7
-	default:
-		return 0xB0
-	}
-}
-
 type SerialConfig struct {
 	BaudRate int    `mapstructure:"baudrate" json:"baudrate" description:"Communication speed" default:"115200" validate:"oneof=115200 230400 460800 500000 576000 921600 1000000 1500000"`
 	Port     string `mapstructure:"port" json:"port" description:"USB port" validate:"required"`

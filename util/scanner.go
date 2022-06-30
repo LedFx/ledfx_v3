@@ -4,6 +4,8 @@
 // as a timing reference for fast zeroconf on windows run:
 // dns-sd -B _wled
 
+// TODO serial device discovery, Art-Poll page 24 https://www.artisticlicence.com/WebSiteMaster/User%20Guides/art-net.pdf
+
 package util
 
 import (

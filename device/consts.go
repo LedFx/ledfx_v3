@@ -33,11 +33,12 @@ func (s State) String() string {
 type Protocol string
 
 const (
-	WARLS Protocol = "WARLS" // https://github.com/Aircoookie/WLED/wiki/UDP-Realtime-Control
-	DRGB  Protocol = "DRGB"
-	DRGBW Protocol = "DRGBW"
-	DNRGB Protocol = "DNRGB"
-	DDP   Protocol = "DDP"      // http://www.3waylabs.com/ddp/
-	ADA   Protocol = "Adalight" // https://gist.github.com/tvdzwan/9008833#file-adalightws2812-ino
-	TPM2  Protocol = "TPM2"     // https://gist.github.com/jblang/89e24e2655be6c463c56
+	WARLS  Protocol = "WARLS" // https://github.com/Aircoookie/WLED/wiki/UDP-Realtime-Control
+	DRGB   Protocol = "DRGB"
+	DRGBW  Protocol = "DRGBW"
+	DNRGB  Protocol = "DNRGB"
+	DDP    Protocol = "DDP"      // http://www.3waylabs.com/ddp/
+	ADA    Protocol = "Adalight" // https://gist.github.com/tvdzwan/9008833#file-adalightws2812-ino
+	TPM2   Protocol = "TPM2"     // https://gist.github.com/jblang/89e24e2655be6c463c56
+	ArtDMX Protocol = "ArtDMX"   // https://www.artisticlicence.com/WebSiteMaster/User%20Guides/art-net.pdf
 )

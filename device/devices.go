@@ -14,6 +14,7 @@ import (
 var deviceTypes = []string{
 	"udp",
 	"serial",
+	"artnet",
 }
 
 // Creates a new device and returns its unique id
@@ -26,6 +27,10 @@ func New(new_id, device_type string, baseConfig map[string]interface{}, implConf
 	case "serial":
 		device = &Device{
 			pixelPusher: &Serial{},
+		}
+	case "artnet":
+		device = &Device{
+			pixelPusher: &ArtNet{},
 		}
 	default:
 		return device, id, fmt.Errorf("%s is not a known device type", device_type)
@@ -125,6 +130,10 @@ func Schema() (schema map[string]interface{}, err error) {
 		return schema, err
 	}
 	implSchema["serial"], err = util.CreateSchema(reflect.TypeOf((*SerialConfig)(nil)).Elem())
+	if err != nil {
+		return schema, err
+	}
+	implSchema["artnet"], err = util.CreateSchema(reflect.TypeOf((*ArtNetConfig)(nil)).Elem())
 	if err != nil {
 		return schema, err
 	}

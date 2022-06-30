@@ -124,6 +124,45 @@ func NewPacketBuilder(pixelCount int, protocol Protocol, timeout byte) (pb *pack
 		pb.packets[0][2] = byte(pc >> 8)
 		pb.packets[0][3] = byte(pc)
 		pb.packets[0][4+pixelCount*3] = 0x36
+	case ArtDMX:
+		universe := timeout // repurpose timeout as universe
+		if pixelCount > int((255-universe)*170) {
+			return pb, errTooManyPx
+		}
+		full_packets := pixelCount / 170
+		remainder := pixelCount % 170
+		pb.packets = make([][]byte, full_packets+1)
+
+		for i := 0; i <= full_packets; i++ {
+			var dlen uint16 = 510
+			if i == full_packets {
+				pb.packets[i] = make([]byte, 18+remainder*3)
+				dlen = uint16(remainder * 3)
+			} else {
+				pb.packets[i] = make([]byte, 18+170*3)
+			}
+			opCode := 0x5000
+			ver := uint16(14)
+			pb.packets[i][0] = 'A'
+			pb.packets[i][1] = 'r'
+			pb.packets[i][2] = 't'
+			pb.packets[i][3] = '-'
+			pb.packets[i][4] = 'N'
+			pb.packets[i][5] = 'e'
+			pb.packets[i][6] = 't'
+			pb.packets[i][7] = 0x00
+			pb.packets[i][8] = byte(opCode)
+			pb.packets[i][9] = byte(opCode >> 8)
+			pb.packets[i][10] = byte(ver >> 8)
+			pb.packets[i][11] = byte(ver)
+			pb.packets[i][12] = 0x00               // seq, would be implemented with sync.
+			pb.packets[i][13] = 0x00               // physical
+			pb.packets[i][14] = universe + byte(i) // sub uni
+			pb.packets[i][15] = 0x00               // net (not used?)
+			pb.packets[i][16] = byte(dlen >> 8)
+			pb.packets[i][17] = byte(dlen)
+		}
+
 	default:
 		return pb, fmt.Errorf("unknown protocol: %s", protocol)
 	}
@@ -181,6 +220,14 @@ func (pb *packetBuilder) Build(p color.Pixels) {
 			pb.packets[0][i*3+4] = byte(c[0] * 255)
 			pb.packets[0][i*3+5] = byte(c[1] * 255)
 			pb.packets[0][i*3+6] = byte(c[2] * 255)
+		}
+	case ArtDMX:
+		for i, c := range p {
+			j := i / 170
+			k := i % 170
+			pb.packets[j][k*3+18] = byte(c[0] * 255)
+			pb.packets[j][k*3+19] = byte(c[1] * 255)
+			pb.packets[j][k*3+20] = byte(c[2] * 255)
 		}
 	}
 }

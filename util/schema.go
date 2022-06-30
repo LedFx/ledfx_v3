@@ -78,10 +78,6 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 		dataType := f.Type.String()
 
 		schemaEntry := make(map[string]interface{})
-		schemaEntry["title"] = ToTitle(f.Name)
-		schemaEntry["description"] = desc
-		schemaEntry["required"] = req
-		schemaEntry["type"] = dataType
 		// convert the "default" value to its appropriate type
 		switch dataType {
 		case "string":
@@ -113,9 +109,24 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 				}
 			}
 			schemaEntry["default"] = x
+		case "[]string":
+			x := []string{}
+			if hasDef {
+				def = strings.TrimLeft(def, "[")
+				def = strings.TrimRight(def, "]")
+				defs := strings.Split(def, " ")
+				x = append(x, defs...)
+			}
+			schemaEntry["default"] = x
+			dataType = "list"
 		default:
 			log.Fatalf("unimplemented config data type: %s", dataType)
 		}
+
+		schemaEntry["title"] = ToTitle(f.Name)
+		schemaEntry["description"] = desc
+		schemaEntry["required"] = req
+		schemaEntry["type"] = dataType
 
 		validation := make(map[string]interface{})
 		validators := strings.Split(val, ",")
@@ -170,6 +181,14 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 				default:
 					log.Fatalf("unimplemented oneof type: %s", dataType)
 				}
+			case "required_if":
+				opts := strings.Split(value, " ")
+				keyval := make(map[string]interface{})
+				keyval["key"] = strings.ToLower(opts[0])
+				keyval["val"] = opts[1]
+				validation["required_if"] = keyval
+			case "omitempty":
+			case "dive":
 			default:
 				log.Fatalf("unimplemented validation tag: %s", tag)
 			}

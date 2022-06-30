@@ -12,25 +12,30 @@ import (
 )
 
 var deviceTypes = []string{
-	"udp",
-	"serial",
-	"artnet",
+	"UDP Stream",
+	"USB Serial",
+	"ArtNet",
+	"E1.31 sACN",
 }
 
 // Creates a new device and returns its unique id
 func New(new_id, device_type string, baseConfig map[string]interface{}, implConfig map[string]interface{}) (device *Device, id string, err error) {
 	switch device_type {
-	case "udp":
+	case "UDP Stream":
 		device = &Device{
 			pixelPusher: &UDP{},
 		}
-	case "serial":
+	case "USB Serial":
 		device = &Device{
 			pixelPusher: &Serial{},
 		}
-	case "artnet":
+	case "ArtNet":
 		device = &Device{
 			pixelPusher: &ArtNet{},
+		}
+	case "E1.31 sACN":
+		device = &Device{
+			pixelPusher: &E131{},
 		}
 	default:
 		return device, id, fmt.Errorf("%s is not a known device type", device_type)
@@ -84,7 +89,7 @@ func Get(id string) (*Device, error) {
 // Kill a device instance
 func Destroy(id string) {
 	if deviceInstances[id].State == Connected {
-	deviceInstances[id].Disconnect()
+		deviceInstances[id].Disconnect()
 	}
 	delete(deviceInstances, id)
 }
@@ -127,15 +132,19 @@ func Schema() (schema map[string]interface{}, err error) {
 	}
 	schema["types"] = deviceTypes
 	implSchema := make(map[string]interface{})
-	implSchema["udp"], err = util.CreateSchema(reflect.TypeOf((*UDPConfig)(nil)).Elem())
+	implSchema["UDP Stream"], err = util.CreateSchema(reflect.TypeOf((*UDPConfig)(nil)).Elem())
 	if err != nil {
 		return schema, err
 	}
-	implSchema["serial"], err = util.CreateSchema(reflect.TypeOf((*SerialConfig)(nil)).Elem())
+	implSchema["USB Serial"], err = util.CreateSchema(reflect.TypeOf((*SerialConfig)(nil)).Elem())
 	if err != nil {
 		return schema, err
 	}
-	implSchema["artnet"], err = util.CreateSchema(reflect.TypeOf((*ArtNetConfig)(nil)).Elem())
+	implSchema["ArtNet"], err = util.CreateSchema(reflect.TypeOf((*ArtNetConfig)(nil)).Elem())
+	if err != nil {
+		return schema, err
+	}
+	implSchema["E1.31 sACN"], err = util.CreateSchema(reflect.TypeOf((*E131Config)(nil)).Elem())
 	if err != nil {
 		return schema, err
 	}

@@ -83,7 +83,9 @@ func Get(id string) (*Device, error) {
 
 // Kill a device instance
 func Destroy(id string) {
+	if deviceInstances[id].State == Connected {
 	deviceInstances[id].Disconnect()
+	}
 	delete(deviceInstances, id)
 }
 

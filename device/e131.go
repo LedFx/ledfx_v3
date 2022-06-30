@@ -17,7 +17,7 @@ var transmitter sacn.Transmitter
 
 func init() {
 	settings := config.GetSettings()
-	hostport := fmt.Sprintf("%s:%d", settings.Host, settings.Port)
+	hostport := fmt.Sprintf("%s:5568", settings.Host)
 	var err error
 	transmitter, err = sacn.NewTransmitter(hostport, cid, "transmitter")
 	if err != nil {

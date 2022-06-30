@@ -50,7 +50,7 @@ func NewPacketBuilder(pixelCount int, protocol Protocol, timeout byte) (pb *pack
 		pb.packets[0][0] = byte(3)
 		pb.packets[0][1] = timeout
 	case DNRGB:
-		if pixelCount > 65536 {
+		if pixelCount > 65535 {
 			return pb, errTooManyPx
 		}
 		full_packets := pixelCount / 489
@@ -126,7 +126,7 @@ func NewPacketBuilder(pixelCount int, protocol Protocol, timeout byte) (pb *pack
 		pb.packets[0][4+pixelCount*3] = 0x36
 	case ArtDMX:
 		universe := timeout // repurpose timeout as universe
-		if pixelCount > int((255-universe)*170) {
+		if pixelCount > (int(255-universe) * 170) {
 			return pb, errTooManyPx
 		}
 		full_packets := pixelCount / 170

@@ -14,12 +14,17 @@ import (
 
 var cid = [16]byte{0x6C, 0x65, 0x64, 0x66, 0x78, 0x20, 0x3A, 0x29} // sender ID, "ledfx :)"
 var transmitter sacn.Transmitter
+var transmitter_init bool = false
 
 func init() {
+	if transmitter_init {
+		return
+	}
 	settings := config.GetSettings()
 	hostport := fmt.Sprintf("%s:5568", settings.Host)
 	var err error
 	transmitter, err = sacn.NewTransmitter(hostport, cid, "transmitter")
+	transmitter_init = true
 	if err != nil {
 		log.Fatal("Failed to initialise E1.31 transmitter")
 	}

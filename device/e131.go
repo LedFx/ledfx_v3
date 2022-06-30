@@ -12,9 +12,18 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-var transmitter *sacn.Transmitter
-
 var cid = [16]byte{0x6C, 0x65, 0x64, 0x66, 0x78, 0x20, 0x3A, 0x29} // sender ID, "ledfx :)"
+var transmitter sacn.Transmitter
+
+func init() {
+	settings := config.GetSettings()
+	hostport := fmt.Sprintf("%s:%d", settings.Host, settings.Port)
+	var err error
+	transmitter, err = sacn.NewTransmitter(hostport, cid, "transmitter")
+	if err != nil {
+		log.Fatal("Failed to initialise E1.31 transmitter")
+	}
+}
 
 type E131 struct {
 	Config     E131Config
@@ -45,17 +54,7 @@ func (d *E131) initialize(base *Device, c map[string]interface{}) (err error) {
 	if d.pixelCount > 170*65535 {
 		return errTooManyPx
 	}
-	// create our transmitter if there isn't one already
-	if transmitter != nil {
-		return
-	}
-	settings := config.GetSettings()
-	hostport := fmt.Sprintf("%s:%d", settings.Host, settings.Port)
-	t, err := sacn.NewTransmitter(hostport, cid, "transmitter")
-	if err != nil {
-		transmitter = &t
-	}
-	return err
+	return nil
 }
 
 func (d *E131) send(p color.Pixels) (err error) {

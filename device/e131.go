@@ -4,8 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"ledfx/color"
-	"ledfx/config"
+	"ledfx/logger"
 	"log"
+	"runtime"
 
 	"github.com/Hundemeier/go-sacn/sacn"
 	"github.com/creasty/defaults"
@@ -20,10 +21,8 @@ func init() {
 	if transmitter_init {
 		return
 	}
-	settings := config.GetSettings()
-	hostport := fmt.Sprintf("%s:5568", settings.Host)
 	var err error
-	transmitter, err = sacn.NewTransmitter(hostport, cid, "transmitter")
+	transmitter, err = sacn.NewTransmitter("", cid, "transmitter")
 	transmitter_init = true
 	if err != nil {
 		log.Fatal("Failed to initialise E1.31 transmitter")
@@ -98,7 +97,11 @@ func (d *E131) connect() (err error) {
 		if err != nil {
 			return err
 		}
-		transmitter.SetMulticast(i+uniStart, d.Config.Multicast)
+		if runtime.GOOS == "windows" && d.Config.Multicast {
+			logger.Logger.WithField("context", "E1.31 sACN").Error("Multicast not supported on Windows")
+		} else {
+			transmitter.SetMulticast(i+uniStart, d.Config.Multicast)
+		}
 		errs := transmitter.SetDestinations(i+uniStart, d.Config.IPs)
 		if len(errs) != 0 {
 			d.disconnect()

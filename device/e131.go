@@ -27,6 +27,7 @@ type E131Config struct {
 	Port      int      `mapstructure:"port" json:"port" description:"Port number the E1.31 device is listening on" default:"5568" validate:"gte=0,lte=65535"`
 	Universe  int      `mapstructure:"universe" json:"universe" description:"Starting universe for DMX data. 170 pixels per universe." default:"0" validate:"gte=0,lte=65535"`
 	Multicast bool     `mapstructure:"multicast" json:"multicast" description:"Broadcast data via multicast UDP" default:"false" validate:""`
+	//
 }
 
 func (d *E131) initialize(base *Device, c map[string]interface{}) (err error) {
@@ -48,7 +49,10 @@ func (d *E131) initialize(base *Device, c map[string]interface{}) (err error) {
 	if transmitter != nil {
 		return
 	}
-	*transmitter, err = sacn.NewTransmitter(config.GetSettings().Host, cid, "transmitter")
+	t, err := sacn.NewTransmitter(config.GetSettings().Host, cid, "transmitter")
+	if err != nil {
+		transmitter = &t
+	}
 	return err
 }
 

@@ -101,12 +101,15 @@
     "method": "POST",
     "sortNum": 20000,
     "created": "2022-06-24T09:10:21.432Z",
-    "modified": "2022-06-24T09:20:05.660Z",
+    "modified": "2022-06-30T23:53:44.687Z",
     "headers": [],
+    "params": [],
     "body": {
       "type": "json",
-      "raw": "{\r\n    \"device_id\": \"udp0\",\r\n    \"virtual_id\": \"virtual0\"\r\n}"
-    }
+      "raw": "{\n    \"device_id\": \"UDP Stream0\",\n    \"virtual_id\": \"virtual0\"\n}",
+      "form": []
+    },
+    "tests": []
   },
   {
     "_id": "035c8910-3de2-482c-8134-17a85d478e71",
@@ -458,12 +461,12 @@
     "method": "POST",
     "sortNum": 30000,
     "created": "2022-06-24T09:10:21.451Z",
-    "modified": "2022-06-30T23:03:47.598Z",
+    "modified": "2022-06-30T23:54:17.628Z",
     "headers": [],
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"type\": \"E1.31 sACN\",\n    \"base_config\": {\n        \"name\": \"test device e131\",\n        \"pixel_count\": 1000\n    },\n    \"impl_config\": {\n        \"ips\": [\"192.168.0.66\"]\n    }\n}",
+      "raw": "{\n    \"type\": \"UDP Stream\",\n    \"base_config\": {\n        \"name\": \"test device udp\",\n        \"pixel_count\": 64\n    },\n    \"impl_config\": {\n        \"ip\": \"192.168.0.66\"\n    }\n}",
       "form": []
     },
     "tests": []

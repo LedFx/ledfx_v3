@@ -62,17 +62,19 @@ func (d *E131) initialize(base *Device, c map[string]interface{}) (err error) {
 }
 
 func (d *E131) send(p color.Pixels) (err error) {
+	data := [512]byte{}
 	for i, c := range p {
 		j := i / 170
 		k := i % 170
-		data := [512]byte{}
 		data[k*3+0] = byte(c[0] * 255)
 		data[k*3+1] = byte(c[1] * 255)
 		data[k*3+2] = byte(c[2] * 255)
-		if k == 169 {
+		if k == 0 && j > 0 {
 			d.chs[j] <- data
+			data = [512]byte{}
 		}
 	}
+	d.chs[len(p)/170] <- data
 	return nil
 }
 

@@ -11,7 +11,7 @@ import (
 
 type SettingsConfig struct {
 	Host     string `mapstructure:"host" json:"host" default:"0.0.0.0" validate:"ip" description:"Web interface hostname"`
-	Port     int    `mapstructure:"port" json:"port" default:"8080" validate:"gte=0,lte=65536" description:"Web interface port"`
+	Port     int    `mapstructure:"port" json:"port" default:"8080" validate:"gte=0,lte=65535" description:"Web interface port"`
 	NoLogo   bool   `mapstructure:"no_logo" json:"no_logo" default:"false" validate:"" description:"Hide the command line logo at startup"`
 	NoUpdate bool   `mapstructure:"no_update" json:"no_update" default:"false" validate:"" description:"Disable automatic updates at startup"`
 	NoTray   bool   `mapstructure:"no_tray" json:"no_tray" default:"false" validate:"" description:"Disable system tray icon to access LedFx"`

@@ -40,7 +40,7 @@ var store *config = &config{
 }
 
 type BaseDeviceConfig struct {
-	PixelCount int    `mapstructure:"pixel_count" json:"pixel_count" description:"Number of pixels on the device" validate:"required,gte=10,lte=255"` // TODO be smarter about this
+	PixelCount int    `mapstructure:"pixel_count" json:"pixel_count" description:"Number of pixels on the device" validate:"required"` // TODO be smarter about this
 	Name       string `mapstructure:"name" json:"name" description:"Display name for the device" validate:"required"`
 }
 

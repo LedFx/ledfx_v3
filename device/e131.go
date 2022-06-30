@@ -49,7 +49,9 @@ func (d *E131) initialize(base *Device, c map[string]interface{}) (err error) {
 	if transmitter != nil {
 		return
 	}
-	t, err := sacn.NewTransmitter(config.GetSettings().Host, cid, "transmitter")
+	settings := config.GetSettings()
+	hostport := fmt.Sprintf("%s:%d", settings.Host, settings.Port)
+	t, err := sacn.NewTransmitter(hostport, cid, "transmitter")
 	if err != nil {
 		transmitter = &t
 	}

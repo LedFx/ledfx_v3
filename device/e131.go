@@ -22,7 +22,7 @@ func init() {
 		return
 	}
 	var err error
-	transmitter, err = sacn.NewTransmitter("", cid, "transmitter")
+	transmitter, err = sacn.NewTransmitter("", cid, "LedFx")
 	transmitter_init = true
 	if err != nil {
 		log.Fatal("Failed to initialise E1.31 transmitter")
@@ -63,18 +63,22 @@ func (d *E131) initialize(base *Device, c map[string]interface{}) (err error) {
 
 func (d *E131) send(p color.Pixels) (err error) {
 	data := [512]byte{}
+	var j, k int
 	for i, c := range p {
-		j := i / 170
-		k := i % 170
-		data[k*3+0] = byte(c[0] * 255)
-		data[k*3+1] = byte(c[1] * 255)
-		data[k*3+2] = byte(c[2] * 255)
-		if k == 0 && j > 0 {
+		if k == 169 && i%170 == 0 { // if we've looped, send the packet and reset
 			d.chs[j] <- data
 			data = [512]byte{}
 		}
+		j = i / 170
+		k = i % 170
+		data[k*3+0] = byte(c[0] * 255)
+		data[k*3+1] = byte(c[1] * 255)
+		data[k*3+2] = byte(c[2] * 255)
 	}
-	d.chs[len(p)/170] <- data
+	// if there's any remainder send the final packet
+	if len(p)%170 != 0 {
+		d.chs[len(p)/170] <- data
+	}
 	return nil
 }
 

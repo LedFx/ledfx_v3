@@ -3,7 +3,7 @@ package device
 import (
 	"encoding/json"
 	"ledfx/config"
-	"ledfx/logger"
+	"ledfx/util"
 	"net/http"
 )
 
@@ -13,12 +13,10 @@ func NewAPI(mux *http.ServeMux) {
 		case http.MethodGet:
 			// Get schema
 			schemaBytes, err := JsonSchema()
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				logger.Logger.WithField("context", "Devices API").Errorf("Error generating JSON Schema")
+			if util.InternalError("Device API", err, writer) {
 				return
 			}
-			_, _ = writer.Write(schemaBytes)
+			writer.Write(schemaBytes)
 		default:
 			writer.WriteHeader(http.StatusNotImplemented)
 		}
@@ -29,12 +27,10 @@ func NewAPI(mux *http.ServeMux) {
 		case http.MethodGet:
 			// Get schema
 			s, err := json.Marshal(GetStates())
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				logger.Logger.WithField("context", "Devices API").Errorf("Error generating device states")
+			if util.InternalError("Device API", err, writer) {
 				return
 			}
-			_, _ = writer.Write(s)
+			writer.Write(s)
 		default:
 			writer.WriteHeader(http.StatusNotImplemented)
 		}
@@ -45,47 +41,34 @@ func NewAPI(mux *http.ServeMux) {
 		case http.MethodGet:
 			// Get devices
 			b, err := json.Marshal(config.GetDevices())
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				writer.Write([]byte(err.Error()))
-				logger.Logger.WithField("context", "Devices API").Errorf("Error generating devices config")
+			if util.InternalError("Device API", err, writer) {
 				return
 			}
-			_, _ = writer.Write(b)
+			writer.Write(b)
 
 		case http.MethodPost:
 			// Create a device
 			data := config.DeviceEntry{}
 			err := json.NewDecoder(request.Body).Decode(&data)
-			if err != nil {
-				writer.WriteHeader(http.StatusBadRequest)
-				writer.Write([]byte(err.Error()))
+			if util.BadRequest("Device API", err, writer) {
 				return
 			}
 			_, id, err := New(data.ID, data.Type, data.BaseConfig, data.ImplConfig)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				writer.Write([]byte(err.Error()))
-				logger.Logger.WithField("context", "Devices API").Error(err)
+			if util.InternalError("Device API", err, writer) {
 				return
 			}
 			c, err := config.GetDevice(id)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				writer.Write([]byte(err.Error()))
-				logger.Logger.WithField("context", "Devices API").Error(err)
+			if util.InternalError("Device API", err, writer) {
 				return
 			}
 			b, err := json.Marshal(c)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				writer.Write([]byte(err.Error()))
-				logger.Logger.WithField("context", "Devices API").Error(err)
+			if util.InternalError("Device API", err, writer) {
 				return
 			}
 			writer.Write(b)
 			return
+		default:
+			writer.WriteHeader(http.StatusNotImplemented)
 		}
-
 	})
 }

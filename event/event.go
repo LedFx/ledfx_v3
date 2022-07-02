@@ -15,7 +15,14 @@ type EventType int
 const (
 	Log EventType = iota
 	EffectRender
+	EffectCreate
 	EffectUpdate
+	EffectDelete
+	VirtualCreate
+	VirtualUpdate
+	VirtualDelete
+	DeviceCreate
+	DeviceDelete
 )
 
 func (et EventType) String() string {

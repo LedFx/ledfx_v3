@@ -2,7 +2,7 @@ package config
 
 import (
 	"encoding/json"
-	log "ledfx/logger"
+	"ledfx/util"
 	"net/http"
 )
 
@@ -12,12 +12,10 @@ func NewAPI(mux *http.ServeMux) {
 		case http.MethodGet:
 			// Get schema
 			schemaBytes, err := CoreJsonSchema()
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Logger.WithField("context", "Settings API").Error("Error generating JSON Schema:", err)
+			if util.InternalError("Settings API", err, writer) {
 				return
 			}
-			_, _ = writer.Write(schemaBytes)
+			writer.Write(schemaBytes)
 		default:
 			writer.WriteHeader(http.StatusNotImplemented)
 		}
@@ -32,31 +30,24 @@ func NewAPI(mux *http.ServeMux) {
 			// i think the active settings make most sense here, as long as the frontend sends incremental updates
 			// if the frontend sends all the settings back, then settings modified by command line flags will be saved to config
 			b, err := json.Marshal(GetSettings())
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				log.Logger.WithField("context", "Settings API").Errorf("Error generating settings config")
+			if util.InternalError("Settings API", err, writer) {
 				return
 			}
-			_, _ = writer.Write(b)
+			writer.Write(b)
 
 		case http.MethodPut:
 			// Update settings
 			settings := make(map[string]interface{})
 			err := json.NewDecoder(request.Body).Decode(&settings)
-			if err != nil {
-				writer.WriteHeader(http.StatusBadRequest)
+			if util.BadRequest("Settings API", err, writer) {
 				return
 			}
 			err = SetSettings(settings)
-			if err != nil {
-				writer.WriteHeader(http.StatusBadRequest)
+			if util.BadRequest("Settings API", err, writer) {
 				return
 			}
 			b, err := json.Marshal(store.Settings)
-			if err != nil {
-				writer.WriteHeader(http.StatusInternalServerError)
-				writer.Write([]byte(err.Error()))
-				log.Logger.WithField("context", "Settings API").Error(err)
+			if util.InternalError("Settings API", err, writer) {
 				return
 			}
 			writer.Write(b)

@@ -46,11 +46,10 @@ func (v *Virtual) Initialize(id string, c map[string]interface{}) (err error) {
 	)
 	v.Devices = map[string]*device.Device{}
 	// invoke event
-	entry, _ := config.GetVirtual(v.ID) // get full config
 	event.Invoke(event.VirtualUpdate,
 		map[string]interface{}{
 			"id":     v.ID,
-			"config": entry.Config,
+			"config": c,
 			"state":  v.State,
 		})
 	return err

@@ -77,7 +77,7 @@ func New(w http.ResponseWriter, r *http.Request) {
 	// subscribe to the events we want
 	// there are eight event types so we'll just ask for all of them
 	var i event.EventType
-	for i = 0; i <= 8; i++ {
+	for i = 0; i <= 10; i++ {
 		// sub and also defer calling the unsubscribe function
 		defer event.Subscribe(i, ws.handleEvent)()
 	}

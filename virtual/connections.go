@@ -5,6 +5,7 @@ import (
 	"ledfx/config"
 	"ledfx/device"
 	"ledfx/effect"
+	"ledfx/event"
 	"ledfx/logger"
 )
 
@@ -32,6 +33,12 @@ func LoadConnectionsFromConfig() {
 			logger.Logger.WithField("context", "Virtual Connections").Fatal(err)
 		}
 	}
+	// invoke event
+	event.Invoke(event.ConnectionsUpdate,
+		map[string]interface{}{
+			"effects": connectionsEffect,
+			"devices": connectionsDevice,
+		})
 }
 
 func ConnectEffect(effectID, virtualID string) error {
@@ -69,6 +76,12 @@ func ConnectEffect(effectID, virtualID string) error {
 	}
 	if !dontSave {
 		config.SetConnections(connectionsEffect, connectionsDevice)
+		// invoke event
+		event.Invoke(event.ConnectionsUpdate,
+			map[string]interface{}{
+				"effects": connectionsEffect,
+				"devices": connectionsDevice,
+			})
 	}
 	return nil
 }
@@ -101,6 +114,12 @@ func ConnectDevice(deviceID, virtualID string) error {
 	}
 	if !dontSave {
 		config.SetConnections(connectionsEffect, connectionsDevice)
+		// invoke event
+		event.Invoke(event.ConnectionsUpdate,
+			map[string]interface{}{
+				"effects": connectionsEffect,
+				"devices": connectionsDevice,
+			})
 	}
 	return err
 }
@@ -124,6 +143,12 @@ func DisconnectEffect(effectID, virtualID string) error {
 	v.Effect = nil
 	if !dontSave {
 		config.SetConnections(connectionsEffect, connectionsDevice)
+		// invoke event
+		event.Invoke(event.ConnectionsUpdate,
+			map[string]interface{}{
+				"effects": connectionsEffect,
+				"devices": connectionsDevice,
+			})
 	}
 	return err
 }
@@ -153,6 +178,12 @@ func DisconnectDevice(deviceID, virtualID string) error {
 	delete(v.Devices, deviceID)
 	if !dontSave {
 		config.SetConnections(connectionsEffect, connectionsDevice)
+		// invoke event
+		event.Invoke(event.ConnectionsUpdate,
+			map[string]interface{}{
+				"effects": connectionsEffect,
+				"devices": connectionsDevice,
+			})
 	}
 	return err
 }

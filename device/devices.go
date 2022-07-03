@@ -3,6 +3,7 @@ package device
 import (
 	"fmt"
 	"ledfx/config"
+	"ledfx/event"
 	"ledfx/logger"
 	"ledfx/util"
 	"reflect"
@@ -91,7 +92,13 @@ func Destroy(id string) {
 	if deviceInstances[id].State == Connected {
 		deviceInstances[id].Disconnect()
 	}
+	config.DeleteEntry(config.Device, id)
 	delete(deviceInstances, id)
+	// invoke event
+	event.Invoke(event.DeviceDelete,
+		map[string]interface{}{
+			"id": id,
+		})
 }
 
 func GetIDs() []string {

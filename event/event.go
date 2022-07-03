@@ -20,8 +20,8 @@ const (
 	GlobalEffectUpdate
 	VirtualUpdate
 	VirtualDelete
-	DeviceUpdate      // TODO
-	DeviceDelete      // TODO
+	DeviceUpdate
+	DeviceDelete
 	ConnectionsUpdate // TODO
 )
 
@@ -57,6 +57,7 @@ func (et EventType) String() string {
 type Event struct {
 	Timestamp time.Time
 	Type      EventType
+	Title     string
 	Data      map[string]interface{}
 }
 
@@ -120,6 +121,7 @@ func Invoke(et EventType, data map[string]interface{}) {
 	event := Event{
 		Timestamp: time.Now(),
 		Type:      et,
+		Title:     et.String(),
 		Data:      data,
 	}
 

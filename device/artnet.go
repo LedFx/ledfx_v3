@@ -36,7 +36,7 @@ func (d *ArtNet) initialize(base *Device, config map[string]interface{}) (err er
 	if err != nil {
 		return err
 	}
-	d.pb, err = NewPacketBuilder(base.Config.PixelCount, ArtDMX, byte(d.Config.Universe)) // repurpose timeout for universe
+	d.pb, err = newPacketBuilder(base.Config.PixelCount, ArtDMX, byte(d.Config.Universe)) // repurpose timeout for universe
 	return err
 }
 

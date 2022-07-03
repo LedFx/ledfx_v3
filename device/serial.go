@@ -33,7 +33,7 @@ func (s *Serial) initialize(base *Device, config map[string]interface{}) error {
 		return err
 	}
 	protocol := Protocol(s.Config.Protocol)
-	s.pb, err = NewPacketBuilder(base.Config.PixelCount, protocol, byte(0))
+	s.pb, err = newPacketBuilder(base.Config.PixelCount, protocol, byte(0))
 	return err
 }
 

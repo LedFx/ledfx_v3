@@ -16,7 +16,7 @@ type packetBuilder struct {
 	rgbw       color.PixelsRGBW // Working array for converting to RGBW color space
 }
 
-func NewPacketBuilder(pixelCount int, protocol Protocol, timeout byte) (pb *packetBuilder, err error) {
+func newPacketBuilder(pixelCount int, protocol Protocol, timeout byte) (pb *packetBuilder, err error) {
 	pb = &packetBuilder{
 		pixelCount: pixelCount,
 		protocol:   protocol,

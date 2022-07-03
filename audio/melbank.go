@@ -17,7 +17,6 @@ const (
 // Wrapper for filterbank which handles initialisation, normalisation
 type melbank struct {
 	fb           *aubio.FilterBank
-	Audio        AudioStream
 	Min          int
 	Max          int
 	Intensity    float64
@@ -28,11 +27,10 @@ type melbank struct {
 }
 
 // Specify the min and max frequencies
-func newMelbank(audio AudioStream, min, max uint, intensity float64) (*melbank, error) {
+func newMelbank(min, max uint, intensity float64) (*melbank, error) {
 
 	mb := &melbank{
 		fb:           aubio.NewFilterBank(melBins, framesPerBuffer),
-		Audio:        audio,
 		Min:          int(min),
 		Max:          int(max),
 		Intensity:    intensity,

@@ -5,6 +5,8 @@ github.com/Hundemeier/go-sacn/sacn v0.0.0-20191003133642-c4680a71fa22 h1:5JKhw+j
 github.com/Hundemeier/go-sacn/sacn v0.0.0-20191003133642-c4680a71fa22/go.mod h1:BYB9UrtJCQ3r2hpVG1kcrtKaPg4cn5rbomvvyWwcSE8=
 github.com/LedFx/aubio-go v0.0.0-20220629004027-8942cf1749c7 h1:fn+Ss/BU28IShKshqY83O7Ow/LwfSMtlNatzwPLXAu8=
 github.com/LedFx/aubio-go v0.0.0-20220629004027-8942cf1749c7/go.mod h1:fCpqn+1CuDGzMycWaQs+lNDpLaUqDgnP3Rw+bhIYjzw=
+github.com/LedFx/aubio-go v0.0.0-20220703213427-11bbaf4c4349 h1:jX/AaiQ5kwb/Z+61JQqDvTJaP88JwjSQsV39Dg6am5Y=
+github.com/LedFx/aubio-go v0.0.0-20220703213427-11bbaf4c4349/go.mod h1:fCpqn+1CuDGzMycWaQs+lNDpLaUqDgnP3Rw+bhIYjzw=
 github.com/antonfisher/nested-logrus-formatter v1.3.1 h1:NFJIr+pzwv5QLHTPyKz9UMEoHck02Q9L0FP13b/xSbQ=
 github.com/antonfisher/nested-logrus-formatter v1.3.1/go.mod h1:6WTfyWFkBc9+zyBaKIqRrg/KwMqBbodBjgbHjDz7zjA=
 github.com/aws/aws-sdk-go v1.38.20/go.mod h1:hcU610XS61/+aQV88ixoOzUoG7v3b31pl2zKMmprdro=

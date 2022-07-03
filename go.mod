@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	fyne.io/systray v1.10.0
-	github.com/LedFx/aubio-go v0.0.0-20220629004027-8942cf1749c7
+	github.com/LedFx/aubio-go v0.0.0-20220703213427-11bbaf4c4349
 	github.com/antonfisher/nested-logrus-formatter v1.3.1
 	github.com/carterpeel/abool v1.2.1-0.20220225054344-4f95bb28612b
 	github.com/carterpeel/ffmpeg-go v0.4.1-0.20220226201032-e6786be815f4

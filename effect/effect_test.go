@@ -113,7 +113,6 @@ func TestGlobalEffectSettings(t *testing.T) {
 		BkgColor:      "Black",
 		FreqMin:       20,
 		FreqMax:       20000,
-		Vocals:        true,
 	}
 	err := SetGlobalSettings(g)
 	if err != nil {

@@ -8,20 +8,18 @@ import (
 	"time"
 )
 
-/* inflexible and hardcoded, but fast and reliable... */
-
+// Regarding updates and deletes: An update with a novel ID can be considered a "create"
 type EventType int
 
 const (
 	Log EventType = iota
 	EffectRender
-	EffectCreate
 	EffectUpdate
 	EffectDelete
-	VirtualCreate
+	GlobalEffectUpdate
 	VirtualUpdate
 	VirtualDelete
-	DeviceCreate
+	DeviceUpdate
 	DeviceDelete
 )
 
@@ -33,6 +31,18 @@ func (et EventType) String() string {
 		return "Effect Render"
 	case EffectUpdate:
 		return "Effect Update"
+	case EffectDelete:
+		return "Effect Delete"
+	case GlobalEffectUpdate:
+		return "Global Effect Update"
+	case VirtualUpdate:
+		return "Virtual Update"
+	case VirtualDelete:
+		return "Virtual Delete"
+	case DeviceUpdate:
+		return "Device Update"
+	case DeviceDelete:
+		return "Device Delete"
 	default:
 		return "Unknown"
 	}
@@ -80,9 +90,17 @@ func Invoke(et EventType, data map[string]interface{}) {
 	case Log:
 		err = checkKeys(data, []string{"level", "msg"})
 	case EffectRender:
-		err = checkKeys(data, []string{"pixels"})
+		err = checkKeys(data, []string{"id", "pixels"})
 	case EffectUpdate:
-		err = checkKeys(data, []string{"config", "id"})
+		err = checkKeys(data, []string{"id", "config"})
+	case GlobalEffectUpdate:
+		err = checkKeys(data, []string{"config"})
+	case VirtualUpdate:
+		err = checkKeys(data, []string{"id", "config", "state"})
+	case DeviceUpdate:
+		err = checkKeys(data, []string{"id", "base_config", "impl_config", "state"})
+	case EffectDelete | DeviceDelete | VirtualDelete:
+		err = checkKeys(data, []string{"id"})
 	}
 
 	// Do not invoke the event if it's missing keys

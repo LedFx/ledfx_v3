@@ -75,12 +75,12 @@ func New(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Logger.WithField("context", "Websocket").Debugf("Connection established with %s", r.RemoteAddr)
 	// subscribe to the events we want
-	unsubLog := event.Subscribe(event.Log, ws.handleEvent)
-	unsubEffectRender := event.Subscribe(event.EffectRender, ws.handleEvent)
-	unsubEffectUpdate := event.Subscribe(event.EffectUpdate, ws.handleEvent)
-	defer unsubLog()
-	defer unsubEffectRender()
-	defer unsubEffectUpdate()
+	// there are seven event types so we'll just ask for all of them
+	var i event.EventType
+	for i = 0; i <= 8; i++ {
+		// sub and also defer calling the unsubscribe function
+		defer event.Subscribe(i, ws.handleEvent)()
+	}
 	// listen indefinitely for new messages coming through on our WebSocket connection
 	ws.Read()
 	logger.Logger.WithField("context", "Websocket").Debugf("Closed connection with %s", r.RemoteAddr)

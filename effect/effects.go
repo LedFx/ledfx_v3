@@ -29,6 +29,7 @@ var effectTypes = []string{
 	"fade",
 	"weave",
 	"pulse",
+	"strobe",
 }
 
 // Creates a new effect and returns its unique id.
@@ -54,6 +55,10 @@ func New(new_id, effect_type string, pixelCount int, new_config interface{}) (ef
 	case "pulse":
 		effect = &Effect{
 			pixelGenerator: &Pulse{},
+		}
+	case "strobe":
+		effect = &Effect{
+			pixelGenerator: &Strobe{},
 		}
 	default:
 		return effect, id, fmt.Errorf("'%s' is not a known effect type. Has it been registered in effects.go?", effect_type)

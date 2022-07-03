@@ -20,9 +20,9 @@ const (
 	GlobalEffectUpdate
 	VirtualUpdate
 	VirtualDelete
-	DeviceUpdate
-	DeviceDelete
-	ConnectionsUpdate
+	DeviceUpdate      // TODO
+	DeviceDelete      // TODO
+	ConnectionsUpdate // TODO
 )
 
 func (et EventType) String() string {

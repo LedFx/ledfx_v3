@@ -114,7 +114,7 @@ func (s *Session) StartReceiving() error {
 // StartSending starts a session for sending data
 func (s *Session) StartSending() (err error) {
 	// keep track of the actual connection, so we can close it later.
-	if s.dataConn, err = net.Dial("udp", fmt.Sprintf("%s:%d", s.RemotePorts.Address, s.RemotePorts.Data)); err != nil {
+	if s.dataConn, err = net.Dial("udp", net.JoinHostPort(s.RemotePorts.Address, fmt.Sprint(s.RemotePorts.Data))); err != nil {
 		return fmt.Errorf("error dialing '%s:%d': %w", s.RemotePorts.Address, s.RemotePorts.Data, err)
 	}
 	log.Logger.WithField("context", "RTSP Session").Infoln("Sending session started successfully")

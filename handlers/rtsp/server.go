@@ -47,7 +47,7 @@ func (r *Server) Start(doneCh chan struct{}) {
 	r.ip = config.GetSettings().Host
 	log.Logger.WithField("context", "RTSP Server").Printf("Starting RTSP server on address: %s:%d", r.ip, r.port)
 
-	tcpListen, err := net.Listen("tcp", fmt.Sprintf("%s:%d", r.ip, r.port))
+	tcpListen, err := net.Listen("tcp", net.JoinHostPort(r.ip, fmt.Sprint(r.port)))
 	if err != nil {
 		log.Logger.WithField("context", "RTSP Server").Errorln("Error listening:", err.Error())
 		return

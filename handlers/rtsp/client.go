@@ -17,7 +17,7 @@ type Client struct {
 
 // NewClient instantiates a new client connecting to the address specified
 func NewClient(address string, port int) (*Client, error) {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", address, port))
+	conn, err := net.Dial("tcp", net.JoinHostPort(address, fmt.Sprint(port)))
 	if err != nil {
 		return nil, err
 	}

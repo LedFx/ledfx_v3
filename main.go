@@ -14,6 +14,7 @@ import (
 	"ledfx/util"
 	"ledfx/virtual"
 	"ledfx/websocket"
+	"net"
 	"net/http"
 	_ "net/http/pprof" //nolint:gosec
 	"os"
@@ -43,7 +44,7 @@ func init() {
 func main() {
 	settings := config.GetSettings()
 	logger.Logger.SetLevel(logrus.Level(5 - settings.LogLevel))
-	hostport := fmt.Sprintf("%s:%d", settings.Host, settings.Port)
+	hostport := net.JoinHostPort(settings.Host, fmt.Sprint(settings.Port))
 	url := fmt.Sprintf("http://%s", hostport)
 	logger.Logger.Info("Info message logging enabled")
 	logger.Logger.Debug("Debug message logging enabled")

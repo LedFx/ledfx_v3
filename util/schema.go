@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"ledfx/logger"
-	"log"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -53,7 +52,7 @@ func CheckConfigTags(t reflect.Type) error {
 func CreateJsonSchema(s map[string]interface{}) ([]byte, error) {
 	jsonSchema, err := json.MarshalIndent(s, "", "\t")
 	if err != nil {
-		log.Fatal(err)
+		logger.Logger.WithField("context", "Schema Builder").Error(err)
 	}
 	return jsonSchema, err
 }
@@ -87,7 +86,8 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 			if hasDef {
 				x, err = strconv.ParseBool(def)
 				if err != nil {
-					log.Fatal(err)
+					logger.Logger.WithField("context", "Schema Builder").Error(err)
+					return schema, err
 				}
 			}
 			schemaEntry["default"] = x
@@ -96,7 +96,8 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 			if hasDef {
 				x, err = strconv.Atoi(def)
 				if err != nil {
-					log.Fatal(err)
+					logger.Logger.WithField("context", "Schema Builder").Error(err)
+					return schema, err
 				}
 			}
 			schemaEntry["default"] = x
@@ -105,7 +106,8 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 			if hasDef {
 				x, err = strconv.ParseFloat(def, 64)
 				if err != nil {
-					log.Fatal(err)
+					logger.Logger.WithField("context", "Schema Builder").Error(err)
+					return schema, err
 				}
 			}
 			schemaEntry["default"] = x
@@ -120,7 +122,8 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 			schemaEntry["default"] = x
 			dataType = "list"
 		default:
-			log.Fatalf("unimplemented config data type: %s", dataType)
+			logger.Logger.WithField("context", "Schema Builder").Errorf("unimplemented config data type: %s", dataType)
+			return schema, err
 		}
 
 		schemaEntry["title"] = ToTitle(f.Name)
@@ -148,13 +151,15 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 			case "gte":
 				x, err := strconv.Atoi(value)
 				if err != nil {
-					log.Fatal(err)
+					logger.Logger.WithField("context", "Schema Builder").Error(err)
+					return schema, err
 				}
 				validation["min"] = x
 			case "lte":
 				x, err := strconv.Atoi(value)
 				if err != nil {
-					log.Fatal(err)
+					logger.Logger.WithField("context", "Schema Builder").Error(err)
+					return schema, err
 				}
 				validation["max"] = x
 			case "color":
@@ -171,7 +176,8 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 					for i, x := range opts {
 						d, err := strconv.Atoi(x)
 						if err != nil {
-							log.Fatal(err)
+							logger.Logger.WithField("context", "Schema Builder").Error(err)
+							return schema, err
 						}
 						intOpts[i] = d
 					}
@@ -179,7 +185,8 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 				case "string":
 					validation["oneof"] = opts
 				default:
-					log.Fatalf("unimplemented oneof type: %s", dataType)
+					logger.Logger.WithField("context", "Schema Builder").Errorf("unimplemented oneof type: %s", dataType)
+					return schema, err
 				}
 			case "required_if":
 				opts := strings.Split(value, " ")
@@ -190,7 +197,8 @@ func CreateSchema(t reflect.Type) (map[string]interface{}, error) {
 			case "omitempty":
 			case "dive":
 			default:
-				log.Fatalf("unimplemented validation tag: %s", tag)
+				logger.Logger.WithField("context", "Schema Builder").Errorf("unimplemented validation tag: %s", tag)
+				return schema, err
 			}
 		}
 		schemaEntry["validation"] = validation

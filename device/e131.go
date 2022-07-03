@@ -114,11 +114,7 @@ func (d *E131) connect() (err error) {
 			return errors.New("invalid unicast IP address")
 		}
 	}
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return nil
+	return err
 }
 
 func (d *E131) disconnect() error {

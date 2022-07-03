@@ -69,7 +69,7 @@ func EstablishSession(ip string, port int, codec CodecType) (*rtsp.Session, erro
 // out things like the encrypting and apple-challenge
 
 // initial state, sends an OPTIONS to make sure all is up
-func initial(client *rtsp.Client, session *rtsp.Session, codec CodecType) (stateFn, error) {
+func initial(client *rtsp.Client, _ *rtsp.Session, _ CodecType) (stateFn, error) {
 	req := rtsp.NewRequest()
 	req.Method = rtsp.Options
 	req.RequestURI = "*"
@@ -141,7 +141,7 @@ func announce(client *rtsp.Client, session *rtsp.Session, codec CodecType) (stat
 	return setup, nil
 }
 
-func setup(client *rtsp.Client, session *rtsp.Session, codec CodecType) (stateFn, error) {
+func setup(client *rtsp.Client, session *rtsp.Session, _ CodecType) (stateFn, error) {
 	req := rtsp.NewRequest()
 	req.Method = rtsp.Setup
 	localAddress := client.LocalAddress()
@@ -179,7 +179,7 @@ func setup(client *rtsp.Client, session *rtsp.Session, codec CodecType) (stateFn
 	return record, nil
 }
 
-func record(client *rtsp.Client, session *rtsp.Session, codecType CodecType) (stateFn, error) {
+func record(client *rtsp.Client, session *rtsp.Session, _ CodecType) (stateFn, error) {
 	req := rtsp.NewRequest()
 	req.Method = rtsp.Record
 	localAddress := client.LocalAddress()

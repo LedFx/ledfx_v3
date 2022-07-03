@@ -33,13 +33,13 @@ func init() {
 // Hook log messages to fire internal ledfx events
 type LogEventHook struct{}
 
-func (l *LogEventHook) Levels() []logrus.Level {
+func (*LogEventHook) Levels() []logrus.Level {
 	// everything up to info level (not debug or trace) should emit a logging event
 	// MUST NOT include debug messages or events will go crazy in an infinite loop
 	return []logrus.Level{0, 1, 2, 3, 4}
 }
 
-func (l *LogEventHook) Fire(e *logrus.Entry) error {
+func (*LogEventHook) Fire(e *logrus.Entry) error {
 	event.Invoke(
 		event.Log,
 		map[string]interface{}{

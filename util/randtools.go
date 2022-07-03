@@ -3,7 +3,6 @@ package util
 import (
 	"math/rand"
 	"time"
-	"unsafe"
 )
 
 var src = rand.NewSource(time.Now().UnixNano())
@@ -30,5 +29,5 @@ func RandString(n int) string {
 		remain--
 	}
 
-	return *(*string)(unsafe.Pointer(&b))
+	return string(b)
 }

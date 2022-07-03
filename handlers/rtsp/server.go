@@ -75,7 +75,7 @@ func (r *Server) Start(doneCh chan struct{}) {
 	}()
 }
 
-func (r *Server) read(conn net.Conn, handlers map[Method]RequestHandler) {
+func (*Server) read(conn net.Conn, handlers map[Method]RequestHandler) {
 	defer conn.Close()
 	localAddr := conn.LocalAddr().(*net.TCPAddr).IP.String()
 	remoteAddr := conn.RemoteAddr().(*net.TCPAddr).IP.String()

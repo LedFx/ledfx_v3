@@ -93,13 +93,6 @@ func TestEffectBaseFunctions(t *testing.T) {
 		t.Error("Invalid config should return an error")
 	}
 
-	// Try to update extra config with an invalid json
-	// For Energy's ExtraConfig, all keys are unknown so should be discarded
-	err = effect.UpdateExtraConfig(j)
-	if err != nil {
-		t.Error(err)
-	}
-
 	// Delete the effect
 	Destroy(id)
 }

@@ -22,7 +22,6 @@ Effects must be computed in HSV space. The color is abstracted and handled outsi
 using the effect's palette. Post processing will handle conversion to RGB but requires HSV space
 */
 type PixelGenerator interface {
-	UpdateExtraConfig(c interface{}) (err error)
 	assembleFrame(base *Effect, colors color.Pixels)
 }
 
@@ -198,13 +197,6 @@ func (e *Effect) updateStoredProperties(newConfig BaseEffectConfig) {
 	if _, err := audio.Analyzer.GetMelbank(e.ID); err != nil {
 		audio.Analyzer.NewMelbank(e.ID, as, uint(newConfig.FreqMin), uint(newConfig.FreqMax), newConfig.Intensity)
 	}
-}
-
-// Effect implementation can implement this method
-func (e *Effect) UpdateExtraConfig(c interface{}) error {
-	e.Ready = false
-	defer func() { e.Ready = true }()
-	return e.pixelGenerator.UpdateExtraConfig(c)
 }
 
 // Render a new frame of pixels. Give the previous frame as argument.

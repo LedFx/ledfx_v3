@@ -20,7 +20,7 @@ import (
 )
 
 /*
-NEW EFFECTS MUST BE REGISTERED IN THIS SLICE AND THESE TWO FUNCTIONS =====================
+NEW EFFECTS MUST BE REGISTERED IN THIS SLICE AND FUNCTION =====================
 */
 
 var effectTypes = []string{
@@ -29,24 +29,6 @@ var effectTypes = []string{
 	"fade",
 	"weave",
 	"pulse",
-}
-
-// Generate a map schema for all effects
-func Schema() (schema map[string]interface{}, err error) {
-	schema = make(map[string]interface{})
-	schema["base"], err = util.CreateSchema(reflect.TypeOf((*BaseEffectConfig)(nil)).Elem())
-	if err != nil {
-		return schema, err
-	}
-	schema["types"] = effectTypes
-	extraSchema := make(map[string]interface{})
-	// Copypaste for new effect types, IF YOUR EFFECT HAS EXTRA CONFIG
-	extraSchema["energy"], err = util.CreateSchema(reflect.TypeOf((*EnergyConfig)(nil)).Elem())
-	if err != nil {
-		return schema, err
-	}
-	schema["extra"] = extraSchema
-	return schema, err
 }
 
 // Creates a new effect and returns its unique id.
@@ -242,6 +224,17 @@ func GetIDs() []string {
 		ids = append(ids, id)
 	}
 	return ids
+}
+
+// Generate a map schema for all effects
+func Schema() (schema map[string]interface{}, err error) {
+	schema = make(map[string]interface{})
+	schema["base"], err = util.CreateSchema(reflect.TypeOf((*BaseEffectConfig)(nil)).Elem())
+	if err != nil {
+		return schema, err
+	}
+	schema["types"] = effectTypes
+	return schema, err
 }
 
 func JsonSchema() (jsonSchema []byte, err error) {

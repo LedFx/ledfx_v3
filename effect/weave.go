@@ -48,11 +48,3 @@ func (e *Weave) assembleFrame(base *Effect, p color.Pixels) {
 func weavePosition(pos float64, freq float64) float64 {
 	return 1 - math.Abs(math.Mod(pos/freq, 2)-1)
 }
-
-// BOILERPLATE CODE BELOW. COPYPASTE & REPLACE CONFIG TYPE WITH THIS EFFECT'S CONFIG
-
-/*
-Updates the config of the effect. Config can be given
-as Config, map[string]interface{}, or raw json
-*/
-func (e *Weave) UpdateExtraConfig(c interface{}) (err error) { return nil }

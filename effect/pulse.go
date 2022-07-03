@@ -17,11 +17,3 @@ func (e *Pulse) assembleFrame(base *Effect, p color.Pixels) {
 	}
 
 }
-
-// BOILERPLATE CODE BELOW. COPYPASTE & REPLACE CONFIG TYPE WITH THIS EFFECT'S CONFIG
-
-/*
-Updates the config of the effect. Config can be given
-as Config, map[string]interface{}, or raw json
-*/
-func (e *Pulse) UpdateExtraConfig(c interface{}) (err error) { return nil }

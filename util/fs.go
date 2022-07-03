@@ -58,6 +58,10 @@ func Unzip(path, dest string) error {
 	for _, f := range archive.File {
 		filePath := filepath.Join(tempDir, f.Name)
 
+		if !strings.Contains(filePath, "..") {
+			return errors.New("no '..' paths allowed")
+		}
+
 		if !strings.HasPrefix(filePath, filepath.Clean(tempDir)+string(os.PathSeparator)) {
 			return errors.New("invalid path")
 		}

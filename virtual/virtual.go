@@ -103,7 +103,7 @@ func (v *Virtual) Start() error {
 		}
 	}
 	v.pixels = make(color.Pixels, v.PixelCount())
-	v.ticker = time.NewTicker(time.Duration(1/float64(v.Config.FrameRate)) * time.Second)
+	v.ticker = time.NewTicker(time.Duration(1000/v.Config.FrameRate) * time.Millisecond)
 	v.done = make(chan bool)
 	go v.renderLoop()
 	v.Active = true

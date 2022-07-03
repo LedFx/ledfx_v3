@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"ledfx/config"
+	"ledfx/event"
 	"ledfx/logger"
 	"ledfx/util"
 	"reflect"
@@ -55,14 +56,20 @@ func Get(id string) (*Virtual, error) {
 
 // Kill a virtual instance
 func Destroy(id string) {
+	config.DeleteEntry(config.Virtual, id)
 	delete(virtualInstances, id)
+	logger.Logger.WithField("context", "Effects").Infof("Deleted virtual with id %s", id)
+	event.Invoke(event.VirtualDelete,
+		map[string]interface{}{
+			"id": id,
+		})
 }
 
 // get activity status of all virtuals
 func GetStates() map[string]bool {
 	states := make(map[string]bool)
 	for _, v := range virtualInstances {
-		states[v.ID] = v.Active
+		states[v.ID] = v.State
 	}
 	return states
 }
@@ -75,7 +82,7 @@ func SetStates(states map[string]bool) (err error) {
 		if !ok {
 			continue
 		}
-		if v.Active == state {
+		if v.State == state {
 			continue
 		}
 		if state {

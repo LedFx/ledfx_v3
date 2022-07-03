@@ -33,12 +33,12 @@ func (w *webSocket) handleEvent(e *event.Event) {
 func (w *webSocket) Send(v any) {
 	b, err := json.Marshal(v)
 	if err != nil {
-		logger.Logger.WithField("context", "Websocket").Error(err)
+		logger.Logger.WithField("context", "Websocket").Debug(err)
 		return
 	}
 	err = w.conn.WriteMessage(1, b)
 	if err != nil {
-		logger.Logger.WithField("context", "Websocket").Error(err)
+		logger.Logger.WithField("context", "Websocket").Debug(err)
 		return
 	}
 }
@@ -49,7 +49,7 @@ func (w *webSocket) Read() {
 		// read in a message
 		messageType, p, err := w.conn.ReadMessage()
 		if err != nil {
-			logger.Logger.WithField("context", "Websocket").Warn(err, messageType)
+			logger.Logger.WithField("context", "Websocket").Debug(err, messageType)
 			return
 		}
 		// print out that message for clarity
@@ -75,7 +75,7 @@ func New(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Logger.WithField("context", "Websocket").Debugf("Connection established with %s", r.RemoteAddr)
 	// subscribe to the events we want
-	// there are seven event types so we'll just ask for all of them
+	// there are eight event types so we'll just ask for all of them
 	var i event.EventType
 	for i = 0; i <= 8; i++ {
 		// sub and also defer calling the unsubscribe function

@@ -13,6 +13,7 @@ type EventType int
 
 const (
 	Log EventType = iota
+	Shutdown
 	EffectRender
 	EffectUpdate
 	EffectDelete
@@ -21,12 +22,15 @@ const (
 	VirtualDelete
 	DeviceUpdate
 	DeviceDelete
+	ConnectionsUpdate
 )
 
 func (et EventType) String() string {
 	switch et {
 	case Log:
 		return "Log"
+	case Shutdown:
+		return "Shutdown"
 	case EffectRender:
 		return "Effect Render"
 	case EffectUpdate:
@@ -43,6 +47,8 @@ func (et EventType) String() string {
 		return "Device Update"
 	case DeviceDelete:
 		return "Device Delete"
+	case ConnectionsUpdate:
+		return "Connections Update"
 	default:
 		return "Unknown"
 	}
@@ -101,6 +107,8 @@ func Invoke(et EventType, data map[string]interface{}) {
 		err = checkKeys(data, []string{"id", "base_config", "impl_config", "state"})
 	case EffectDelete | DeviceDelete | VirtualDelete:
 		err = checkKeys(data, []string{"id"})
+	case ConnectionsUpdate:
+		err = checkKeys(data, []string{"effects", "devices"})
 	}
 
 	// Do not invoke the event if it's missing keys

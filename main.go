@@ -8,6 +8,7 @@ import (
 	"ledfx/constants"
 	"ledfx/device"
 	"ledfx/effect"
+	"ledfx/event"
 	"ledfx/frontend"
 	"ledfx/logger"
 	"ledfx/util"
@@ -46,6 +47,9 @@ func main() {
 	logger.Logger.Info("Info message logging enabled")
 	logger.Logger.Debug("Debug message logging enabled")
 
+	// subscribe to shutdown event
+	event.Subscribe(event.Shutdown, func(e *event.Event) { shutdown() })
+
 	// Check for updates
 	if settings.NoUpdate {
 		logger.Logger.Warn("Not checking for updates")
@@ -60,34 +64,7 @@ func main() {
 		go systray.Run(util.StartTray(url), util.StopTray)
 	}
 
-	// TODO: handle other flags
-	/**
-	  profiler
-	*/
-	// profiler.Start()
-
-	//go audio.CaptureDemo()
-
-	// Set up API routes
-	// Initialise frontend
-	// Scan for WLED
-	// Run systray
-	// load effects, devices, virtuals
-
-	// br, err := audiobridge.NewBridge(audio.Analyzer.BufferCallback)
-	// if err != nil {
-	// 	log.Fatalf("Error initializing new bridge: %v\n", err)
-	// }
-	// defer br.Stop()
-
-	// // audio.LogAudioDevices()
-	// audiodevice, err := audio.GetDeviceByID("9f012a5ef29af5e7b226bae734a8cb2ad229f063") // get from config
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// if err := br.StartLocalInput(audiodevice, true); err != nil {
-	// 	logger.Logger.WithField("context", "HTTP Listener").Fatalf("Error starting local input: %v\n", err)
-	// }
+	// TODO: handle profiler flags
 
 	err := effect.LoadFromConfig()
 	if err != nil {

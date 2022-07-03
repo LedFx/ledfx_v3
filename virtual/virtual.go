@@ -6,6 +6,7 @@ import (
 	"ledfx/config"
 	"ledfx/device"
 	"ledfx/effect"
+	"ledfx/event"
 	"ledfx/logger"
 	"time"
 
@@ -17,7 +18,7 @@ type Virtual struct {
 	ID      string
 	Effect  *effect.Effect
 	Devices map[string]*device.Device
-	Active  bool
+	State   bool
 	Config  config.VirtualConfig
 	ticker  *time.Ticker
 	done    chan bool
@@ -26,7 +27,7 @@ type Virtual struct {
 
 func (v *Virtual) Initialize(id string, c map[string]interface{}) (err error) {
 	v.ID = id
-	v.Active = false
+	v.State = false
 	defaults.Set(&v.Config)
 	err = mapstructure.Decode(c, &v.Config)
 	if err != nil {
@@ -44,6 +45,14 @@ func (v *Virtual) Initialize(id string, c map[string]interface{}) (err error) {
 		},
 	)
 	v.Devices = map[string]*device.Device{}
+	// invoke event
+	entry, _ := config.GetVirtual(v.ID) // get full config
+	event.Invoke(event.VirtualUpdate,
+		map[string]interface{}{
+			"id":     v.ID,
+			"config": entry.Config,
+			"state":  v.State,
+		})
 	return err
 }
 
@@ -106,7 +115,15 @@ func (v *Virtual) Start() error {
 	v.ticker = time.NewTicker(time.Duration(1000/v.Config.FrameRate) * time.Millisecond)
 	v.done = make(chan bool)
 	go v.renderLoop()
-	v.Active = true
+	v.State = true
+	// invoke event
+	entry, _ := config.GetVirtual(v.ID)
+	event.Invoke(event.VirtualUpdate,
+		map[string]interface{}{
+			"id":     v.ID,
+			"config": entry.Config,
+			"state":  v.State,
+		})
 	return nil
 }
 
@@ -117,5 +134,13 @@ func (v *Virtual) Stop() {
 	if v.done != nil {
 		v.done <- true
 	}
-	v.Active = false
+	v.State = false
+	// invoke event
+	entry, _ := config.GetVirtual(v.ID)
+	event.Invoke(event.VirtualUpdate,
+		map[string]interface{}{
+			"id":     v.ID,
+			"config": entry.Config,
+			"state":  v.State,
+		})
 }

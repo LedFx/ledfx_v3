@@ -146,6 +146,13 @@ func (e *Effect) UpdateBaseConfig(c interface{}) (err error) {
 			BaseConfig: mapConfig,
 		},
 	)
+
+	// invoke event
+	event.Invoke(event.EffectUpdate,
+		map[string]interface{}{
+			"id":     e.ID,
+			"config": mapConfig,
+		})
 	return err
 }
 

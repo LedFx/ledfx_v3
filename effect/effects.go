@@ -7,6 +7,7 @@ import (
 	"ledfx/audio"
 	"ledfx/color"
 	"ledfx/config"
+	"ledfx/event"
 	"ledfx/logger"
 	"ledfx/util"
 	"log"
@@ -205,6 +206,11 @@ func SetGlobalSettings(c interface{}) (err error) {
 	if err == nil {
 		config.SetGlobalEffects(configMap)
 	}
+	// invoke event
+	event.Invoke(event.GlobalEffectUpdate,
+		map[string]interface{}{
+			"config": configMap,
+		})
 	return err
 }
 
@@ -219,11 +225,15 @@ func Get(id string) (*Effect, error) {
 
 // Kill an effect instance
 func Destroy(id string) {
-	logger.Logger.WithField("context", "Effects").Debugf("Deleting effect with id %s", id)
 	audio.Analyzer.DeleteMelbank(id)
 	config.DeleteEntry(config.Effect, id)
 	delete(effectInstances, id)
 	logger.Logger.WithField("context", "Effects").Infof("Deleted effect with id %s", id)
+	// invoke event
+	event.Invoke(event.EffectDelete,
+		map[string]interface{}{
+			"id": id,
+		})
 }
 
 func GetIDs() []string {

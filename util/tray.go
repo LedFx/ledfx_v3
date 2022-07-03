@@ -3,6 +3,7 @@ package util
 import (
 	_ "embed"
 	"fmt"
+	"ledfx/event"
 	"ledfx/logger"
 
 	"fyne.io/systray"
@@ -35,4 +36,5 @@ func StartTray(url string) func() {
 func StopTray() {
 	// TODO kill ledfx from here. need to emit a broadcast event.
 	logger.Logger.WithField("context", "Systray Handler").Warnln("Closing systray...")
+	event.Invoke(event.Shutdown, map[string]interface{}{})
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	log "ledfx/logger"
 	"sync"
+	"time"
 
 	"github.com/LedFx/aubio-go"
 )
@@ -18,23 +19,23 @@ const (
 var Analyzer *analyzer
 
 type analyzer struct {
-	mu       sync.Mutex
-	buf      *aubio.SimpleBuffer // aubio buffer
-	data     []float32           // mono mix of left and right audio channels
-	eq       *aubio.Filter       // balances the volume across freqs. Stateless, only need one
-	onset    *aubio.Onset        // detects percussive onsets
-	pvoc     *aubio.PhaseVoc     // transforms audio data to fft
-	melbanks map[string]*melbank // a melbank for each effect
-	OnsetNow bool                //  onset for effects
+	mu          sync.Mutex
+	buf         *aubio.SimpleBuffer // aubio buffer
+	data        []float32           // mono mix of left and right audio channels
+	eq          *aubio.Filter       // balances the volume across freqs. Stateless, only need one
+	onset       *aubio.Onset        // detects percussive onsets
+	pvoc        *aubio.PhaseVoc     // transforms audio data to fft
+	melbanks    map[string]*melbank // a melbank for each effect
+	RecentOnset time.Time           //  onset for effects
 }
 
 func init() {
 	Analyzer = &analyzer{
-		mu:       sync.Mutex{},
-		buf:      aubio.NewSimpleBuffer(framesPerBuffer),
-		data:     make([]float32, framesPerBuffer),
-		melbanks: make(map[string]*melbank),
-		OnsetNow: false,
+		mu:          sync.Mutex{},
+		buf:         aubio.NewSimpleBuffer(framesPerBuffer),
+		data:        make([]float32, framesPerBuffer),
+		melbanks:    make(map[string]*melbank),
+		RecentOnset: time.Now(),
 	}
 	var err error
 
@@ -79,7 +80,9 @@ func (a *analyzer) BufferCallback(buf Buffer) {
 
 	// do onset analysis
 	a.onset.Do(a.buf)
-	a.OnsetNow = a.onset.OnsetNow()
+	if a.onset.OnsetNow() {
+		a.RecentOnset = time.Now()
+	}
 }
 
 func (a *analyzer) Cleanup() {

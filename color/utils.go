@@ -112,7 +112,7 @@ func RandomColor() string {
 	return "#ff0000"
 }
 
-func FromBufSliceSum(sum float64) string {
+func FromBufSliceSum(_ float64) string {
 	// sum divided by 37
 	return ""
 }

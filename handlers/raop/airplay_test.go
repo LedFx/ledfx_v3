@@ -16,18 +16,18 @@ type FakePlayer struct {
 	title  string
 }
 
-func (*FakePlayer) Play(session *rtsp.Session) {}
-func (*FakePlayer) SetVolume(volume float64)   {}
-func (fp *FakePlayer) SetMute(isMuted bool)    { fp.muted = isMuted }
-func (fp *FakePlayer) GetIsMuted() bool        { return fp.muted }
+func (*FakePlayer) Play(_ *rtsp.Session)    {}
+func (*FakePlayer) SetVolume(_ float64)     {}
+func (fp *FakePlayer) SetMute(isMuted bool) { fp.muted = isMuted }
+func (fp *FakePlayer) GetIsMuted() bool     { return fp.muted }
 func (fp *FakePlayer) SetTrack(album string, artist string, title string) {
 	fp.album = album
 	fp.artist = artist
 	fp.title = title
 }
-func (*FakePlayer) SetAlbumArt(artwork []byte) {}
-func (*FakePlayer) GetTrack() player.Track     { return player.Track{} }
-func (*FakePlayer) GetAlbumArt() (b []byte)    { return b }
+func (*FakePlayer) SetAlbumArt(_ []byte)    {}
+func (*FakePlayer) GetTrack() player.Track  { return player.Track{} }
+func (*FakePlayer) GetAlbumArt() (b []byte) { return b }
 
 func TestHandleOptions(t *testing.T) {
 	req := rtsp.NewRequest()

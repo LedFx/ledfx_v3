@@ -207,7 +207,7 @@ func (a *AirplayServer) initAdvertise() (err error) {
 	return nil
 }
 
-func handleOptions(req *rtsp.Request, resp *rtsp.Response, localAddress string, remoteAddress string) {
+func handleOptions(req *rtsp.Request, resp *rtsp.Response, localAddress string, _ string) {
 	resp.Status = rtsp.Ok
 	resp.Headers["Public"] = strings.Join(rtsp.GetMethods(), " ")
 	appleChallenge, exists := req.Headers["Apple-Challenge"]
@@ -222,7 +222,7 @@ func handleOptions(req *rtsp.Request, resp *rtsp.Response, localAddress string, 
 	resp.Headers["Apple-Response"] = challengResponse
 }
 
-func (a *AirplayServer) handleAnnounce(req *rtsp.Request, resp *rtsp.Response, localAddress string, remoteAddress string) {
+func (a *AirplayServer) handleAnnounce(req *rtsp.Request, resp *rtsp.Response, _ string, remoteAddress string) {
 	if req.Headers["Content-Type"] == "application/sdp" {
 		description, err := sdp.Parse(bytes.NewReader(req.Body))
 		if err != nil {
@@ -272,7 +272,7 @@ func (a *AirplayServer) handleAnnounce(req *rtsp.Request, resp *rtsp.Response, l
 	resp.Status = rtsp.Ok
 }
 
-func (a *AirplayServer) handleSetup(req *rtsp.Request, resp *rtsp.Response, localAddress string, remoteAddress string) {
+func (a *AirplayServer) handleSetup(req *rtsp.Request, resp *rtsp.Response, _ string, remoteAddress string) {
 	transport, hasTransport := req.Headers["Transport"]
 	as := a.sessions.getSession(remoteAddress)
 	if hasTransport {
@@ -303,7 +303,7 @@ func (a *AirplayServer) handleSetup(req *rtsp.Request, resp *rtsp.Response, loca
 	resp.Status = rtsp.Ok
 }
 
-func (a *AirplayServer) handleRecord(req *rtsp.Request, resp *rtsp.Response, localAddress string, remoteAddress string) {
+func (a *AirplayServer) handleRecord(_ *rtsp.Request, resp *rtsp.Response, _ string, remoteAddress string) {
 	as := a.sessions.getSession(remoteAddress)
 	err := as.session.StartReceiving()
 	if err != nil {
@@ -316,7 +316,7 @@ func (a *AirplayServer) handleRecord(req *rtsp.Request, resp *rtsp.Response, loc
 	resp.Status = rtsp.Ok
 }
 
-func (a *AirplayServer) handleSetParameter(req *rtsp.Request, resp *rtsp.Response, localAddress string, remoteAddress string) {
+func (a *AirplayServer) handleSetParameter(req *rtsp.Request, resp *rtsp.Response, _ string, _ string) {
 	if req.Headers["Content-Type"] == "application/x-dmap-tagged" {
 		daapData := parseDaap(req.Body)
 		album := ""
@@ -360,11 +360,11 @@ func (a *AirplayServer) handleSetParameter(req *rtsp.Request, resp *rtsp.Respons
 	resp.Status = rtsp.Ok
 }
 
-func handleFlush(req *rtsp.Request, resp *rtsp.Response, localAddress string, remoteAddress string) {
+func handleFlush(_ *rtsp.Request, resp *rtsp.Response, _ string, _ string) {
 	resp.Status = rtsp.Ok
 }
 
-func (a *AirplayServer) handleTeardown(req *rtsp.Request, resp *rtsp.Response, localAddress string, remoteAddress string) {
+func (a *AirplayServer) handleTeardown(_ *rtsp.Request, resp *rtsp.Response, _ string, remoteAddress string) {
 	a.closeSession(remoteAddress)
 	resp.Status = rtsp.Ok
 }

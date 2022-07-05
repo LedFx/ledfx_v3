@@ -7,7 +7,7 @@ import (
 )
 
 //go:embed assets/logo.ico
-var logo []byte
+var Logo []byte
 
 //go:embed assets/logo.txt
 var logoTxt []byte

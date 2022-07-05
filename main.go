@@ -36,8 +36,7 @@ func init() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		shutdown()
-		os.Exit(1)
+		event.Invoke(event.Shutdown, map[string]interface{}{})
 	}()
 }
 
@@ -57,13 +56,6 @@ func main() {
 		logger.Logger.Warn("Not checking for updates")
 	} else {
 		frontend.Update()
-	}
-
-	// run systray
-	if settings.NoTray {
-		logger.Logger.Warn("Not creating system tray icon")
-	} else {
-		go systray.Run(util.StartTray(url), util.StopTray)
 	}
 
 	// TODO: handle profiler flags
@@ -148,17 +140,29 @@ func main() {
 		logger.Logger.Info("Automatically opened the browser")
 	}
 
+	// run systray
+	if settings.NoTray {
+		logger.Logger.Warn("Not creating system tray icon")
+	} else {
+		systray.Run(StartTray(url), StopTray)
+	}
+
 	// Wait for all running goroutines to finish
 	wg.Wait()
 }
 
 func shutdown() {
-	logger.Logger.Info("Shutting down LedFx")
+	logger.Logger.WithField("context", "Shutdown Handler").Info("Shutting down LedFx")
+
+	logger.Logger.WithField("context", "Shutdown Handler").Info("Cleaning up audio analyzer")
 	// kill analyzer
 	audio.Analyzer.Cleanup()
 
 	// kill systray
+	logger.Logger.WithField("context", "Shutdown Handler").Info("Shutting down Systray")
 	systray.Quit()
+
+	os.Exit(1)
 }
 
 func setHeaders(h http.Handler) http.Handler {

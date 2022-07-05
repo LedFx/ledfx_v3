@@ -31,6 +31,9 @@ jobs:
         export CYGPATH=$(cygpath -m /)
         curl -o aubio.zip https://www.ledfx.app/downloads/aubio-0.5.0-alpha-win64.zip
         unzip aubio.zip
+        mv aubio-0.5.0-alpha-win64/lib/pkgconfig/aubio.pc $CYGPATH/mingw64/lib/pkgconfig/aubio.pc
+        rmdir aubio-0.5.0-alpha-win64/lib/pkgconfig/
+        mv aubio-0.5.0-alpha-win64/lib/* $CYGPATH/mingw64/lib/
         mv aubio-0.5.0-alpha-win64/bin/* $CYGPATH/mingw64/bin/
         mv aubio-0.5.0-alpha-win64/include/* $CYGPATH/mingw64/include/
     - name: Checkout Code

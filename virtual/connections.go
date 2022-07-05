@@ -83,6 +83,7 @@ func ConnectEffect(effectID, virtualID string) error {
 				"devices": connectionsDevice,
 			})
 	}
+	logger.Logger.WithField("context", "Virtuals").Infof("Connected %s to %s", effectID, virtualID)
 	return nil
 }
 
@@ -121,6 +122,7 @@ func ConnectDevice(deviceID, virtualID string) error {
 				"devices": connectionsDevice,
 			})
 	}
+	logger.Logger.WithField("context", "Virtuals").Infof("Connected %s to %s", deviceID, virtualID)
 	return err
 }
 
@@ -150,6 +152,7 @@ func DisconnectEffect(effectID, virtualID string) error {
 				"devices": connectionsDevice,
 			})
 	}
+	logger.Logger.WithField("context", "Virtuals").Infof("Disconnected %s from %s", effectID, virtualID)
 	return err
 }
 
@@ -185,5 +188,6 @@ func DisconnectDevice(deviceID, virtualID string) error {
 				"devices": connectionsDevice,
 			})
 	}
+	logger.Logger.WithField("context", "Virtuals").Infof("Disconnected %s from %s", deviceID, virtualID)
 	return err
 }

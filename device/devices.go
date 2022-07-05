@@ -71,6 +71,7 @@ func New(new_id, device_type string, baseConfig map[string]interface{}, implConf
 	if prev_state == Connected || prev_state == Connecting {
 		go device.Connect()
 	}
+	logger.Logger.WithField("context", "Devices").Infof("Created device with id %s", id)
 	return device, id, err
 }
 
@@ -94,6 +95,7 @@ func Destroy(id string) {
 	}
 	config.DeleteEntry(config.Device, id)
 	delete(deviceInstances, id)
+	logger.Logger.WithField("context", "Devices").Infof("Deleted device with id %s", id)
 	// invoke event
 	event.Invoke(event.DeviceDelete,
 		map[string]interface{}{

@@ -38,6 +38,7 @@ func New(new_id string, config map[string]interface{}) (virtual *Virtual, id str
 	if err = virtual.Initialize(id, config); err != nil {
 		Destroy(id)
 	}
+	logger.Logger.WithField("context", "Virtuals").Infof("Created virtual with id %s", id)
 	return virtual, id, err
 }
 

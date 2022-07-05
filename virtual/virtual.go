@@ -115,6 +115,7 @@ func (v *Virtual) Start() error {
 	v.done = make(chan bool)
 	go v.renderLoop()
 	v.State = true
+	logger.Logger.WithField("context", "Virtuals").Infof("Activated %s", v.ID)
 	// invoke event
 	entry, _ := config.GetVirtual(v.ID)
 	event.Invoke(event.VirtualUpdate,
@@ -134,6 +135,7 @@ func (v *Virtual) Stop() {
 		v.done <- true
 	}
 	v.State = false
+	logger.Logger.WithField("context", "Virtuals").Infof("Deactivated %s", v.ID)
 	// invoke event
 	entry, _ := config.GetVirtual(v.ID)
 	event.Invoke(event.VirtualUpdate,

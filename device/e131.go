@@ -38,7 +38,7 @@ type E131 struct {
 type E131Config struct {
 	IPs       []string `mapstructure:"ips" json:"ips" description:"Unicast IP addresses on the LAN" validate:"required_if=Multicast false,omitempty,dive,ip"`
 	Port      int      `mapstructure:"port" json:"port" description:"Port number the E1.31 device is listening on" default:"5568" validate:"gte=0,lte=65535"`
-	Universe  int      `mapstructure:"universe" json:"universe" description:"Starting universe for DMX data. 170 pixels per universe." default:"0" validate:"gte=0,lte=65535"`
+	Universe  int      `mapstructure:"universe" json:"universe" description:"Starting universe for DMX data. 170 pixels per universe." default:"1" validate:"gte=1,lte=65535"`
 	Multicast bool     `mapstructure:"multicast" json:"multicast" description:"Broadcast data via multicast UDP" default:"false" validate:""`
 	//
 }

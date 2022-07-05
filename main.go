@@ -161,8 +161,6 @@ func shutdown() {
 	// kill systray
 	logger.Logger.WithField("context", "Shutdown Handler").Info("Shutting down Systray")
 	systray.Quit()
-
-	os.Exit(1)
 }
 
 func setHeaders(h http.Handler) http.Handler {

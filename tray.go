@@ -6,6 +6,7 @@ import (
 	"ledfx/event"
 	"ledfx/logger"
 	"ledfx/util"
+	"os"
 
 	"fyne.io/systray"
 )
@@ -37,4 +38,5 @@ func StartTray(url string) func() {
 func StopTray() {
 	// TODO kill ledfx from here. need to emit a broadcast event.
 	logger.Logger.WithField("context", "Systray Handler").Warnln("Removed systray icon")
+	os.Exit(0)
 }

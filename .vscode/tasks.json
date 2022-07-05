@@ -6,7 +6,8 @@
         {
             "label": "start backend",
             "type": "shell",
-            "command": "go run . -p ${input:port} -n -l 0"
+            "command": "go run . -p ${input:port} -n -l 0",
+            "problemMatcher": []
         }
     ],
     "inputs": [{

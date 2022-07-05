@@ -1,17 +1,18 @@
-package util
+package main
 
 import (
 	_ "embed"
 	"fmt"
 	"ledfx/event"
 	"ledfx/logger"
+	"ledfx/util"
 
 	"fyne.io/systray"
 )
 
 func StartTray(url string) func() {
 	return func() {
-		systray.SetIcon(logo)
+		systray.SetIcon(util.Logo)
 		systray.SetTooltip("LedFx")
 		mOpen := systray.AddMenuItem("Open", "Open LedFx Web Interface in Browser")
 		mGithub := systray.AddMenuItem("Github", "Open LedFx Github in Browser")
@@ -21,11 +22,11 @@ func StartTray(url string) func() {
 			for {
 				select {
 				case <-mOpen.ClickedCh:
-					OpenBrowser(fmt.Sprintf("http://%s/#/?newCore=1", url))
+					util.OpenBrowser(fmt.Sprintf("http://%s/#/?newCore=1", url))
 				case <-mGithub.ClickedCh:
-					OpenBrowser("https://github.com/LedFx/ledfx_rewrite")
+					util.OpenBrowser("https://github.com/LedFx/ledfx_rewrite")
 				case <-mQuit.ClickedCh:
-					systray.Quit()
+					event.Invoke(event.Shutdown, map[string]interface{}{})
 					return
 				}
 			}
@@ -35,6 +36,5 @@ func StartTray(url string) func() {
 
 func StopTray() {
 	// TODO kill ledfx from here. need to emit a broadcast event.
-	logger.Logger.WithField("context", "Systray Handler").Warnln("Closing systray...")
-	event.Invoke(event.Shutdown, map[string]interface{}{})
+	logger.Logger.WithField("context", "Systray Handler").Warnln("Removed systray icon")
 }

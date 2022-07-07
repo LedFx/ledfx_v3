@@ -20,7 +20,7 @@ target "base" {
 
 target "image" {
   inherits = ["_commons"]
-  tags = ["ledfx_go:local"]
+  tags = ["ledfx_v3:local"]
 }
 
 target "image-local" {

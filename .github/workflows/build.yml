@@ -1,10 +1,10 @@
 on:
   push:
-    branches: [ci-refactoring]
+    branches: [main]
   workflow_dispatch:
 
 env:
-  GHCR_SLUG: ghcr.io/spiro-c/ledfx_go
+  GHCR_SLUG: ghcr.io/ledfx/ledfx_v3
   PLATFORMS: linux/amd64,linux/arm64
 
 jobs:
@@ -133,12 +133,13 @@ jobs:
           CGO_ENABLED=1 GOOS=${{ matrix.OS }} GOARCH=${{ matrix.ARCH }} go build -tags dynamic -o "$BINARY_NAME" -v -ldflags="-s -w"
         fi
       # Permission Loss https://github.com/actions/upload-artifact#permission-loss  
-    - name: Tar files
+    - name: Tar artifacts
       run: tar -cvf ${{ env.BINARY_NAME }}-${{ github.sha }}.tar ${{ env.BINARY_NAME }} 
 
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
       with:
+        name: ${{ env.BINARY_NAME }}-${{ github.sha }}.tar
         path: ${{ env.BINARY_NAME }}-${{ github.sha }}.tar
 
 
@@ -224,8 +225,8 @@ jobs:
                 ${{ env.GHCR_SLUG }}
           tags: ${{ steps.tags.outputs.result }}
           labels: |
-            org.opencontainers.image.title=ledfx 
-            org.opencontainers.image.vendor=Spiro-C
+            org.opencontainers.image.title=ledfx
+            org.opencontainers.image.vendor=ledfx
       -
         name: Build artifacts
         uses: docker/bake-action@v2
@@ -238,12 +239,13 @@ jobs:
 #        run: |
 #          mv ./dist/**/* ./dist/
       - 
-        name: Tar files
+        # Permission Loss https://github.com/actions/upload-artifact#permission-loss
+        name: Tar artifacts
         run: tar -cvf LedFx-${{ matrix.os }}-${{ matrix.debian-arch }}-${{ github.sha }}.tar dist/ 
       -
         name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-#          name: LedFx-${{ matrix.os }}-${{ matrix.debian-arch }}-${{ github.sha }}
+          name: LedFx-${{ matrix.os }}-${{ matrix.debian-arch }}-${{ github.sha }}.tar
           path: LedFx-${{ matrix.os }}-${{ matrix.debian-arch }}-${{ github.sha }}.tar
           if-no-files-found: error

@@ -1,3 +1,4 @@
+name: Build LedFx Binary's 
 on:
   push:
     branches: [main]
@@ -28,17 +29,33 @@ jobs:
             mingw-w64-x86_64-gcc
             mingw-w64-x86_64-go
             mingw-w64-x86_64-pkg-config
-            mingw-w64-x86_64-portaudio
-    - name: Get aubio
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-libsamplerate
+            mingw-w64-x86_64-python
+            mingw-w64-x86_64-waf
+
+    - name: Build Aubio
+      run: |
+        git clone https://github.com/aubio/aubio && cd aubio
+        curl -o 0001-fix-AUBIO_STRERROR-definition.patch https://raw.githubusercontent.com/msys2/MINGW-packages/master/mingw-w64-aubio/0001-fix-AUBIO_STRERROR-definition.patch
+        curl -o 0002-wscript-disable-tests.patch https://raw.githubusercontent.com/msys2/MINGW-packages/master/mingw-w64-aubio/0002-wscript-disable-tests.patch
+        patch -p1 -i 0001-fix-AUBIO_STRERROR-definition.patch
+        patch -p1 -i 0002-wscript-disable-tests.patch
+        waf configure --prefix=${MINGW_PREFIX} --check-c-compiler=gcc --with-target-platform=win64 --enable-fftw3 --disable-docs --disable-tests --notests
+        waf build
+        waf install
+        mv ${MINGW_PREFIX}/lib/*.dll ${MINGW_PREFIX}/bin/
+        cd .. && rm -rf aubio
+
+    - name: Build portaudio
       run: |
         export CYGPATH=$(cygpath -m /)
-        curl -o aubio.zip https://www.ledfx.app/downloads/aubio-0.5.0-alpha-win64.zip
-        unzip aubio.zip
-        mv aubio-0.5.0-alpha-win64/lib/pkgconfig/aubio.pc $CYGPATH/mingw64/lib/pkgconfig/aubio.pc
-        rmdir aubio-0.5.0-alpha-win64/lib/pkgconfig/
-        mv aubio-0.5.0-alpha-win64/lib/* $CYGPATH/mingw64/lib/
-        mv aubio-0.5.0-alpha-win64/bin/* $CYGPATH/mingw64/bin/
-        mv aubio-0.5.0-alpha-win64/include/* $CYGPATH/mingw64/include/
+        git clone https://github.com/portaudio/portaudio
+        cmake -B portaudio/.build -S portaudio -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} -DCMAKE_BUILD_TYPE=Release -DPA_USE_ASIO=on
+        cmake --build portaudio/.build/
+        cmake --install portaudio/.build/
+        rm -rf portaudio
+
     - name: Checkout Code
       uses: actions/checkout@v3
       with:
@@ -52,7 +69,18 @@ jobs:
          mkdir LedFx_Builds/
          mv LedFx.exe LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libaubio-5.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libportaudio.dll LedFx_Builds/   
+         cp $CYGPATH/mingw64/bin/libportaudio.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libfftw3f-3.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libFLAC.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libogg-0.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libopus-0.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libsamplerate-0.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libsndfile-1.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libssp-0.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libvorbis-0.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libvorbisenc-2.dll LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libwinpthread-1.dll LedFx_Builds/
+
     - name: Upload LedFx Artifact
       uses: actions/upload-artifact@v3
       with:
@@ -60,7 +88,7 @@ jobs:
         path: LedFx_Builds/
 
   build_macos:
-    name: Build macos Binaries
+    name: Build macos Binary's
     runs-on: macos-latest
     strategy:
       matrix:
@@ -180,7 +208,7 @@ jobs:
           rm -rf /tmp/.ledfx-cache
           mv /tmp/.ledfx-cache-new /tmp/.ledfx-cache
   build_linux:
-    name: Build linux Binaries
+    name: Build linux Binary's
     needs: prepare_linux
     runs-on: ubuntu-latest
     strategy:

@@ -131,12 +131,15 @@ jobs:
         else
           export PATH=/System/Volumes/Data/Users/runner/go/bin:$PATH
           CGO_ENABLED=1 GOOS=${{ matrix.OS }} GOARCH=${{ matrix.ARCH }} go build -tags dynamic -o "$BINARY_NAME" -v -ldflags="-s -w"
-        fi  
+        fi
+      # Permission Loss https://github.com/actions/upload-artifact#permission-loss  
+    - name: Tar files
+      run: tar -cvf ${{ env.BINARY_NAME }}-${{ github.sha }}.tar ${{ env.BINARY_NAME }} 
+
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.BINARY_NAME }}-${{ github.sha }}
-        path: ./${{ env.BINARY_NAME }}
+        path: ./${{ env.BINARY_NAME }}-${{ github.sha }}.tar
 
 
   prepare_linux:
@@ -234,10 +237,13 @@ jobs:
 #        name: Move artifacts
 #        run: |
 #          mv ./dist/**/* ./dist/
+      - 
+        name: Tar files
+        run: tar -cvf LedFx-${{ matrix.os }}-${{ matrix.debian-arch }}-${{ github.sha }}.tar dist/ 
       -
         name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: LedFx-${{ matrix.os }}-${{ matrix.debian-arch }}-${{ github.sha }}
-          path: ./dist/*
+#          name: LedFx-${{ matrix.os }}-${{ matrix.debian-arch }}-${{ github.sha }}
+          path: .LedFx-${{ matrix.os }}-${{ matrix.debian-arch }}-${{ github.sha }}.tar
           if-no-files-found: error

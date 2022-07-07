@@ -3,6 +3,10 @@ on:
     branches: [ci-refactoring]
   workflow_dispatch:
 
+env:
+  GHCR_SLUG: ghcr.io/spiro-c/ledfx_go
+  PLATFORMS: linux/amd64,linux/arm64
+
 jobs:
   build_win:
     name: Build Windows x64 Binary
@@ -84,7 +88,7 @@ jobs:
         CGO_ENABLED=1
         GOOS=${{ matrix.OS }}
         GOARCH=${{ matrix.ARCH }}
-        BINARY_NAME=ledfx-${{ matrix.OS }}-${{ matrix.ARCH }}
+        BINARY_NAME=LedFx-${{ matrix.OS }}-${{ matrix.ARCH }}
         echo "BINARY_NAME=$BINARY_NAME" >> $GITHUB_ENV
         echo "GOOS=$GOOS" >> $GITHUB_ENV
         echo "GOARCH=$GOARCH" >> $GITHUB_ENV
@@ -131,5 +135,109 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.BINARY_NAME }}
+        name: ${{ env.BINARY_NAME }}-${{ github.sha }}
         path: ./${{ env.BINARY_NAME }}
+
+
+  prepare_linux:
+    name: Prepare linux env
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Cache
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.ledfx-cache
+          key: ${{ runner.os }}-ledfx-base-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-ledfx-base-
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Build base (cache only)
+        uses: docker/bake-action@v2
+        with:
+          targets: base
+          set: |
+            *.platform=${{ env.PLATFORMS }}
+            *.cache-from=type=local,src=/tmp/.ledfx-cache
+            *.cache-to=type=local,dest=/tmp/.ledfx-cache-new,mode=max
+      -
+        # FIXME: https://github.com/moby/buildkit/issues/1896
+        name: Move cache
+        run: |
+          rm -rf /tmp/.ledfx-cache
+          mv /tmp/.ledfx-cache-new /tmp/.ledfx-cache
+  build_linux:
+    name: Build linux Binaries
+    needs: prepare_linux
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            os: linux
+            debian-arch: amd64
+          - platform: linux/arm64
+            os: linux
+            debian-arch: arm64
+          - platform: linux/arm/v7
+            os: linux
+            debian-arch: armhf
+          - platform: linux/arm/v6
+            os: linux
+            debian-arch: armel
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -  
+        name: Cache
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.ledfx-cache
+          key: ${{ runner.os }}-ledfx-base-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-ledfx-base-
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+                ${{ env.GHCR_SLUG }}
+          tags: ${{ steps.tags.outputs.result }}
+          labels: |
+            org.opencontainers.image.title=ledfx 
+            org.opencontainers.image.vendor=Spiro-C
+      -
+        name: Build artifacts
+        uses: docker/bake-action@v2
+        with:
+          targets: artifact
+          set: |
+            *.platform=${{ matrix.platform }}
+#      -
+#        name: Move artifacts
+#        run: |
+#          mv ./dist/**/* ./dist/
+      -
+        name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: LedFx-${{ matrix.os }}-${{ matrix.debian-arch }}-${{ github.sha }}
+          path: ./dist/*
+          if-no-files-found: error

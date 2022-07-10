@@ -30,7 +30,7 @@ func init() {
 }
 
 type E131 struct {
-	Config     E131Config
+	config     E131Config
 	chs        []chan<- [512]byte
 	pixelCount int
 }
@@ -40,16 +40,15 @@ type E131Config struct {
 	Port      int      `mapstructure:"port" json:"port" description:"Port number the E1.31 device is listening on" default:"5568" validate:"gte=0,lte=65535"`
 	Universe  int      `mapstructure:"universe" json:"universe" description:"Starting universe for DMX data. 170 pixels per universe." default:"1" validate:"gte=1,lte=65535"`
 	Multicast bool     `mapstructure:"multicast" json:"multicast" description:"Broadcast data via multicast UDP" default:"false" validate:""`
-	//
 }
 
 func (d *E131) initialize(base *Device, c map[string]interface{}) (err error) {
-	defaults.Set(&d.Config)
-	err = mapstructure.Decode(&c, &d.Config)
+	defaults.Set(&d.config)
+	err = mapstructure.Decode(&c, &d.config)
 	if err != nil {
 		return err
 	}
-	err = validate.Struct(&d.Config)
+	err = validate.Struct(&d.config)
 	if err != nil {
 		return err
 	}
@@ -84,7 +83,7 @@ func (d *E131) send(p color.Pixels) (err error) {
 
 func (d *E131) connect() (err error) {
 	// calculate how many universes we need
-	uniStart := uint16(d.Config.Universe)
+	uniStart := uint16(d.config.Universe)
 	uniCount := uint16(d.pixelCount / 170)
 	if d.pixelCount%170 > 0 {
 		uniCount++
@@ -103,12 +102,12 @@ func (d *E131) connect() (err error) {
 		if err != nil {
 			return err
 		}
-		if runtime.GOOS == "windows" && d.Config.Multicast {
+		if runtime.GOOS == "windows" && d.config.Multicast {
 			logger.Logger.WithField("context", "E1.31 sACN").Error("Multicast not supported on Windows")
 		} else {
-			transmitter.SetMulticast(i+uniStart, d.Config.Multicast)
+			transmitter.SetMulticast(i+uniStart, d.config.Multicast)
 		}
-		errs := transmitter.SetDestinations(i+uniStart, d.Config.IPs)
+		errs := transmitter.SetDestinations(i+uniStart, d.config.IPs)
 		if len(errs) != 0 {
 			d.disconnect()
 			return errors.New("invalid unicast IP address")
@@ -122,4 +121,9 @@ func (d *E131) disconnect() error {
 		close(ch)
 	}
 	return nil
+}
+
+func (d *E131) getConfig() (c map[string]interface{}) {
+	mapstructure.Decode(&d.config, &c)
+	return c
 }

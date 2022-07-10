@@ -11,7 +11,7 @@ import (
 )
 
 type Serial struct {
-	Config SerialConfig
+	config SerialConfig
 	port   serial.Port
 	pb     *packetBuilder
 }
@@ -23,16 +23,16 @@ type SerialConfig struct {
 }
 
 func (s *Serial) initialize(base *Device, config map[string]interface{}) error {
-	defaults.Set(&s.Config)
-	err := mapstructure.Decode(&config, &s.Config)
+	defaults.Set(&s.config)
+	err := mapstructure.Decode(&config, &s.config)
 	if err != nil {
 		return err
 	}
-	err = validate.Struct(&s.Config)
+	err = validate.Struct(&s.config)
 	if err != nil {
 		return err
 	}
-	protocol := Protocol(s.Config.Protocol)
+	protocol := Protocol(s.config.Protocol)
 	s.pb, err = newPacketBuilder(base.Config.PixelCount, protocol, byte(0))
 	return err
 }
@@ -48,10 +48,10 @@ func (s *Serial) send(p color.Pixels) error {
 
 func (s *Serial) connect() error {
 	mode := &serial.Mode{
-		BaudRate: s.Config.BaudRate,
+		BaudRate: s.config.BaudRate,
 	}
 	var err error
-	s.port, err = serial.Open(s.Config.Port, mode)
+	s.port, err = serial.Open(s.config.Port, mode)
 	if e, ok := err.(*serial.PortError); ok {
 		if e.Code() == serial.PermissionDenied && runtime.GOOS == "linux" {
 			logger.Logger.WithField("context", "Serial").Error("Try adding your user to 'dialout' group - https://askubuntu.com/q/210177")
@@ -62,4 +62,9 @@ func (s *Serial) connect() error {
 
 func (s *Serial) disconnect() error {
 	return s.port.Close()
+}
+
+func (s *Serial) getConfig() (c map[string]interface{}) {
+	mapstructure.Decode(&s.config, &c)
+	return c
 }

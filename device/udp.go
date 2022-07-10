@@ -11,34 +11,31 @@ import (
 )
 
 type UDP struct {
-	Config     UDPConfig
+	config     UDPConfig
 	connection net.Conn
 	pb         *packetBuilder
 }
 
 type UDPConfig struct {
-	NetworkerConfig
+	IP       string `mapstructure:"ip" json:"ip" description:"Device IP address on the LAN" validate:"required,ip"`
+	Port     int    `mapstructure:"port" json:"port" description:"Port number the device is listening on" default:"21324" validate:"gte=0,lte=65535"`
 	Protocol string `mapstructure:"protocol" json:"protocol" description:"UDP packet type" default:"DRGB" validate:"oneof=WARLS DRGB DRGBW DNRGB DDP"`
 	Timeout  int    `mapstructure:"timeout" json:"timeout" description:"How long between it takes the device to return to normal state after LedFx stops sending data to it" default:"2" validate:"gte=0,lte=255"`
 }
 
 func (d *UDP) initialize(base *Device, config map[string]interface{}) (err error) {
 	//d.Config = config.(UDPConfig)
-	defaults.Set(&d.Config)
-	err = mapstructure.Decode(&config, &d.Config)
+	defaults.Set(&d.config)
+	err = mapstructure.Decode(&config, &d.config)
 	if err != nil {
 		return err
 	}
-	err = mapstructure.Decode(&config, &d.Config.NetworkerConfig)
+	err = validate.Struct(&d.config)
 	if err != nil {
 		return err
 	}
-	err = validate.Struct(&d.Config)
-	if err != nil {
-		return err
-	}
-	protocol := Protocol(d.Config.Protocol)
-	d.pb, err = newPacketBuilder(base.Config.PixelCount, protocol, byte(d.Config.Timeout))
+	protocol := Protocol(d.config.Protocol)
+	d.pb, err = newPacketBuilder(base.Config.PixelCount, protocol, byte(d.config.Timeout))
 	return err
 }
 
@@ -51,7 +48,7 @@ func (d *UDP) send(p color.Pixels) (err error) {
 }
 
 func (d *UDP) connect() (err error) {
-	service := d.Config.IP + ":" + strconv.Itoa(d.Config.Port)
+	service := d.config.IP + ":" + strconv.Itoa(d.config.Port)
 	remoteAddr, err := net.ResolveUDPAddr("udp", service)
 	if err != nil {
 		return err
@@ -69,4 +66,9 @@ func (d *UDP) connect() (err error) {
 
 func (d *UDP) disconnect() error {
 	return d.connection.Close()
+}
+
+func (d *UDP) getConfig() (c map[string]interface{}) {
+	mapstructure.Decode(&d.config, &c)
+	return c
 }

@@ -17,6 +17,7 @@ type PixelPusher interface {
 	send(p color.Pixels) error
 	connect() error
 	disconnect() error
+	getConfig() map[string]interface{} // pointer to config
 }
 
 type Device struct {
@@ -44,18 +45,14 @@ func (d *Device) Initialize(id string, baseConfig map[string]interface{}, implCo
 		return err
 	}
 	// save to config store
-	mapConfig := map[string]interface{}{}
-	err = mapstructure.Decode(implConfig, &mapConfig)
-	if err != nil {
-		return err
-	}
+	base, impl := d.FullConfig()
 	err = config.AddEntry(
 		d.ID,
 		config.DeviceEntry{
 			ID:         d.ID,
 			Type:       d.Type,
-			BaseConfig: baseConfig,
-			ImplConfig: mapConfig,
+			BaseConfig: base,
+			ImplConfig: impl,
 		},
 	)
 	if err != nil {
@@ -65,8 +62,8 @@ func (d *Device) Initialize(id string, baseConfig map[string]interface{}, implCo
 	event.Invoke(event.DeviceUpdate,
 		map[string]interface{}{
 			"id":          d.ID,
-			"base_config": baseConfig,
-			"impl_config": implConfig,
+			"base_config": base,
+			"impl_config": impl,
 			"state":       d.State,
 		})
 	return err
@@ -115,4 +112,10 @@ func (d *Device) Send(p color.Pixels) (err error) {
 		return errors.New("device isn't connected")
 	}
 	return d.pixelPusher.send(p)
+}
+
+func (d *Device) FullConfig() (base, impl map[string]interface{}) {
+	mapstructure.Decode(&d.Config, &base)
+	impl = d.pixelPusher.getConfig()
+	return base, impl
 }

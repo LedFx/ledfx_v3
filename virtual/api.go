@@ -115,7 +115,7 @@ func NewAPI(mux *http.ServeMux) {
 	mux.HandleFunc("/api/virtuals", func(writer http.ResponseWriter, request *http.Request) {
 		switch request.Method {
 		case http.MethodGet:
-			// Get virtuals
+			// Get virtuals from config
 			b, err := json.Marshal(config.GetVirtuals())
 			if util.InternalError("Virtuals API", err, writer) {
 				return

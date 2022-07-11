@@ -63,7 +63,7 @@
     "method": "POST",
     "sortNum": 20000,
     "created": "2022-06-24T09:10:21.428Z",
-    "modified": "2022-07-05T13:42:03.217Z",
+    "modified": "2022-07-11T13:06:13.600Z",
     "headers": [],
     "params": [],
     "body": {
@@ -82,12 +82,12 @@
     "method": "POST",
     "sortNum": 10000,
     "created": "2022-06-24T09:10:21.431Z",
-    "modified": "2022-06-24T12:02:22.439Z",
+    "modified": "2022-07-11T13:39:33.912Z",
     "headers": [],
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"effect_id\": \"pulse0\",\n    \"virtual_id\": \"virtual0\"\n}",
+      "raw": "{\n    \"effect_id\": \"energy0\",\n    \"virtual_id\": \"virtual0\"\n}",
       "form": []
     },
     "tests": []
@@ -275,24 +275,20 @@
     "method": "PUT",
     "sortNum": 20000,
     "created": "2022-06-24T09:10:21.440Z",
-    "modified": "2022-06-24T09:21:24.054Z",
+    "modified": "2022-07-11T14:36:36.970Z",
     "headers": [
       {
         "name": "Content-Type",
         "value": "application/json"
       }
     ],
-    "params": [
-      {
-        "name": "",
-        "value": null,
-        "isDisabled": true
-      }
-    ],
+    "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"intensity\": 0.5,\n    \"hue_shift\": 1,\n    \"palette\": \"RGB\"\n}"
-    }
+      "raw": "{\n    \"blur\": 0\n}",
+      "form": []
+    },
+    "tests": []
   },
   {
     "_id": "0e8d86a0-7fbc-4d42-a99f-dce416b5dca5",
@@ -346,7 +342,7 @@
     "method": "PUT",
     "sortNum": 5000,
     "created": "2022-06-24T09:10:21.443Z",
-    "modified": "2022-06-30T23:59:58.071Z",
+    "modified": "2022-07-11T13:34:24.742Z",
     "headers": [
       {
         "name": "Content-Type",
@@ -356,7 +352,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"id\": \"palette0\",\n    \"base_config\":{\n    \"bkg_brightness\": 0.2,\n    \"bkg_color\": \"#000000\",\n    \"blur\": 1,\n    \"brightness\": 1,\n    \"decay\": 1,\n    \"flip\": false,\n    \"freq_max\": 20000,\n    \"freq_min\": 20,\n    \"hue_shift\": 1,\n    \"intensity\":1,\n    \"mirror\": true,\n    \"palette\": \"rgb\",\n    \"saturation\": 1,\n    \"vocals\": false\n  }\n}",
+      "raw": "{\n    \"id\": \"palette0\",\n    \"base_config\":{\n    \"bkg_brightness\": 0.6,\n    \"bkg_color\": \"#000000\",\n    \"blur\": 1,\n    \"brightness\": 1,\n    \"decay\": 1,\n    \"flip\": false,\n    \"freq_max\": 20000,\n    \"freq_min\": 20,\n    \"hue_shift\": 1,\n    \"intensity\":1,\n    \"mirror\": true,\n    \"palette\": \"rgb\",\n    \"saturation\": 1,\n    \"vocals\": false\n  }\n}",
       "form": []
     },
     "tests": []
@@ -394,7 +390,7 @@
     "method": "DELETE",
     "sortNum": 30000,
     "created": "2022-06-24T09:10:21.445Z",
-    "modified": "2022-06-24T12:01:36.344Z",
+    "modified": "2022-07-11T13:35:34.241Z",
     "headers": [
       {
         "name": "Content-Type",
@@ -404,7 +400,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"id\": \"weave0\"\n}",
+      "raw": "{\n    \"id\": \"energy1\"\n}",
       "form": []
     },
     "tests": []

@@ -48,9 +48,9 @@ func (v *Virtual) Initialize(id string, c map[string]interface{}) (err error) {
 	// invoke event
 	event.Invoke(event.VirtualUpdate,
 		map[string]interface{}{
-			"id":     v.ID,
-			"config": c,
-			"state":  v.State,
+			"id":          v.ID,
+			"base_config": c,
+			"active":      v.State,
 		})
 	return err
 }
@@ -120,9 +120,9 @@ func (v *Virtual) Start() error {
 	entry, _ := config.GetVirtual(v.ID)
 	event.Invoke(event.VirtualUpdate,
 		map[string]interface{}{
-			"id":     v.ID,
-			"config": entry.Config,
-			"state":  v.State,
+			"id":          v.ID,
+			"base_config": entry.Config,
+			"active":      v.State,
 		})
 	return nil
 }
@@ -140,8 +140,8 @@ func (v *Virtual) Stop() {
 	entry, _ := config.GetVirtual(v.ID)
 	event.Invoke(event.VirtualUpdate,
 		map[string]interface{}{
-			"id":     v.ID,
-			"config": entry.Config,
-			"state":  v.State,
+			"id":          v.ID,
+			"base_config": entry.Config,
+			"active":      v.State,
 		})
 }

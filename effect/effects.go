@@ -1,7 +1,6 @@
 package effect
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"ledfx/audio"
@@ -148,20 +147,10 @@ Updates the global effect settings. Config can be given
 as BaseEffectConfig, map[string]interface{}, or raw json
 For incremental config updates, you must use map or json.
 */
-func SetGlobalSettings(c interface{}) (err error) {
+func SetGlobalSettings(c map[string]interface{}) (err error) {
 	// create a copy of the config
 	newConfig := globalConfig
-	// update values
-	switch t := c.(type) {
-	case BaseEffectConfig:
-		newConfig = c.(BaseEffectConfig)
-	case map[string]interface{}:
-		err = mapstructure.Decode(t, &newConfig)
-	case []byte:
-		err = json.Unmarshal(t, &newConfig)
-	default:
-		err = fmt.Errorf("invalid config type %T", c)
-	}
+	err = mapstructure.Decode(c, &newConfig)
 	if err != nil {
 		return err
 	}
@@ -178,25 +167,31 @@ func SetGlobalSettings(c interface{}) (err error) {
 	// knowing that it's valid, pass it on to all the effects
 	for _, e := range effectInstances {
 		// we'll do this manually rather than calling updateBaseConfig to avoid unnecessary config saves and validation
-		e.updateStoredProperties(newConfig)
-		e.Config = newConfig
+		// update effect configs incrementally with global config settings
+		eConfig := e.Config
+		err = mapstructure.Decode(&c, &eConfig)
+		if err != nil {
+			return err
+		}
+		e.updateStoredProperties(eConfig)
+		e.Config = eConfig
+		// manually invoke event
+		event.Invoke(event.EffectUpdate,
+			map[string]interface{}{
+				"id":          e.ID,
+				"base_config": eConfig,
+			})
 	}
 
-	// assign it
-	globalConfig = newConfig
-
-	// TODO this could be changed so that global config follows incremental updates.
-	// I think this way encourages users to use the global settings.
-	// Globals will be applied as defaults to new effects
-	configMap := make(map[string]interface{})
-	err = mapstructure.Decode(globalConfig, &configMap)
+	// save to config
+	err = mapstructure.Decode(&newConfig, &c)
 	if err == nil {
-		config.SetGlobalEffects(configMap)
+		config.SetGlobalEffects(c)
 	}
 	// invoke event
 	event.Invoke(event.GlobalEffectUpdate,
 		map[string]interface{}{
-			"config": configMap,
+			"config": c,
 		})
 	return err
 }

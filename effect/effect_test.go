@@ -98,42 +98,11 @@ func TestEffectBaseFunctions(t *testing.T) {
 }
 
 func TestGlobalEffectSettings(t *testing.T) {
-	// test with complete GlobalEffectsConfig
-	g := BaseEffectConfig{
-		Intensity:     0,
-		Brightness:    0.5,
-		Saturation:    1,
-		Palette:       "RGB",
-		Blur:          0,
-		Flip:          false,
-		Mirror:        false,
-		Decay:         0,
-		HueShift:      0,
-		BkgBrightness: 0,
-		BkgColor:      "Black",
-		FreqMin:       20,
-		FreqMax:       20000,
-	}
-	err := SetGlobalSettings(g)
-	if err != nil {
-		t.Error(err)
-	}
-
 	// test with incremental map[string]interface
 	m := map[string]interface{}{
 		"brightness": 0.3,
 	}
-	err = SetGlobalSettings(m)
-	if err != nil {
-		t.Error(err)
-	}
-
-	// test with incremental json
-	j, err := json.Marshal(m)
-	if err != nil {
-		t.Error(err)
-	}
-	err = SetGlobalSettings(j)
+	err := SetGlobalSettings(m)
 	if err != nil {
 		t.Error(err)
 	}
@@ -154,12 +123,5 @@ func TestGlobalEffectSettings(t *testing.T) {
 	err = SetGlobalSettings(m)
 	if err != nil {
 		t.Error(err)
-	}
-
-	// test with invalid config type
-	s := "this isn't a config"
-	err = SetGlobalSettings(s)
-	if err == nil {
-		t.Error("Invalid config should return an error")
 	}
 }

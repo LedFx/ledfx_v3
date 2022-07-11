@@ -1,6 +1,7 @@
 package config
 
 import (
+	"ledfx/event"
 	"ledfx/logger"
 	"ledfx/util"
 	"reflect"
@@ -100,5 +101,9 @@ func SetSettings(c map[string]interface{}) error {
 		}
 	}
 	err = saveConfig()
+	event.Invoke(event.SettingsUpdate,
+		map[string]interface{}{
+			"settings": store.Settings,
+		})
 	return err
 }

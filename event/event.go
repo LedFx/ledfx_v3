@@ -23,6 +23,7 @@ const (
 	DeviceUpdate
 	DeviceDelete
 	ConnectionsUpdate // TODO
+	SettingsUpdate
 )
 
 func (et EventType) String() string {
@@ -49,6 +50,8 @@ func (et EventType) String() string {
 		return "Device Delete"
 	case ConnectionsUpdate:
 		return "Connections Update"
+	case SettingsUpdate:
+		return "Settings Update"
 	default:
 		return "Unknown"
 	}
@@ -99,17 +102,19 @@ func Invoke(et EventType, data map[string]interface{}) {
 	case EffectRender:
 		err = checkKeys(data, []string{"id", "pixels"})
 	case EffectUpdate:
-		err = checkKeys(data, []string{"id", "config"})
+		err = checkKeys(data, []string{"id", "base_config"})
 	case GlobalEffectUpdate:
 		err = checkKeys(data, []string{"config"})
 	case VirtualUpdate:
-		err = checkKeys(data, []string{"id", "config", "state"})
+		err = checkKeys(data, []string{"id", "base_config", "active"})
 	case DeviceUpdate:
 		err = checkKeys(data, []string{"id", "base_config", "impl_config", "state"})
 	case EffectDelete | DeviceDelete | VirtualDelete:
 		err = checkKeys(data, []string{"id"})
 	case ConnectionsUpdate:
 		err = checkKeys(data, []string{"effects", "devices"})
+	case SettingsUpdate:
+		err = checkKeys(data, []string{"settings"})
 	}
 
 	// Do not invoke the event if it's missing keys

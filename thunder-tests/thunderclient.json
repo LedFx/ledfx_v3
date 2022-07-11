@@ -120,12 +120,12 @@
     "method": "POST",
     "sortNum": 30000,
     "created": "2022-06-24T09:10:21.433Z",
-    "modified": "2022-06-24T14:53:53.819Z",
+    "modified": "2022-07-11T19:46:44.146Z",
     "headers": [],
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"effect_id\": \"energy0\",\n    \"virtual_id\": \"virtual0\",\n    \"device_id\": \"udp0\"\n}",
+      "raw": "{\n    \"effect_id\": \"energy0\",\n    \"virtual_id\": \"virtual0\",\n    \"device_id\": \"E1.31 sACN0\"\n}",
       "form": []
     },
     "tests": []
@@ -155,12 +155,15 @@
     "method": "POST",
     "sortNum": 50000,
     "created": "2022-06-24T09:10:21.435Z",
-    "modified": "2022-06-24T09:20:10.455Z",
+    "modified": "2022-07-11T19:46:04.780Z",
     "headers": [],
+    "params": [],
     "body": {
       "type": "json",
-      "raw": "{\r\n    \"effect_id\": \"energy0\",\r\n    \"virtual_id\": \"virtual0\",\r\n    \"device_id\": \"udp0\"\r\n}"
-    }
+      "raw": "{\n    \"effect_id\": \"energy0\",\n    \"virtual_id\": \"virtual0\",\n    \"device_id\": \"E1.31 sACN0\"\n}",
+      "form": []
+    },
+    "tests": []
   },
   {
     "_id": "df235082-ce60-42d0-9713-5e9912764b30",
@@ -204,24 +207,20 @@
     "method": "PUT",
     "sortNum": 20000,
     "created": "2022-06-24T09:10:21.436Z",
-    "modified": "2022-06-24T09:21:06.020Z",
+    "modified": "2022-07-11T19:49:40.887Z",
     "headers": [
       {
         "name": "Content-Type",
         "value": "application/json"
       }
     ],
-    "params": [
-      {
-        "name": "",
-        "value": null,
-        "isDisabled": true
-      }
-    ],
+    "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"no_scan\": false\n}"
-    }
+      "raw": "{\n    \"no_scan\": false\n}",
+      "form": []
+    },
+    "tests": []
   },
   {
     "_id": "3b02ab6c-ddc5-48dd-ae7e-21e7536b115e",
@@ -275,7 +274,7 @@
     "method": "PUT",
     "sortNum": 20000,
     "created": "2022-06-24T09:10:21.440Z",
-    "modified": "2022-07-11T14:36:36.970Z",
+    "modified": "2022-07-11T19:47:50.569Z",
     "headers": [
       {
         "name": "Content-Type",
@@ -285,7 +284,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"blur\": 0\n}",
+      "raw": "{\n    \"intensity\": 0\n}",
       "form": []
     },
     "tests": []
@@ -496,6 +495,25 @@
     "body": {
       "type": "json",
       "raw": "{\n    \"device_id\": \"2fb34793a593ebe3d8230f119ea136ef3fd5cec1\"\n}",
+      "form": []
+    },
+    "tests": []
+  },
+  {
+    "_id": "ff3197fb-32b5-4dd5-8fc1-d6c317151ac9",
+    "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
+    "containerId": "b981d0c6-9449-4c60-972b-7322b3826e8c",
+    "name": "Update Device",
+    "url": "{{host}}:8080/api/devices",
+    "method": "POST",
+    "sortNum": 40000,
+    "created": "2022-07-11T19:50:20.865Z",
+    "modified": "2022-07-11T19:53:07.562Z",
+    "headers": [],
+    "params": [],
+    "body": {
+      "type": "json",
+      "raw": "{\n    \"id\": \"E1.31 sACN0\",\n    \"type\": \"E1.31 sACN\",\n    \"base_config\": {\n        \"name\": \"test device e131\",\n        \"pixel_count\": 500\n    },\n    \"impl_config\": {\n        \"ips\": [\n          \"192.168.0.49\"\n        ],\n        \"port\": 6000\n    }\n}",
       "form": []
     },
     "tests": []

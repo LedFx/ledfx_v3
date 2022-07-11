@@ -20,7 +20,7 @@ type UDPConfig struct {
 	IP       string `mapstructure:"ip" json:"ip" description:"Device IP address on the LAN" validate:"required,ip"`
 	Port     int    `mapstructure:"port" json:"port" description:"Port number the device is listening on" default:"21324" validate:"gte=0,lte=65535"`
 	Protocol string `mapstructure:"protocol" json:"protocol" description:"UDP packet type" default:"DRGB" validate:"oneof=WARLS DRGB DRGBW DNRGB DDP"`
-	Timeout  int    `mapstructure:"timeout" json:"timeout" description:"How long between it takes the device to return to normal state after LedFx stops sending data to it" default:"2" validate:"gte=0,lte=255"`
+	Timeout  int    `mapstructure:"timeout" json:"timeout" description:"How many seconds for the device to return to normal state after LedFx stops sending data to it" default:"2" validate:"gte=0,lte=255"`
 }
 
 func (d *UDP) initialize(base *Device, config map[string]interface{}) (err error) {

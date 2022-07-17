@@ -109,6 +109,8 @@ func NewAPI(mux *http.ServeMux) {
 			if util.InternalError("Virtuals API", err, writer) {
 				return
 			}
+		default:
+			writer.WriteHeader(http.StatusNotImplemented)
 		}
 	})
 
@@ -143,7 +145,8 @@ func NewAPI(mux *http.ServeMux) {
 			}
 			writer.Write(b)
 			return
+		default:
+			writer.WriteHeader(http.StatusNotImplemented)
 		}
-
 	})
 }

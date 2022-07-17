@@ -71,6 +71,9 @@ func (v *Virtual) renderLoop() {
 	for {
 		select {
 		case <-v.ticker.C:
+			if v.Effect == nil {
+				return
+			}
 			v.Effect.Render(v.pixels) // todo catch errors in send?
 			for _, d := range v.Devices {
 				if d.Config.PixelCount != len(v.pixels) {

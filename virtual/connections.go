@@ -142,7 +142,7 @@ func DisconnectEffect(effectID, virtualID string) error {
 		return nil
 	}
 	delete(connectionsEffect, effectID)
-	v.Effect = nil
+	v.Stop()
 	if !dontSave {
 		config.SetConnections(connectionsEffect, connectionsDevice)
 		// invoke event
@@ -179,6 +179,9 @@ func DisconnectDevice(deviceID, virtualID string) error {
 		err = d.Disconnect()
 	}
 	delete(v.Devices, deviceID)
+	if len(v.Devices) == 0 {
+		v.Stop()
+	}
 	if !dontSave {
 		config.SetConnections(connectionsEffect, connectionsDevice)
 		// invoke event

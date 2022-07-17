@@ -107,10 +107,10 @@ func (v *Virtual) Start() error {
 	}
 	for _, d := range v.Devices {
 		if d.State != device.Connected {
-			err := fmt.Errorf("cannot start virtual %s, device %s is not connected", v.ID, d.ID)
-			logger.Logger.WithField("context", "Virtual").Error(err)
+			// err := fmt.Errorf("cannot start virtual %s, device %s is not connected", v.ID, d.ID)
+			// logger.Logger.WithField("context", "Virtual").Error(err)
 			go d.Connect()
-			return err
+			// return err
 		}
 	}
 	v.pixels = make(color.Pixels, v.PixelCount())
@@ -138,6 +138,9 @@ func (v *Virtual) Stop() {
 		v.done <- true
 	}
 	v.State = false
+	for _, d := range v.Devices {
+		d.Disconnect()
+	}
 	logger.Logger.WithField("context", "Virtuals").Infof("Deactivated %s", v.ID)
 	// invoke event
 	entry, _ := config.GetVirtual(v.ID)

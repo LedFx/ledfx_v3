@@ -75,11 +75,12 @@ func (d *Device) Connect() (err error) {
 	if err == nil {
 		d.State = Connected
 		// invoke event
+		base, impl := d.FullConfig()
 		event.Invoke(event.DeviceUpdate,
 			map[string]interface{}{
 				"id":          d.ID,
-				"base_config": nil,
-				"impl_config": nil,
+				"base_config": base,
+				"impl_config": impl,
 				"state":       d.State,
 			})
 	} else {
@@ -94,11 +95,12 @@ func (d *Device) Disconnect() (err error) {
 	if err == nil {
 		d.State = Disconnected
 		// invoke event
+		base, impl := d.FullConfig()
 		event.Invoke(event.DeviceUpdate,
 			map[string]interface{}{
 				"id":          d.ID,
-				"base_config": nil,
-				"impl_config": nil,
+				"base_config": base,
+				"impl_config": impl,
 				"state":       d.State,
 			})
 	} else {

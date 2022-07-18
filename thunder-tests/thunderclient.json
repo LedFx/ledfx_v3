@@ -341,7 +341,7 @@
     "method": "PUT",
     "sortNum": 5000,
     "created": "2022-06-24T09:10:21.443Z",
-    "modified": "2022-07-11T13:34:24.742Z",
+    "modified": "2022-07-18T20:19:53.483Z",
     "headers": [
       {
         "name": "Content-Type",
@@ -351,7 +351,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"id\": \"palette0\",\n    \"base_config\":{\n    \"bkg_brightness\": 0.6,\n    \"bkg_color\": \"#000000\",\n    \"blur\": 1,\n    \"brightness\": 1,\n    \"decay\": 1,\n    \"flip\": false,\n    \"freq_max\": 20000,\n    \"freq_min\": 20,\n    \"hue_shift\": 1,\n    \"intensity\":1,\n    \"mirror\": true,\n    \"palette\": \"rgb\",\n    \"saturation\": 1,\n    \"vocals\": false\n  }\n}",
+      "raw": "{\n    \"id\": \"palette0\",\n    \"base_config\":{\n    \"bkg_brightness\": 0.6\n  }\n}",
       "form": []
     },
     "tests": []
@@ -516,6 +516,31 @@
       "raw": "{\n    \"id\": \"E1.31 sACN0\",\n    \"type\": \"E1.31 sACN\",\n    \"base_config\": {\n        \"name\": \"test device e131\",\n        \"pixel_count\": 500\n    },\n    \"impl_config\": {\n        \"ips\": [\n          \"192.168.0.49\"\n        ],\n        \"port\": 6000\n    }\n}",
       "form": []
     },
+    "tests": []
+  },
+  {
+    "_id": "ef5f9e8d-e0ae-427a-8cf4-afe99727a5c2",
+    "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
+    "containerId": "ee7c8679-fbaa-414c-b72e-9bab0a089755",
+    "name": "Delete Effect by URL Param",
+    "url": "{{host}}:8080/api/effects?id=palette0",
+    "method": "DELETE",
+    "sortNum": 35000,
+    "created": "2022-07-18T22:13:25.635Z",
+    "modified": "2022-07-18T22:22:15.514Z",
+    "headers": [
+      {
+        "name": "Content-Type",
+        "value": "application/json"
+      }
+    ],
+    "params": [
+      {
+        "name": "id",
+        "value": "palette0",
+        "isPath": false
+      }
+    ],
     "tests": []
   }
 ]

@@ -80,9 +80,14 @@ func NewAPI(mux *http.ServeMux) {
 		case http.MethodDelete:
 			// Delete an effect
 			data := config.EffectEntry{}
-			err := json.NewDecoder(request.Body).Decode(&data)
-			if util.BadRequest("Effects API", err, writer) {
-				return
+			keys, ok := request.URL.Query()["id"]
+			if !ok || len(keys) == 0 {
+				err := json.NewDecoder(request.Body).Decode(&data)
+				if util.BadRequest("Effects API", err, writer) {
+					return
+				}
+			} else {
+				data.ID = keys[0]
 			}
 			Destroy(data.ID)
 			return

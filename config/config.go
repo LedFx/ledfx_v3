@@ -47,7 +47,7 @@ type BaseDeviceConfig struct {
 type VirtualConfig struct {
 	Name      string `mapstructure:"name" json:"name" description:"Display name for the virtual" validate:"required"`
 	IconName  string `mapstructure:"icon_name" json:"icon_name" description:"Icon name to identify this virtual" default:"alert-circle-outline" validate:""`
-	FrameRate int    `mapstructure:"framerate" json:"framerate" description:"Target framerate" default:"60" validate:"gte=1,lte=120"`
+	FrameRate int    `mapstructure:"framerate" json:"framerate" description:"Target framerate" default:"60" validate:"gte=5,lte=120"`
 	// Span      bool            `mapstructure:"span" json:"span"`
 	// Outputs   []VirtualOutput `mapstructure:"outputs" json:"outputs"`
 }

@@ -22,7 +22,7 @@ const (
 	ControllerDelete
 	DeviceUpdate
 	DeviceDelete
-	ConnectionsUpdate // TODO
+	ConnectionsUpdate
 	SettingsUpdate
 )
 

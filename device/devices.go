@@ -12,29 +12,51 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-var deviceTypes = []string{
-	"UDP Stream",
-	"USB Serial",
-	"ArtNet",
-	"E1.31 sACN",
+type deviceInfo struct {
+	Name      string   `mapstructure:"name" json:"name"`
+	Info      string   `mapstructure:"info" json:"info"`
+	Protocols []string `mapstructure:"protocols" json:"protocols"`
+}
+
+var deviceTypes = map[string]deviceInfo{
+	"udp_stream": {
+		Name:      "UDP Stream",
+		Info:      "Stream pixel data over the network. Recommended for WLED",
+		Protocols: []string{"WARLS", "DRGB", "DRGBW", "DNRGB", "DDP"},
+	},
+	"usb_serial": {
+		Name:      "USB Serial",
+		Info:      "Send pixel data to devices connected by USB. Works with WLED.",
+		Protocols: []string{"Adalight", "TPM2"},
+	},
+	"artnet": {
+		Name:      "ArtNet",
+		Info:      "Implements ArtNet IV to send DMX-512 data over the network.",
+		Protocols: []string{"ArtNet"},
+	},
+	"e131": {
+		Name:      "E1.31 sACN",
+		Info:      "Implements E1.31 sACN to send DMX-512 data over the network. Industry standard for lighting and control.",
+		Protocols: []string{"E131"},
+	},
 }
 
 // Creates a new device and returns its unique id
 func New(new_id, device_type string, baseConfig map[string]interface{}, implConfig map[string]interface{}) (device *Device, id string, err error) {
 	switch device_type {
-	case "UDP Stream":
+	case "udp_stream":
 		device = &Device{
 			pixelPusher: &UDP{},
 		}
-	case "USB Serial":
+	case "usb_serial":
 		device = &Device{
 			pixelPusher: &Serial{},
 		}
-	case "ArtNet":
+	case "artnet":
 		device = &Device{
 			pixelPusher: &ArtNet{},
 		}
-	case "E1.31 sACN":
+	case "e131_sacn":
 		device = &Device{
 			pixelPusher: &E131{},
 		}

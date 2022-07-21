@@ -18,17 +18,55 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+type EffectInfo struct {
+	Description string `mapstructure:"description" json:"description"`
+	GoodFor     string `mapstructure:"good_for" json:"good_for"`
+	Category    string `mapstructure:"category" json:"category"`
+	Preview     []byte `mapstructure:"preview" json:"preview"`
+}
+
 /*
-NEW EFFECTS MUST BE REGISTERED IN THIS SLICE AND FUNCTION =====================
+NEW EFFECTS MUST BE REGISTERED IN THIS MAP AND FUNCTION =====================
 */
 
-var effectTypes = []string{
-	"energy",
-	"palette",
-	"fade",
-	"weave",
-	"pulse",
-	"strobe",
+// Order them nicely and only create a new category if you need ;)
+var effectTypes = map[string]EffectInfo{
+	"energy": {
+		Description: "Blended color bar composed from audio bass, mids, and highs",
+		GoodFor:     "Energetic music with high dynamic range",
+		Category:    "Audio Reactive",
+		Preview:     []byte{},
+	},
+	"weave": {
+		Description: "Interleaved snaking bands of color reacting to audio bass, mids and highs",
+		GoodFor:     "Calm music, sustained notes",
+		Category:    "Audio Reactive",
+		Preview:     []byte{},
+	},
+	"strobe": {
+		Description: "Flashes of color on bass and percussive hits",
+		GoodFor:     "Music with clear and defined percussion, eg. House, Dance",
+		Category:    "Audio Reactive",
+		Preview:     []byte{},
+	},
+	"palette": {
+		Description: "Displays the full color palette",
+		GoodFor:     "Ambience, static colors",
+		Category:    "Non Reactive",
+		Preview:     []byte{},
+	},
+	"fade": {
+		Description: "Cycle through the color palette",
+		GoodFor:     "Ambience, morphing colors",
+		Category:    "Non Reactive",
+		Preview:     []byte{},
+	},
+	"pulse": {
+		Description: "Repeatedly flashes the full color palette",
+		GoodFor:     "High intensity, building energy",
+		Category:    "Non reactive",
+		Preview:     []byte{},
+	},
 }
 
 // Creates a new effect and returns its unique id.
@@ -233,7 +271,9 @@ func Schema() (schema map[string]interface{}, err error) {
 	if err != nil {
 		return schema, err
 	}
-	schema["types"] = effectTypes
+	types := make(map[string]interface{})
+	mapstructure.Decode(&effectTypes, &types)
+	schema["types"] = types
 	return schema, err
 }
 

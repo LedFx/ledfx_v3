@@ -111,14 +111,12 @@ func GetIDs() []string {
 	return ids
 }
 
-func GetStates() []State {
-	s := make([]State, len(deviceInstances))
-	var i = 0
+func GetStates() map[string]State {
+	states := map[string]State{}
 	for _, d := range deviceInstances {
-		s[i] = d.State
-		i++
+		states[d.ID] = d.State
 	}
-	return s
+	return states
 }
 
 func LoadFromConfig() error {

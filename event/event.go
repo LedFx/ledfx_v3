@@ -102,7 +102,7 @@ func Invoke(et EventType, data map[string]interface{}) {
 	case EffectRender:
 		err = checkKeys(data, []string{"id", "pixels"})
 	case EffectUpdate:
-		err = checkKeys(data, []string{"id", "base_config"})
+		err = checkKeys(data, []string{"id", "type", "base_config"})
 	case GlobalEffectUpdate:
 		err = checkKeys(data, []string{"config"})
 	case VirtualUpdate:

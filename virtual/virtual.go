@@ -1,7 +1,6 @@
 package virtual
 
 import (
-	"fmt"
 	"ledfx/color"
 	"ledfx/config"
 	"ledfx/device"
@@ -96,14 +95,12 @@ func (v *Virtual) renderLoop() {
 
 func (v *Virtual) Start() error {
 	if v.Effect == nil {
-		err := fmt.Errorf("cannot start virtual %s, it does not have an effect", v.ID)
-		logger.Logger.WithField("context", "Virtual").Error(err)
-		return err
+		logger.Logger.WithField("context", "Virtual").Warnf("cannot start virtual %s, it does not have an effect", v.ID)
+		return nil
 	}
 	if len(v.Devices) == 0 {
-		err := fmt.Errorf("cannot start virtual %s, it does not have any devices", v.ID)
-		logger.Logger.WithField("context", "Virtual").Error(err)
-		return err
+		logger.Logger.WithField("context", "Virtual").Warnf("cannot start virtual %s, it does not have any devices", v.ID)
+		return nil
 	}
 	for _, d := range v.Devices {
 		if d.State != device.Connected {

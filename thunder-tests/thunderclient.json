@@ -542,5 +542,19 @@
       }
     ],
     "tests": []
+  },
+  {
+    "_id": "f6ec7186-cf48-4482-8997-2db3acd926d5",
+    "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
+    "containerId": "b981d0c6-9449-4c60-972b-7322b3826e8c",
+    "name": "Get States",
+    "url": "{{host}}:8080/api/devices/state",
+    "method": "GET",
+    "sortNum": 15000,
+    "created": "2022-07-20T19:10:28.482Z",
+    "modified": "2022-07-20T19:10:40.941Z",
+    "headers": [],
+    "params": [],
+    "tests": []
   }
 ]

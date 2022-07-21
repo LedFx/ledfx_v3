@@ -57,9 +57,27 @@ func Get(id string) (*Virtual, error) {
 
 // Kill a virtual instance
 func Destroy(id string) {
+	v, ok := virtualInstances[id]
+	if !ok {
+		logger.Logger.WithField("context", "Virtuals").Warnf("Cannot delete %s, it doesn't exist", id)
+		return
+	}
+	if v.State {
+		v.Stop()
+	}
+	// remove it from saved states
+	config.SetStates(GetStates())
+	// disconnect any effects and devices
+	if v.Effect != nil {
+		DisconnectEffect(v.Effect.ID, v.ID)
+	}
+	for id := range v.Devices {
+		DisconnectDevice(id, v.ID)
+	}
+	// remove it from config
 	config.DeleteEntry(config.Virtual, id)
 	delete(virtualInstances, id)
-	logger.Logger.WithField("context", "Effects").Infof("Deleted virtual with id %s", id)
+	logger.Logger.WithField("context", "Virtuals").Infof("Deleted %s", id)
 	event.Invoke(event.VirtualDelete,
 		map[string]interface{}{
 			"id": id,

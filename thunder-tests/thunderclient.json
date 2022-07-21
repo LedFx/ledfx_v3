@@ -4,7 +4,7 @@
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "267f424a-15cd-4aae-a8ac-c2692994ab52",
     "name": "Get Schema",
-    "url": "{{host}}:8080/api/virtuals/schema",
+    "url": "{{host}}:8080/api/controllers/schema",
     "method": "GET",
     "sortNum": 10000,
     "created": "2022-06-24T09:10:07.878Z",
@@ -15,8 +15,8 @@
     "_id": "680dcec1-8ae2-4468-a338-a6d06fef884b",
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "267f424a-15cd-4aae-a8ac-c2692994ab52",
-    "name": "Get Virtuals",
-    "url": "{{host}}:8080/api/virtuals",
+    "name": "Get Controllers",
+    "url": "{{host}}:8080/api/controllers",
     "method": "GET",
     "sortNum": 20000,
     "created": "2022-06-24T09:10:07.879Z",
@@ -27,8 +27,8 @@
     "_id": "73f6fa86-3d8e-482a-ab45-9da149f40c1e",
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "267f424a-15cd-4aae-a8ac-c2692994ab52",
-    "name": "Create Virtual",
-    "url": "{{host}}:8080/api/virtuals",
+    "name": "Create Controller",
+    "url": "{{host}}:8080/api/controllers",
     "method": "POST",
     "sortNum": 30000,
     "created": "2022-06-24T09:10:07.880Z",
@@ -37,7 +37,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"base_config\": {\n        \"name\": \"test another virtual\"\n    }\n}",
+      "raw": "{\n    \"base_config\": {\n        \"name\": \"test another controller\"\n    }\n}",
       "form": []
     },
     "tests": []
@@ -47,7 +47,7 @@
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "8abf63bb-fbfd-4164-a2c7-d74baddcd377",
     "name": "Get States",
-    "url": "{{host}}:8080/api/virtuals/state",
+    "url": "{{host}}:8080/api/controllers/state",
     "method": "GET",
     "sortNum": 10000,
     "created": "2022-06-24T09:10:21.426Z",
@@ -59,7 +59,7 @@
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "8abf63bb-fbfd-4164-a2c7-d74baddcd377",
     "name": "Set States",
-    "url": "{{host}}:8080/api/virtuals/state",
+    "url": "{{host}}:8080/api/controllers/state",
     "method": "POST",
     "sortNum": 20000,
     "created": "2022-06-24T09:10:21.428Z",
@@ -68,7 +68,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"virtual0\": false\n}",
+      "raw": "{\n    \"controller0\": false\n}",
       "form": []
     },
     "tests": []
@@ -78,7 +78,7 @@
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "2e83502f-f3d6-4cc6-afc8-6f8edfc2ca85",
     "name": "Connect Effect",
-    "url": "{{host}}:8080/api/virtuals/connect",
+    "url": "{{host}}:8080/api/controllers/connect",
     "method": "POST",
     "sortNum": 10000,
     "created": "2022-06-24T09:10:21.431Z",
@@ -87,7 +87,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"effect_id\": \"energy0\",\n    \"virtual_id\": \"virtual0\"\n}",
+      "raw": "{\n    \"effect_id\": \"energy0\",\n    \"controller_id\": \"controller0\"\n}",
       "form": []
     },
     "tests": []
@@ -97,7 +97,7 @@
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "2e83502f-f3d6-4cc6-afc8-6f8edfc2ca85",
     "name": "Connect Device",
-    "url": "{{host}}:8080/api/virtuals/connect",
+    "url": "{{host}}:8080/api/controllers/connect",
     "method": "POST",
     "sortNum": 20000,
     "created": "2022-06-24T09:10:21.432Z",
@@ -106,7 +106,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"device_id\": \"UDP Stream0\",\n    \"virtual_id\": \"virtual0\"\n}",
+      "raw": "{\n    \"device_id\": \"UDP Stream0\",\n    \"controller_id\": \"controller0\"\n}",
       "form": []
     },
     "tests": []
@@ -116,7 +116,7 @@
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "2e83502f-f3d6-4cc6-afc8-6f8edfc2ca85",
     "name": "Connect Effect and Device",
-    "url": "{{host}}:8080/api/virtuals/connect",
+    "url": "{{host}}:8080/api/controllers/connect",
     "method": "POST",
     "sortNum": 30000,
     "created": "2022-06-24T09:10:21.433Z",
@@ -125,7 +125,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"effect_id\": \"energy0\",\n    \"virtual_id\": \"virtual0\",\n    \"device_id\": \"E1.31 sACN0\"\n}",
+      "raw": "{\n    \"effect_id\": \"energy0\",\n    \"controller_id\": \"controller0\",\n    \"device_id\": \"E1.31 sACN0\"\n}",
       "form": []
     },
     "tests": []
@@ -135,7 +135,7 @@
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "2e83502f-f3d6-4cc6-afc8-6f8edfc2ca85",
     "name": "Disconnect Effect",
-    "url": "{{host}}:8080/api/virtuals/disconnect",
+    "url": "{{host}}:8080/api/controllers/disconnect",
     "method": "POST",
     "sortNum": 40000,
     "created": "2022-06-24T09:10:21.434Z",
@@ -143,7 +143,7 @@
     "headers": [],
     "body": {
       "type": "json",
-      "raw": "{\r\n    \"effect_id\": \"energy0\",\r\n    \"virtual_id\": \"virtual0\"\r\n}"
+      "raw": "{\r\n    \"effect_id\": \"energy0\",\r\n    \"controller_id\": \"controller0\"\r\n}"
     }
   },
   {
@@ -151,7 +151,7 @@
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "2e83502f-f3d6-4cc6-afc8-6f8edfc2ca85",
     "name": "Disconnect Effect and Device",
-    "url": "{{host}}:8080/api/virtuals/disconnect",
+    "url": "{{host}}:8080/api/controllers/disconnect",
     "method": "POST",
     "sortNum": 50000,
     "created": "2022-06-24T09:10:21.435Z",
@@ -160,7 +160,7 @@
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"effect_id\": \"energy0\",\n    \"virtual_id\": \"virtual0\",\n    \"device_id\": \"E1.31 sACN0\"\n}",
+      "raw": "{\n    \"effect_id\": \"energy0\",\n    \"controller_id\": \"controller0\",\n    \"device_id\": \"E1.31 sACN0\"\n}",
       "form": []
     },
     "tests": []
@@ -189,7 +189,7 @@
     "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
     "containerId": "2e83502f-f3d6-4cc6-afc8-6f8edfc2ca85",
     "name": "Get Connections",
-    "url": "{{host}}:{{port}}/api/virtuals/connect",
+    "url": "{{host}}:{{port}}/api/controllers/connect",
     "method": "GET",
     "sortNum": 60000,
     "created": "2022-06-24T09:10:21.436Z",

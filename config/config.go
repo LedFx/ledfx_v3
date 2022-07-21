@@ -33,10 +33,10 @@ var (
 var mu sync.Mutex = sync.Mutex{}
 var validate *validator.Validate = validator.New()
 var store *config = &config{
-	Settings: SettingsConfig{},
-	Effects:  map[string]EffectEntry{},
-	Devices:  map[string]DeviceEntry{},
-	Virtuals: map[string]VirtualEntry{},
+	Settings:    SettingsConfig{},
+	Effects:     map[string]EffectEntry{},
+	Devices:     map[string]DeviceEntry{},
+	Controllers: map[string]ControllerEntry{},
 }
 
 type BaseDeviceConfig struct {
@@ -44,26 +44,26 @@ type BaseDeviceConfig struct {
 	Name       string `mapstructure:"name" json:"name" description:"Display name for the device" validate:"required"`
 }
 
-type VirtualConfig struct {
-	Name      string `mapstructure:"name" json:"name" description:"Display name for the virtual" validate:"required"`
-	IconName  string `mapstructure:"icon_name" json:"icon_name" description:"Icon name to identify this virtual" default:"alert-circle-outline" validate:""`
+type ControllerConfig struct {
+	Name      string `mapstructure:"name" json:"name" description:"Display name for the controller" validate:"required"`
+	IconName  string `mapstructure:"icon_name" json:"icon_name" description:"Icon name to identify this controller" default:"alert-circle-outline" validate:""`
 	FrameRate int    `mapstructure:"framerate" json:"framerate" description:"Target framerate" default:"60" validate:"gte=5,lte=120"`
 	// Span      bool            `mapstructure:"span" json:"span"`
-	// Outputs   []VirtualOutput `mapstructure:"outputs" json:"outputs"`
+	// Outputs   []ControllerOutput `mapstructure:"outputs" json:"outputs"`
 }
 
 type config struct {
 	//Version  string                  `mapstructure:"version" json:"version"`
-	Settings      SettingsConfig          `mapstructure:"core" json:"core"`
-	Frontend      FrontendConfig          `mapstructure:"frontend" json:"frontend"`
-	Effects       map[string]EffectEntry  `mapstructure:"effects" json:"effects"`
-	Devices       map[string]DeviceEntry  `mapstructure:"devices" json:"devices"`
-	Virtuals      map[string]VirtualEntry `mapstructure:"virtuals" json:"virtuals"`
-	EffectsGlobal map[string]interface{}  `mapstructure:"global_effects" json:"global_effects"`
-	ConnEffect    map[string]string       `mapstructure:"connections_effect" json:"connections_effect"`
-	ConnDevice    map[string]string       `mapstructure:"connections_device" json:"connections_device"`
-	VirtStates    map[string]bool         `mapstructure:"virtual_states" json:"virtual_states"`
-	LocalInput    string                  `mapstructure:"local_input" json:"local_input"`
+	Settings      SettingsConfig             `mapstructure:"core" json:"core"`
+	Frontend      FrontendConfig             `mapstructure:"frontend" json:"frontend"`
+	Effects       map[string]EffectEntry     `mapstructure:"effects" json:"effects"`
+	Devices       map[string]DeviceEntry     `mapstructure:"devices" json:"devices"`
+	Controllers   map[string]ControllerEntry `mapstructure:"controllers" json:"controllers"`
+	EffectsGlobal map[string]interface{}     `mapstructure:"global_effects" json:"global_effects"`
+	ConnEffect    map[string]string          `mapstructure:"connections_effect" json:"connections_effect"`
+	ConnDevice    map[string]string          `mapstructure:"connections_device" json:"connections_device"`
+	VirtStates    map[string]bool            `mapstructure:"controller_states" json:"controller_states"`
+	LocalInput    string                     `mapstructure:"local_input" json:"local_input"`
 	// Audio    AudioEntry              `mapstructure:"audio" json:"audio"`
 	// Audio    AudioConfig             `mapstructure:"audio" json:"audio"`
 }

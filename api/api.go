@@ -54,23 +54,23 @@ func HandleApi() {
 	// 	if err != nil {
 	// 		logger.Logger.Warn(err)
 	// 	}
-	// 	// TODO: See comment for Virtuals
+	// 	// TODO: See comment for Controllers
 	// 	// json.NewEncoder(w).Encode(config.GlobalConfig.Devices)
 	// })
 
-	// http.HandleFunc("/api/virtuals", func(w http.ResponseWriter, r *http.Request) {
+	// http.HandleFunc("/api/controllers", func(w http.ResponseWriter, r *http.Request) {
 	// 	SetHeader(w)
 	// 	// TODO:
-	// 	// this is too much, we only need Virtuals
+	// 	// this is too much, we only need Controllers
 	// 	err := json.NewEncoder(w).Encode(config.GlobalConfig)
 	// 	if err != nil {
 	// 		logger.Logger.Warn(err)
 	// 	}
 
-	// 	// this is too less, we need the key also: {"virtuals": ...}
-	// 	// json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
+	// 	// this is too less, we need the key also: {"controllers": ...}
+	// 	// json.NewEncoder(w).Encode(config.GlobalConfig.Controllers)
 	// })
-	/*	http.HandleFunc("/api/virtuals/", func(w http.ResponseWriter, r *http.Request) {
+	/*	http.HandleFunc("/api/controllers/", func(w http.ResponseWriter, r *http.Request) {
 			if LastColor == "" {
 				LastColor = "#ff0000"
 			}
@@ -83,13 +83,13 @@ func HandleApi() {
 
 				var p Resp
 				var category string
-				var virtualid string
-				path := strings.TrimPrefix(r.URL.Path, "/virtuals/")
-				virtualid = strings.Split(path, "/api/virtuals/")[1]
-				pathNodes := strings.Split(virtualid, "/")
+				var controllerid string
+				path := strings.TrimPrefix(r.URL.Path, "/controllers/")
+				controllerid = strings.Split(path, "/api/controllers/")[1]
+				pathNodes := strings.Split(controllerid, "/")
 				if len(pathNodes) > 1 {
 					category = string(pathNodes[1])
-					virtualid = string(pathNodes[0])
+					controllerid = string(pathNodes[0])
 				}
 
 				err := json.NewDecoder(r.Body).Decode(&p)
@@ -99,7 +99,7 @@ func HandleApi() {
 				}
 
 				if r.Method == "DELETE" {
-					err := virtual.StopVirtual(virtualid)
+					err := controller.StopController(controllerid)
 					if err != nil {
 						logger.Logger.Warn(err)
 					}
@@ -116,7 +116,7 @@ func HandleApi() {
 
 				if category == "effects" {
 					LastColor = p.Config.Color
-					err := virtual.PlayVirtual(virtualid, true, LastColor)
+					err := controller.PlayController(controllerid, true, LastColor)
 					if err != nil {
 						logger.Logger.Warn(err)
 					}
@@ -126,13 +126,13 @@ func HandleApi() {
 					if LastColor == "" {
 						LastColor = "#000fff"
 					}
-					err := virtual.PlayVirtual(virtualid, p.Active, LastColor)
+					err := controller.PlayController(controllerid, p.Active, LastColor)
 					if err != nil {
 						logger.Logger.Warn(err)
 					}
 				}
 
-				err = json.NewEncoder(w).Encode(config.GlobalConfig.Virtuals)
+				err = json.NewEncoder(w).Encode(config.GlobalConfig.Controllers)
 				if err != nil {
 					logger.Logger.Warn(err)
 				}

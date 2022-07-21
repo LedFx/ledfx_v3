@@ -1,4 +1,4 @@
-package virtual
+package controller
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func TestVirtual(t *testing.T) {
+func TestController(t *testing.T) {
 
 	bdc := map[string]interface{}{
 		"pixel_count": 64,
@@ -85,7 +85,7 @@ func TestVirtual(t *testing.T) {
 	}
 }
 
-func BenchmarkVirtual(t *testing.B) {
+func BenchmarkController(t *testing.B) {
 
 	bdc := map[string]interface{}{
 		"pixel_count": 64,

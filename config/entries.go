@@ -10,7 +10,7 @@ type EntryType int
 const (
 	Effect EntryType = iota
 	Device
-	Virtual
+	Controller
 )
 
 func (e EntryType) String() string {
@@ -19,8 +19,8 @@ func (e EntryType) String() string {
 		return "effect"
 	case Device:
 		return "device"
-	case Virtual:
-		return "virtual"
+	case Controller:
+		return "controller"
 	default:
 		return "unknown"
 	}
@@ -41,7 +41,7 @@ type DeviceEntry struct {
 	ImplConfig map[string]interface{} `mapstructure:"impl_config" json:"impl_config"`
 }
 
-type VirtualEntry struct {
+type ControllerEntry struct {
 	ID     string                 `mapstructure:"id" json:"id"`
 	Config map[string]interface{} `mapstructure:"base_config" json:"base_config"`
 }
@@ -54,8 +54,8 @@ func AddEntry(id string, entry interface{}) (err error) {
 		store.Effects[id] = entry.(EffectEntry)
 	case DeviceEntry:
 		store.Devices[id] = entry.(DeviceEntry)
-	case VirtualEntry:
-		store.Virtuals[id] = entry.(VirtualEntry)
+	case ControllerEntry:
+		store.Controllers[id] = entry.(ControllerEntry)
 	default:
 		err = fmt.Errorf("unknown config entry type: %v", t)
 	}
@@ -81,11 +81,11 @@ func DeleteEntry(t EntryType, id string) {
 			return
 		}
 		delete(store.Devices, id)
-	case Virtual:
-		if _, exists := store.Virtuals[id]; !exists {
+	case Controller:
+		if _, exists := store.Controllers[id]; !exists {
 			return
 		}
-		delete(store.Virtuals, id)
+		delete(store.Controllers, id)
 	}
 	logger.Logger.WithField("context", "Config").Debugf("Deleted %s %s from config", t.String(), id)
 	saveConfig()
@@ -115,14 +115,14 @@ func GetDevice(id string) (DeviceEntry, error) {
 	}
 }
 
-func GetVirtuals() map[string]VirtualEntry {
-	return store.Virtuals
+func GetControllers() map[string]ControllerEntry {
+	return store.Controllers
 }
 
-func GetVirtual(id string) (VirtualEntry, error) {
-	if entry, ok := store.Virtuals[id]; ok {
+func GetController(id string) (ControllerEntry, error) {
+	if entry, ok := store.Controllers[id]; ok {
 		return entry, nil
 	} else {
-		return entry, fmt.Errorf("cannot retrieve virtual config of id: %s", id)
+		return entry, fmt.Errorf("cannot retrieve controller config of id: %s", id)
 	}
 }

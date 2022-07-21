@@ -6,13 +6,13 @@ import (
 	"ledfx/bridgeapi"
 	"ledfx/config"
 	"ledfx/constants"
+	"ledfx/controller"
 	"ledfx/device"
 	"ledfx/effect"
 	"ledfx/event"
 	"ledfx/frontend"
 	"ledfx/logger"
 	"ledfx/util"
-	"ledfx/virtual"
 	"ledfx/websocket"
 	"net"
 	"net/http"
@@ -68,12 +68,12 @@ func main() {
 	if err != nil {
 		logger.Logger.WithField("context", "Load Devices from Config").Fatal(err)
 	}
-	err = virtual.LoadFromConfig()
+	err = controller.LoadFromConfig()
 	if err != nil {
-		logger.Logger.WithField("context", "Load Virtuals from Config").Fatal(err)
+		logger.Logger.WithField("context", "Load Controllers from Config").Fatal(err)
 	}
-	virtual.LoadConnectionsFromConfig()
-	virtual.LoadStatesFromConfig()
+	controller.LoadConnectionsFromConfig()
+	controller.LoadStatesFromConfig()
 
 	// Handle WLED scanning
 	if !settings.NoScan {
@@ -86,7 +86,7 @@ func main() {
 	mux := http.DefaultServeMux
 	effect.NewAPI(mux)
 	device.NewAPI(mux)
-	virtual.NewAPI(mux)
+	controller.NewAPI(mux)
 	config.NewAPI(mux)
 	frontend.NewServer(mux)
 	websocket.Serve(mux)

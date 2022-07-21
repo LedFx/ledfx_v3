@@ -1,4 +1,4 @@
-package virtual
+package controller
 
 import (
 	"ledfx/color"

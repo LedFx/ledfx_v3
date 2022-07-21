@@ -1,4 +1,4 @@
-package virtual
+package controller
 
 import (
 	"ledfx/color"
@@ -13,18 +13,18 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type Virtual struct {
+type Controller struct {
 	ID      string
 	Effect  *effect.Effect
 	Devices map[string]*device.Device
 	State   bool
-	Config  config.VirtualConfig
+	Config  config.ControllerConfig
 	ticker  *time.Ticker
 	done    chan bool
 	pixels  color.Pixels
 }
 
-func (v *Virtual) Initialize(id string, c map[string]interface{}) (err error) {
+func (v *Controller) Initialize(id string, c map[string]interface{}) (err error) {
 	v.ID = id
 	v.State = false
 	defaults.Set(&v.Config)
@@ -38,14 +38,14 @@ func (v *Virtual) Initialize(id string, c map[string]interface{}) (err error) {
 	}
 	err = config.AddEntry(
 		v.ID,
-		config.VirtualEntry{
+		config.ControllerEntry{
 			ID:     v.ID,
 			Config: c,
 		},
 	)
 	v.Devices = map[string]*device.Device{}
 	// invoke event
-	event.Invoke(event.VirtualUpdate,
+	event.Invoke(event.ControllerUpdate,
 		map[string]interface{}{
 			"id":          v.ID,
 			"base_config": c,
@@ -55,7 +55,7 @@ func (v *Virtual) Initialize(id string, c map[string]interface{}) (err error) {
 }
 
 // gets the largest device pixel count
-func (v *Virtual) PixelCount() int {
+func (v *Controller) PixelCount() int {
 	pc := 0
 	for _, d := range v.Devices {
 		dpc := d.Config.PixelCount
@@ -66,7 +66,7 @@ func (v *Virtual) PixelCount() int {
 	return pc
 }
 
-func (v *Virtual) renderLoop() {
+func (v *Controller) renderLoop() {
 	for {
 		select {
 		case <-v.ticker.C:
@@ -85,7 +85,7 @@ func (v *Virtual) renderLoop() {
 				}
 			}
 			// if err != nil {
-			// 	logger.Logger.WithField("context", "Virtual").Error(err)
+			// 	logger.Logger.WithField("context", "Controller").Error(err)
 			// }
 		case <-v.done:
 			return
@@ -93,19 +93,19 @@ func (v *Virtual) renderLoop() {
 	}
 }
 
-func (v *Virtual) Start() error {
+func (v *Controller) Start() error {
 	if v.Effect == nil {
-		logger.Logger.WithField("context", "Virtual").Warnf("cannot start virtual %s, it does not have an effect", v.ID)
+		logger.Logger.WithField("context", "Controller").Warnf("cannot start controller %s, it does not have an effect", v.ID)
 		return nil
 	}
 	if len(v.Devices) == 0 {
-		logger.Logger.WithField("context", "Virtual").Warnf("cannot start virtual %s, it does not have any devices", v.ID)
+		logger.Logger.WithField("context", "Controller").Warnf("cannot start controller %s, it does not have any devices", v.ID)
 		return nil
 	}
 	for _, d := range v.Devices {
 		if d.State != device.Connected {
-			// err := fmt.Errorf("cannot start virtual %s, device %s is not connected", v.ID, d.ID)
-			// logger.Logger.WithField("context", "Virtual").Error(err)
+			// err := fmt.Errorf("cannot start controller %s, device %s is not connected", v.ID, d.ID)
+			// logger.Logger.WithField("context", "Controller").Error(err)
 			go d.Connect()
 			// return err
 		}
@@ -115,10 +115,10 @@ func (v *Virtual) Start() error {
 	v.done = make(chan bool)
 	go v.renderLoop()
 	v.State = true
-	logger.Logger.WithField("context", "Virtuals").Infof("Activated %s", v.ID)
+	logger.Logger.WithField("context", "Controllers").Infof("Activated %s", v.ID)
 	// invoke event
-	entry, _ := config.GetVirtual(v.ID)
-	event.Invoke(event.VirtualUpdate,
+	entry, _ := config.GetController(v.ID)
+	event.Invoke(event.ControllerUpdate,
 		map[string]interface{}{
 			"id":          v.ID,
 			"base_config": entry.Config,
@@ -127,7 +127,7 @@ func (v *Virtual) Start() error {
 	return nil
 }
 
-func (v *Virtual) Stop() {
+func (v *Controller) Stop() {
 	if v.ticker != nil {
 		v.ticker.Stop()
 	}
@@ -138,10 +138,10 @@ func (v *Virtual) Stop() {
 	for _, d := range v.Devices {
 		d.Disconnect()
 	}
-	logger.Logger.WithField("context", "Virtuals").Infof("Deactivated %s", v.ID)
+	logger.Logger.WithField("context", "Controllers").Infof("Deactivated %s", v.ID)
 	// invoke event
-	entry, _ := config.GetVirtual(v.ID)
-	event.Invoke(event.VirtualUpdate,
+	entry, _ := config.GetController(v.ID)
+	event.Invoke(event.ControllerUpdate,
 		map[string]interface{}{
 			"id":          v.ID,
 			"base_config": entry.Config,

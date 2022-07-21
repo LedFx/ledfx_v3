@@ -104,7 +104,7 @@ paths:
                     verbose: true
                     version: false
                     very-verbose: false
-                    virtuals:
+                    controllers:
                       - active: false
                         config:
                           center_offset: 0
@@ -319,7 +319,7 @@ paths:
                     type: boolean
                   very-verbose:
                     type: boolean
-                  virtuals:
+                  controllers:
                     type: array
                     uniqueItems: true
                     minItems: 1
@@ -421,7 +421,7 @@ paths:
                   - verbose
                   - version
                   - very-verbose
-                  - virtuals
+                  - controllers
       description: Get the whole LedFx config-tree
   /devices:
     get:
@@ -554,9 +554,9 @@ paths:
                         type: wled
       operationId: get-devices
       description: Get the whole LedFx devices-tree
-  /virtuals:
+  /controllers:
     get:
-      summary: GET virtuals
+      summary: GET controllers
       tags: []
       responses:
         '200':
@@ -567,7 +567,7 @@ paths:
                 description: ''
                 type: object
                 properties:
-                  virtuals:
+                  controllers:
                     type: array
                     uniqueItems: true
                     minItems: 1
@@ -663,10 +663,10 @@ paths:
                                   required: []
                                   properties: {}
                 required:
-                  - virtuals
+                  - controllers
                 x-examples:
                   example-1:
-                    virtuals:
+                    controllers:
                       - active: false
                         config:
                           center_offset: 0
@@ -823,11 +823,11 @@ paths:
                             - 0
                             - 291
                             - false
-      operationId: get-virtuals
-      description: Get the whole LedFx virtuals-tree
-  '/virtuals/{virtualId}':
+      operationId: get-controllers
+      description: Get the whole LedFx controllers-tree
+  '/controllers/{controllerId}':
     get:
-      summary: GET Virtual
+      summary: GET Controller
       tags: []
       responses:
         '200':
@@ -958,17 +958,17 @@ paths:
                         - 0
                         - 35
                         - false
-      operationId: 'get-virtuals-virtualId]'
-      description: Get virtual
+      operationId: 'get-controllers-controllerId]'
+      description: Get controller
     parameters:
       - schema:
           type: string
-        name: virtualId
+        name: controllerId
         in: path
         required: true
     put:
-      summary: Set Virtual
-      operationId: put-virtuals-virtualId
+      summary: Set Controller
+      operationId: put-controllers-controllerId
       responses:
         '200':
           description: OK
@@ -978,7 +978,7 @@ paths:
                 description: ''
                 type: object
                 properties:
-                  virtuals:
+                  controllers:
                     type: array
                     uniqueItems: true
                     minItems: 1
@@ -1074,10 +1074,10 @@ paths:
                                   required: []
                                   properties: {}
                 required:
-                  - virtuals
+                  - controllers
                 x-examples:
                   example-1:
-                    virtuals:
+                    controllers:
                       - active: false
                         config:
                           center_offset: 0
@@ -1240,7 +1240,7 @@ paths:
             schema:
               type: object
               properties: {}
-      description: Set Virtual
+      description: Set Controller
 components:
   schemas: {}
   securitySchemes: {}

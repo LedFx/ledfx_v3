@@ -1,4 +1,4 @@
-package virtual
+package controller
 
 import (
 	"fmt"
@@ -9,10 +9,10 @@ import (
 	"ledfx/logger"
 )
 
-// links effect IDs to virtual IDs
+// links effect IDs to controller IDs
 var connectionsEffect = map[string]string{}
 
-// links device IDs to virtual IDs
+// links device IDs to controller IDs
 var connectionsDevice = map[string]string{}
 
 var dontSave bool = false
@@ -24,13 +24,13 @@ func LoadConnectionsFromConfig() {
 	for eID, vID := range effects {
 		err := ConnectEffect(eID, vID)
 		if err != nil {
-			logger.Logger.WithField("context", "Virtual Connections").Fatal(err)
+			logger.Logger.WithField("context", "Controller Connections").Fatal(err)
 		}
 	}
 	for dID, vID := range devices {
 		err := ConnectDevice(dID, vID)
 		if err != nil {
-			logger.Logger.WithField("context", "Virtual Connections").Fatal(err)
+			logger.Logger.WithField("context", "Controller Connections").Fatal(err)
 		}
 	}
 	// invoke event
@@ -41,14 +41,14 @@ func LoadConnectionsFromConfig() {
 		})
 }
 
-func ConnectEffect(effectID, virtualID string) error {
+func ConnectEffect(effectID, controllerID string) error {
 	// make sure effect exists
 	e, err := effect.Get(effectID)
 	if err != nil {
 		return err
 	}
-	// make sure virtual exists
-	v, err := Get(virtualID)
+	// make sure controller exists
+	v, err := Get(controllerID)
 	if err != nil {
 		return err
 	}
@@ -58,19 +58,19 @@ func ConnectEffect(effectID, virtualID string) error {
 	}
 
 	for eID, vID := range connectionsEffect {
-		// -> virtual can only have one effect.
-		// if there's already an effect connected to the virtual, disconnect it
-		// -> effect can only output to one virtual.
-		// if it's already assigned to a virtual, disconnect it first
-		if eID == effectID || vID == virtualID {
+		// -> controller can only have one effect.
+		// if there's already an effect connected to the controller, disconnect it
+		// -> effect can only output to one controller.
+		// if it's already assigned to a controller, disconnect it first
+		if eID == effectID || vID == controllerID {
 			delete(connectionsEffect, eID)
 			otherv, _ := Get(vID)
 			otherv.Effect = nil
 		}
 	}
-	connectionsEffect[effectID] = virtualID
+	connectionsEffect[effectID] = controllerID
 	v.Effect = e
-	// if the virtual has a device, initialise the effect with the pixel count
+	// if the controller has a device, initialise the effect with the pixel count
 	if len(v.Devices) != 0 {
 		v.Effect.UpdatePixelCount(v.PixelCount())
 	}
@@ -83,18 +83,18 @@ func ConnectEffect(effectID, virtualID string) error {
 				"devices": connectionsDevice,
 			})
 	}
-	logger.Logger.WithField("context", "Virtuals").Infof("Connected %s to %s", effectID, virtualID)
+	logger.Logger.WithField("context", "Controllers").Infof("Connected %s to %s", effectID, controllerID)
 	return nil
 }
 
-func ConnectDevice(deviceID, virtualID string) error {
+func ConnectDevice(deviceID, controllerID string) error {
 	// make sure device exists
 	dev, err := device.Get(deviceID)
 	if err != nil {
 		return err
 	}
-	// make sure virtual exists
-	v, err := Get(virtualID)
+	// make sure controller exists
+	v, err := Get(controllerID)
 	if err != nil {
 		return err
 	}
@@ -104,12 +104,12 @@ func ConnectDevice(deviceID, virtualID string) error {
 			return nil
 		}
 	}
-	connectionsDevice[deviceID] = virtualID
+	connectionsDevice[deviceID] = controllerID
 	v.Devices[dev.ID] = dev
 	if dev.State != device.Connected {
 		err = dev.Connect()
 	}
-	// if the virtual has an effect, initialise it with the pixel count
+	// if the controller has an effect, initialise it with the pixel count
 	if v.Effect != nil {
 		v.Effect.UpdatePixelCount(v.PixelCount())
 	}
@@ -122,19 +122,19 @@ func ConnectDevice(deviceID, virtualID string) error {
 				"devices": connectionsDevice,
 			})
 	}
-	logger.Logger.WithField("context", "Virtuals").Infof("Connected %s to %s", deviceID, virtualID)
+	logger.Logger.WithField("context", "Controllers").Infof("Connected %s to %s", deviceID, controllerID)
 	return err
 }
 
-func DisconnectEffect(effectID, virtualID string) error {
-	// make sure virtual exists
-	_, err := Get(virtualID)
+func DisconnectEffect(effectID, controllerID string) error {
+	// make sure controller exists
+	_, err := Get(controllerID)
 	if err != nil {
 		return err
 	}
 	vID, connected := connectionsEffect[effectID]
-	if !connected || virtualID != vID {
-		err = fmt.Errorf("effect %s and virtual %s are not connected", effectID, virtualID)
+	if !connected || controllerID != vID {
+		err = fmt.Errorf("effect %s and controller %s are not connected", effectID, controllerID)
 		return err
 	}
 	v, _ := Get(vID)
@@ -152,24 +152,24 @@ func DisconnectEffect(effectID, virtualID string) error {
 				"devices": connectionsDevice,
 			})
 	}
-	logger.Logger.WithField("context", "Virtuals").Infof("Disconnected %s from %s", effectID, virtualID)
+	logger.Logger.WithField("context", "Controllers").Infof("Disconnected %s from %s", effectID, controllerID)
 	return err
 }
 
-func DisconnectDevice(deviceID, virtualID string) error {
-	// make sure virtual exists
-	_, err := Get(virtualID)
+func DisconnectDevice(deviceID, controllerID string) error {
+	// make sure controller exists
+	_, err := Get(controllerID)
 	if err != nil {
 		return err
 	}
 	// delete it from connections
 	vID, connected := connectionsDevice[deviceID]
-	if !connected || virtualID != vID {
-		err = fmt.Errorf("device %s and virtual %s are not connected", deviceID, virtualID)
+	if !connected || controllerID != vID {
+		err = fmt.Errorf("device %s and controller %s are not connected", deviceID, controllerID)
 		return err
 	}
 	delete(connectionsDevice, deviceID)
-	// delete it from virtual
+	// delete it from controller
 	v, _ := Get(vID)
 	d, exists := v.Devices[deviceID]
 	if !exists {
@@ -191,6 +191,6 @@ func DisconnectDevice(deviceID, virtualID string) error {
 				"devices": connectionsDevice,
 			})
 	}
-	logger.Logger.WithField("context", "Virtuals").Infof("Disconnected %s from %s", deviceID, virtualID)
+	logger.Logger.WithField("context", "Controllers").Infof("Disconnected %s from %s", deviceID, controllerID)
 	return err
 }

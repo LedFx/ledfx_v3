@@ -18,8 +18,8 @@ const (
 	EffectUpdate
 	EffectDelete
 	GlobalEffectUpdate
-	VirtualUpdate
-	VirtualDelete
+	ControllerUpdate
+	ControllerDelete
 	DeviceUpdate
 	DeviceDelete
 	ConnectionsUpdate // TODO
@@ -40,10 +40,10 @@ func (et EventType) String() string {
 		return "Effect Delete"
 	case GlobalEffectUpdate:
 		return "Global Effect Update"
-	case VirtualUpdate:
-		return "Virtual Update"
-	case VirtualDelete:
-		return "Virtual Delete"
+	case ControllerUpdate:
+		return "Controller Update"
+	case ControllerDelete:
+		return "Controller Delete"
 	case DeviceUpdate:
 		return "Device Update"
 	case DeviceDelete:
@@ -105,11 +105,11 @@ func Invoke(et EventType, data map[string]interface{}) {
 		err = checkKeys(data, []string{"id", "type", "base_config"})
 	case GlobalEffectUpdate:
 		err = checkKeys(data, []string{"config"})
-	case VirtualUpdate:
+	case ControllerUpdate:
 		err = checkKeys(data, []string{"id", "base_config", "active"})
 	case DeviceUpdate:
 		err = checkKeys(data, []string{"id", "base_config", "impl_config", "state"})
-	case EffectDelete | DeviceDelete | VirtualDelete:
+	case EffectDelete | DeviceDelete | ControllerDelete:
 		err = checkKeys(data, []string{"id"})
 	case ConnectionsUpdate:
 		err = checkKeys(data, []string{"effects", "devices"})

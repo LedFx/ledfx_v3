@@ -95,19 +95,16 @@ func (v *Controller) renderLoop() {
 
 func (v *Controller) Start() error {
 	if v.Effect == nil {
-		logger.Logger.WithField("context", "Controller").Warnf("cannot start controller %s, it does not have an effect", v.ID)
+		logger.Logger.WithField("context", "Controller").Warnf("cannot start %s, it does not have an effect", v.ID)
 		return nil
 	}
 	if len(v.Devices) == 0 {
-		logger.Logger.WithField("context", "Controller").Warnf("cannot start controller %s, it does not have any devices", v.ID)
+		logger.Logger.WithField("context", "Controller").Warnf("cannot start %s, it does not have any devices", v.ID)
 		return nil
 	}
 	for _, d := range v.Devices {
 		if d.State != device.Connected {
-			// err := fmt.Errorf("cannot start controller %s, device %s is not connected", v.ID, d.ID)
-			// logger.Logger.WithField("context", "Controller").Error(err)
 			go d.Connect()
-			// return err
 		}
 	}
 	v.pixels = make(color.Pixels, v.PixelCount())

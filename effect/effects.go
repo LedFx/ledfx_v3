@@ -19,10 +19,10 @@ import (
 )
 
 type EffectInfo struct {
-	Description string `mapstructure:"description" json:"description"`
-	GoodFor     string `mapstructure:"good_for" json:"good_for"`
-	Category    string `mapstructure:"category" json:"category"`
-	Preview     []byte `mapstructure:"preview" json:"preview"`
+	Description string   `mapstructure:"description" json:"description"`
+	GoodFor     []string `mapstructure:"good_for" json:"good_for"`
+	Category    string   `mapstructure:"category" json:"category"`
+	Preview     []byte   `mapstructure:"preview" json:"preview"`
 }
 
 /*
@@ -33,37 +33,37 @@ NEW EFFECTS MUST BE REGISTERED IN THIS MAP AND FUNCTION =====================
 var effectTypes = map[string]EffectInfo{
 	"energy": {
 		Description: "Blended color bar composed from audio bass, mids, and highs",
-		GoodFor:     "Energetic music with high dynamic range",
+		GoodFor:     []string{"Energetic music", "High dynamic range", "Dance"},
 		Category:    "Audio Reactive",
 		Preview:     []byte{},
 	},
 	"weave": {
 		Description: "Interleaved snaking bands of color reacting to audio bass, mids and highs",
-		GoodFor:     "Calm music, sustained notes",
+		GoodFor:     []string{"Calm music", "Sustained notes"},
 		Category:    "Audio Reactive",
 		Preview:     []byte{},
 	},
 	"strobe": {
 		Description: "Flashes of color on bass and percussive hits",
-		GoodFor:     "Music with clear and defined percussion, eg. House, Dance",
+		GoodFor:     []string{"Percussion", "House", "Dance"},
 		Category:    "Audio Reactive",
 		Preview:     []byte{},
 	},
 	"palette": {
 		Description: "Displays the full color palette",
-		GoodFor:     "Ambience, static colors",
+		GoodFor:     []string{"Ambience", "Static colors"},
 		Category:    "Non Reactive",
 		Preview:     []byte{},
 	},
 	"fade": {
 		Description: "Cycle through the color palette",
-		GoodFor:     "Ambience, morphing colors",
+		GoodFor:     []string{"Ambience", "Morphing colors"},
 		Category:    "Non Reactive",
 		Preview:     []byte{},
 	},
 	"pulse": {
 		Description: "Repeatedly flashes the full color palette",
-		GoodFor:     "High intensity, building energy",
+		GoodFor:     []string{"High intensity", "Building energy"},
 		Category:    "Non reactive",
 		Preview:     []byte{},
 	},

@@ -83,10 +83,22 @@ jobs:
          cp $CYGPATH/mingw64/bin/libvorbisenc-2.dll LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libwinpthread-1.dll LedFx_Builds/
 
-    - name: Upload LedFx Artifact
+    - name: Build AIP
+      uses: caphyon/advinst-github-action@v1.0
+      with:
+        advinst-license: ${{ secrets.ADVINST_LICENSE_KEY }}
+        advinst-enable-automation: 'true'
+        aip-path: ${{ github.workspace }}\LedFx Installer.aip
+        aip-build-name: DefaultBuild
+        aip-package-name: LedFx Installer.exe
+        aip-output-dir:  LedFx_Builds/
+        aip-commands: |
+          SetProperty github_sha="${{ github.sha }}"
+          SetVersion 6.6.6
+    - name: Publish all windows artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: LedFx-windows-amd64-${{ github.sha }}
+        name: Upload Windows Artifacts
         path: LedFx_Builds/
 
   build_macos:

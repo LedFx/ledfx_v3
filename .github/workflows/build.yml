@@ -69,7 +69,7 @@ jobs:
          mkdir LedFx_Builds/
          mv LedFx.exe LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libgcc_s_seh-1.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libstdc++-6 LedFx_Builds/
+         cp $CYGPATH/mingw64/bin/libstdc++-6.dll LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libaubio-5.dll LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libportaudio.dll LedFx_Builds/
          cp $CYGPATH/mingw64/bin/libfftw3f-3.dll LedFx_Builds/

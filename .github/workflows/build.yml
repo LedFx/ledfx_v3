@@ -91,7 +91,7 @@ jobs:
         aip-path: ${{ github.workspace }}\LedFx Installer.aip
         aip-build-name: DefaultBuild
         aip-package-name: LedFx Installer.exe
-        aip-output-dir:  ${{ github.workspace }}\LedFx_Builds/
+        aip-output-dir:  ${{ github.workspace }}\LedFx_Builds
         aip-commands: |
           SetProperty github_sha="${{ github.sha }}"
           SetVersion 6.6.6

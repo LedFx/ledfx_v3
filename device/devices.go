@@ -36,7 +36,7 @@ var deviceTypes = map[string]deviceInfo{
 	},
 	"e131": {
 		Name:      "E1.31 sACN",
-		Info:      "Implements E1.31 sACN to send DMX-512 data over the network. Industry standard for lighting and control.",
+		Info:      "Implements E1.31 sACN to send DMX-512 data over the network.",
 		Protocols: []string{"E131"},
 	},
 }
@@ -161,19 +161,19 @@ func Schema() (schema map[string]interface{}, err error) {
 	}
 	schema["types"] = deviceTypes
 	implSchema := make(map[string]interface{})
-	implSchema["UDP Stream"], err = util.CreateSchema(reflect.TypeOf((*UDPConfig)(nil)).Elem())
+	implSchema["udp_stream"], err = util.CreateSchema(reflect.TypeOf((*UDPConfig)(nil)).Elem())
 	if err != nil {
 		return schema, err
 	}
-	implSchema["USB Serial"], err = util.CreateSchema(reflect.TypeOf((*SerialConfig)(nil)).Elem())
+	implSchema["usb_serial"], err = util.CreateSchema(reflect.TypeOf((*SerialConfig)(nil)).Elem())
 	if err != nil {
 		return schema, err
 	}
-	implSchema["ArtNet"], err = util.CreateSchema(reflect.TypeOf((*ArtNetConfig)(nil)).Elem())
+	implSchema["artnet"], err = util.CreateSchema(reflect.TypeOf((*ArtNetConfig)(nil)).Elem())
 	if err != nil {
 		return schema, err
 	}
-	implSchema["E1.31 sACN"], err = util.CreateSchema(reflect.TypeOf((*E131Config)(nil)).Elem())
+	implSchema["e131"], err = util.CreateSchema(reflect.TypeOf((*E131Config)(nil)).Elem())
 	if err != nil {
 		return schema, err
 	}

@@ -7,21 +7,21 @@
     "folders": [
       {
         "_id": "267f424a-15cd-4aae-a8ac-c2692994ab52",
-        "name": "Controllers",
+        "name": "Virtuals",
         "containerId": "",
         "created": "2022-06-24T09:19:03.629Z",
         "sortNum": 10000
       },
       {
         "_id": "8abf63bb-fbfd-4164-a2c7-d74baddcd377",
-        "name": "Controller States",
+        "name": "Virtual States",
         "containerId": "",
         "created": "2022-06-24T09:19:30.495Z",
         "sortNum": 20000
       },
       {
         "_id": "2e83502f-f3d6-4cc6-afc8-6f8edfc2ca85",
-        "name": "Controller Connections",
+        "name": "Virtual Connections",
         "containerId": "",
         "created": "2022-06-24T09:19:59.985Z",
         "sortNum": 15000
@@ -60,6 +60,13 @@
         "containerId": "",
         "created": "2022-06-24T09:22:34.938Z",
         "sortNum": 5000
+      },
+      {
+        "_id": "e28cb433-e4b6-485c-b83c-5b91f8ee7caa",
+        "name": "Color",
+        "containerId": "",
+        "created": "2022-07-26T19:11:38.188Z",
+        "sortNum": 30000
       }
     ]
   }

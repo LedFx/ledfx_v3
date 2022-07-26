@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"ledfx/audio"
 	"ledfx/bridgeapi"
+	"ledfx/color"
 	"ledfx/config"
 	"ledfx/constants"
 	"ledfx/controller"
@@ -88,6 +89,7 @@ func main() {
 	device.NewAPI(mux)
 	controller.NewAPI(mux)
 	config.NewAPI(mux)
+	color.NewAPI(mux)
 	frontend.NewServer(mux)
 	websocket.Serve(mux)
 	bridgeServer, err := bridgeapi.NewServer(audio.Analyzer.BufferCallback, mux)

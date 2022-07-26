@@ -556,5 +556,19 @@
     "headers": [],
     "params": [],
     "tests": []
+  },
+  {
+    "_id": "8f22ae30-cd2f-42ba-821e-62b2247d30c0",
+    "colId": "0892376e-c6b0-4e6a-99f7-986614e0ba25",
+    "containerId": "e28cb433-e4b6-485c-b83c-5b91f8ee7caa",
+    "name": "Get Colors and Palettes",
+    "url": "{{host}}:8080/api/color",
+    "method": "GET",
+    "sortNum": 10000,
+    "created": "2022-07-26T19:11:46.848Z",
+    "modified": "2022-07-26T19:12:52.513Z",
+    "headers": [],
+    "params": [],
+    "tests": []
   }
 ]

@@ -132,17 +132,37 @@ func ParsePalette(gs string) (g *Palette, err error) {
 	if err != nil {
 		return nil, errInvalidPalette
 	}
-	// validate first and last positions
-	if (g.positions[0] != 0) || (g.positions[len(g.positions)-1] != 1) {
-		return nil, errors.New("palette color positions must start at 0% and end at 100%")
+	// ensure first position at 0
+	if g.positions[0] != 0 {
+		// copy first color to position 0
+		g.colors = append([]Color{g.colors[0]}, g.colors...)
+		g.positions = append([]float64{0}, g.positions...)
+	}
+	// ensure last position at 1
+	lastIdx := len(g.positions) - 1
+	if g.positions[lastIdx] != 1 {
+		// copy last color to position 1
+		g.colors = append(g.colors, g.colors[lastIdx])
+		g.positions = append(g.positions, 1)
 	}
 
-	// validate positions are in order
-	for i, j := 0, 1; j < len(g.positions); i, j = i+1, j+1 {
-		if g.positions[j]-g.positions[i] <= 0.01 {
-			return nil, errors.New("consecutive palette colors must ascend with a position difference of at least 1%")
+	// sort positions using bubblesort
+	// compare each pair of numbers, ensuring that left is lower than right
+	for i := len(g.positions) - 1; i > 0; i-- {
+		for j := 1; j < i; j++ {
+			if g.positions[j-1] > g.positions[j] {
+				g.positions[j], g.positions[i] = g.positions[i], g.positions[j]
+				g.colors[j], g.colors[i] = g.colors[i], g.colors[j]
+			}
 		}
 	}
+
+	// validate positions are in order and discard colors within 1% of each other
+	// for i, j := 0, 1; j < len(g.positions); i, j = i+1, j+1 {
+	// 	if g.positions[j]-g.positions[i] < 0 {
+	// 		return nil, errors.New("palette positions must ascend in order")
+	// 	}
+	// }
 
 	// Create the RGB color array
 	start, stop := 0, 0

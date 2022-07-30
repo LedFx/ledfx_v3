@@ -91,15 +91,6 @@ func SetSettings(c map[string]interface{}) error {
 		logger.Logger.WithField("context", "Config").Warn(err)
 		return err
 	}
-	// if scan setting is changed, we need to handle it
-	if GetSettings().NoScan != prevSettings.NoScan {
-		switch store.Settings.NoScan {
-		case false:
-			util.EnableScan()
-		case true:
-			util.DisableScan()
-		}
-	}
 	err = saveConfig()
 	event.Invoke(event.SettingsUpdate,
 		map[string]interface{}{

@@ -6,13 +6,15 @@
 
 // TODO serial device discovery, Art-Poll page 24 https://www.artisticlicence.com/WebSiteMaster/User%20Guides/art-net.pdf
 
-package util
+package device
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"ledfx/config"
+	"ledfx/event"
 	"ledfx/logger"
 	"net/http"
 	"time"
@@ -31,9 +33,7 @@ type wledInfo struct {
 	Vid  int    `json:"vid"`
 	Leds struct {
 		Count  int  `json:"count"`
-		Rgbw   bool `json:"rgbw"`
-		Wv     bool `json:"wv"`
-		Cct    bool `json:"cct"`
+		Lc     byte `json:"lc"`
 		Pwr    int  `json:"pwr"`
 		Fps    int  `json:"fps"`
 		Maxpwr int  `json:"maxpwr"`
@@ -79,6 +79,14 @@ func init() {
 	if err != nil {
 		logger.Logger.WithField("context", "WLED Scanner").Fatal(err)
 	}
+	event.Subscribe(event.SettingsUpdate, func(e *event.Event) {
+		switch config.GetSettings().NoScan {
+		case false:
+			EnableScan()
+		case true:
+			DisableScan()
+		}
+	})
 }
 
 func EnableScan() error {
@@ -142,6 +150,52 @@ func handleEntry(entry *zeroconf.ServiceEntry) error {
 	if err := json.Unmarshal(body, &info); err != nil {
 		return err
 	}
-	// TODO: update existing device or create new device
+	// Try to avoid duplication matching IP to other devices
+	for id, d := range deviceInstances {
+		switch pusher := d.pixelPusher.(type) {
+		case *UDP:
+			if pusher.config.IP == info.IP {
+				logger.Logger.WithField("context", "WLED Scanner").Debugf("Matches IP of %s - Ignoring.", id)
+				return nil
+			}
+		case *ArtNet:
+			if pusher.config.IP == info.IP {
+				logger.Logger.WithField("context", "WLED Scanner").Debugf("Matches IP of %s - Ignoring.", id)
+				return nil
+			}
+		case *E131:
+			for _, ip := range pusher.config.IPs {
+				if ip == info.IP {
+					logger.Logger.WithField("context", "WLED Scanner").Debugf("Matches IP of %s - Ignoring.", id)
+					return nil
+				}
+			}
+		}
+	}
+
+	// choose a suitable UDP protocol
+	var protocol Protocol
+	if info.Leds.Count <= 490 {
+		protocol = DRGB
+	} else {
+		protocol = DNRGB
+	}
+
+	// Create the device
+	logger.Logger.WithField("context", "WLED Scanner").Infof("Detected WLED %s", info.Name)
+	New("",
+		"udp_stream",
+		map[string]interface{}{
+			"name":        info.Name,
+			"pixel_count": info.Leds.Count,
+		},
+		map[string]interface{}{
+			"ip":       info.IP,
+			"port":     info.Udpport,
+			"protocol": protocol,
+			"timeout":  3,
+		},
+	)
+
 	return nil
 }

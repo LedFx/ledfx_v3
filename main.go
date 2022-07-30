@@ -78,7 +78,7 @@ func main() {
 
 	// Handle WLED scanning
 	if !settings.NoScan {
-		util.EnableScan()
+		device.EnableScan()
 	} else {
 		logger.Logger.Warning("WLED scanning is disabled")
 	}

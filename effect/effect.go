@@ -50,19 +50,19 @@ type Effect struct {
 }
 
 type BaseEffectConfig struct {
-	Intensity     float64 `mapstructure:"intensity" json:"intensity" description:"Visual intensity eg. speed, reactivity" default:"0.5" validate:"gte=0,lte=1"`
-	Brightness    float64 `mapstructure:"brightness" json:"brightness" description:"Brightness modifier applied to this effect" default:"1" validate:"gte=0,lte=1"`
-	Saturation    float64 `mapstructure:"saturation" json:"saturation" description:"Saturation modifier applied to this effect" default:"1" validate:"gte=0,lte=1"`
-	Palette       string  `mapstructure:"palette" json:"palette" description:"Color scheme" default:"RGB" validate:"palette"`
-	Blur          float64 `mapstructure:"blur" json:"blur"  description:"Gaussian blur to smoothly blend colors" default:"0.5" validate:"gte=0,lte=1"`
-	Flip          bool    `mapstructure:"flip" json:"flip" description:"Reverse the pixels" default:"false" validate:""`
-	Mirror        bool    `mapstructure:"mirror" json:"mirror" description:"Mirror the pixels across the center" default:"false" validate:""`
-	Decay         float64 `mapstructure:"decay" json:"decay" description:"Apply temporal filtering" default:"0.5" validate:"gte=0,lte=1"`
-	HueShift      float64 `mapstructure:"hue_shift" json:"hue_shift" description:"Cycle the colors through time" default:"0" validate:"gte=0,lte=1"`
-	BkgBrightness float64 `mapstructure:"bkg_brightness" json:"bkg_brightness" description:"Brightness modifier applied to the background color" default:"0.2" validate:"gte=0,lte=1"`
-	BkgColor      string  `mapstructure:"bkg_color" json:"bkg_color" description:"Apply a background color" default:"#000000" validate:"color"`
-	FreqMin       int     `mapstructure:"freq_min" json:"freq_min" description:"Lowest audio frequency to react to" default:"20" validate:"gte=20,lte=20000"`
-	FreqMax       int     `mapstructure:"freq_max" json:"freq_max" description:"Highest audio frequency to react to" default:"20000" validate:"gte=20,lte=20000"`
+	Intensity            float64 `mapstructure:"intensity" json:"intensity" description:"Visual intensity eg. speed, reactivity" default:"0.5" validate:"gte=0,lte=1"`
+	Brightness           float64 `mapstructure:"brightness" json:"brightness" description:"Brightness modifier applied to this effect" default:"1" validate:"gte=0,lte=1"`
+	Saturation           float64 `mapstructure:"saturation" json:"saturation" description:"Saturation modifier applied to this effect" default:"1" validate:"gte=0,lte=1"`
+	Palette              string  `mapstructure:"palette" json:"palette" description:"Color scheme" default:"RGB" validate:"palette"`
+	Blur                 float64 `mapstructure:"blur" json:"blur"  description:"Gaussian blur to smoothly blend colors" default:"0.5" validate:"gte=0,lte=1"`
+	Flip                 bool    `mapstructure:"flip" json:"flip" description:"Reverse the pixels" default:"false" validate:""`
+	Mirror               bool    `mapstructure:"mirror" json:"mirror" description:"Mirror the pixels across the center" default:"false" validate:""`
+	Decay                float64 `mapstructure:"decay" json:"decay" description:"Apply temporal filtering" default:"0.5" validate:"gte=0,lte=1"`
+	HueShift             float64 `mapstructure:"hue_shift" json:"hue_shift" description:"Cycle the colors through time" default:"0" validate:"gte=0,lte=1"`
+	BackgroundBrightness float64 `mapstructure:"background_brightness" json:"background_brightness" description:"Brightness modifier applied to the background color" default:"0.2" validate:"gte=0,lte=1"`
+	BackgroundColor      string  `mapstructure:"background_color" json:"background_color" description:"Apply a background color" default:"#000000" validate:"color"`
+	FreqMin              int     `mapstructure:"freq_min" json:"freq_min" description:"Lowest audio frequency to react to" default:"20" validate:"gte=20,lte=20000"`
+	FreqMax              int     `mapstructure:"freq_max" json:"freq_max" description:"Highest audio frequency to react to" default:"20000" validate:"gte=20,lte=20000"`
 }
 
 func (e *Effect) GetID() string {
@@ -164,7 +164,7 @@ func (e *Effect) updateStoredProperties(newConfig BaseEffectConfig) {
 		e.palette, _ = color.NewPalette(newConfig.Palette)
 	}
 	// parsing a color is cheap, just do it every time
-	e.bkgColor, _ = color.NewColor(e.Config.BkgColor)
+	e.bkgColor, _ = color.NewColor(e.Config.BackgroundColor)
 	// blur needs new blurrer if changed
 	if e.blurrer == nil || e.Config.Blur != newConfig.Blur {
 		e.blurrer = color.NewBlurrer(e.pixelCount, newConfig.Blur)
@@ -294,9 +294,9 @@ func (e *Effect) applyMirror(p color.Pixels) {
 // mixes a background colour
 func (e *Effect) applyBkg(p color.Pixels) {
 	for i := 0; i < e.pixelCount; i++ {
-		p[i][0] += e.bkgColor[0] * e.Config.BkgBrightness
-		p[i][1] += e.bkgColor[1] * e.Config.BkgBrightness
-		p[i][2] += e.bkgColor[2] * e.Config.BkgBrightness
+		p[i][0] += e.bkgColor[0] * e.Config.BackgroundBrightness
+		p[i][1] += e.bkgColor[1] * e.Config.BackgroundBrightness
+		p[i][2] += e.bkgColor[2] * e.Config.BackgroundBrightness
 	}
 }
 

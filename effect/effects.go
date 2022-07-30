@@ -217,6 +217,7 @@ func SetGlobalSettings(c map[string]interface{}) (err error) {
 		event.Invoke(event.EffectUpdate,
 			map[string]interface{}{
 				"id":          e.ID,
+				"type":        e.Type,
 				"base_config": eConfig,
 			})
 	}
@@ -226,6 +227,7 @@ func SetGlobalSettings(c map[string]interface{}) (err error) {
 	if err == nil {
 		config.SetGlobalEffects(c)
 	}
+	globalConfig = newConfig
 	// invoke event
 	event.Invoke(event.GlobalEffectUpdate,
 		map[string]interface{}{

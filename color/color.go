@@ -23,16 +23,16 @@ var Full Color = Color{1, 1, 1}
 var errInvalidColor = errors.New("invalid color")
 
 // NewColor Parses string to ledfx color. "#ff00ff" / "rgb(255,0,255)" / "red" -> [1., 0., 1.]
-func NewColor(c string) (col Color, err error) {
-	c = strings.ToLower(c)
-	predef, isPredef := LedFxColors[c]
+func NewColor(color_string string) (col Color, err error) {
+	color_string = strings.ToLower(color_string)
+	predef, isPredef := LedFxColors[color_string]
 	switch {
 	case isPredef: // Color is predefined
 		col, err = parseHex(predef)
-	case strings.HasPrefix(c, "rgb("): // "rgb(0, 127, 255)"
-		col, err = parseRGB(c)
-	case strings.HasPrefix(c, "#"): // "#0088ff"
-		col, err = parseHex(c)
+	case strings.HasPrefix(color_string, "rgb("): // "rgb(0, 127, 255)"
+		col, err = parseRGB(color_string)
+	case strings.HasPrefix(color_string, "#"): // "#0088ff"
+		col, err = parseHex(color_string)
 	default:
 		return col, errInvalidColor
 	}
@@ -42,22 +42,22 @@ func NewColor(c string) (col Color, err error) {
 	return col, err
 }
 
-func parseRGB(c string) (col Color, err error) {
-	c = strings.ReplaceAll(c, " ", "")
-	c = strings.TrimLeft(c, "rgb(")
-	c = strings.TrimRight(c, ")")
-	for i, val := range strings.Split(c, ",") {
-		col[i], err = strconv.ParseFloat(val, 64)
-		col[i] /= 255
-		if col[i] < 0 || col[i] > 1 {
+func parseRGB(rgb_color_string string) (col Color, err error) {
+	rgb_color_string = strings.ReplaceAll(rgb_color_string, " ", "")
+	rgb_color_string = strings.TrimLeft(rgb_color_string, "rgb(")
+	rgb_color_string = strings.TrimRight(rgb_color_string, ")")
+	for sub_color, val := range strings.Split(rgb_color_string, ",") {
+		col[sub_color], err = strconv.ParseFloat(val, 64)
+		col[sub_color] /= 255
+		if col[sub_color] < 0 || col[sub_color] > 1 {
 			err = errInvalidColor
 		}
 	}
 	return col, err
 }
 
-func parseHex(c string) (col Color, err error) {
-	if len(c) != 7 {
+func parseHex(hex_color_string string) (col Color, err error) {
+	if len(hex_color_string) != 7 {
 		err = errInvalidColor
 		return col, err
 	}
@@ -71,8 +71,8 @@ func parseHex(c string) (col Color, err error) {
 		err = errInvalidColor
 		return 0
 	}
-	col[0] = float64(hexToByte(c[1])<<4+hexToByte(c[2])) / 255
-	col[1] = float64(hexToByte(c[3])<<4+hexToByte(c[4])) / 255
-	col[2] = float64(hexToByte(c[5])<<4+hexToByte(c[6])) / 255
+	col[0] = float64(hexToByte(hex_color_string[1])<<4+hexToByte(hex_color_string[2])) / 255
+	col[1] = float64(hexToByte(hex_color_string[3])<<4+hexToByte(hex_color_string[4])) / 255
+	col[2] = float64(hexToByte(hex_color_string[5])<<4+hexToByte(hex_color_string[6])) / 255
 	return col, err
 }

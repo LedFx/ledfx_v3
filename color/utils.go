@@ -15,74 +15,74 @@ var TestPixels = []Pixels{
 
 // Apply HSV saturation to an RGB color
 // 1: color remains unchanged, 0: color is fully desaturated
-func Saturation(c Color, s float64) Color {
-	if s == 1 {
-		return c
+func Saturation(passed_color Color, saturation float64) Color {
+	if saturation == 1 {
+		return passed_color
 	}
 	// apply scaling
 	s = math.Sqrt(s)
 	// find brightest channel of color
-	var max float64 = math.Max(c[0], math.Max(c[1], c[2]))
+	var max float64 = math.Max(passed_color[0], math.Max(passed_color[1], passed_color[2]))
 	// scale each channel accordingly
-	c[0] += (max - c[0]) * (1 - s)
-	c[1] += (max - c[1]) * (1 - s)
-	c[2] += (max - c[2]) * (1 - s)
+	passed_color[0] += (max - passed_color[0]) * (1 - saturation)
+	passed_color[1] += (max - passed_color[1]) * (1 - saturation)
+	passed_color[2] += (max - passed_color[2]) * (1 - saturation)
 
-	return c
+	return passed_color
 }
 
 // Apply HSV lightness to an RGB color
 // 1: color remains unchanged, 0: color is fully darkened
-func Value(c Color, ds float64) Color {
-	if ds == 1 {
-		return c
+func Value(passed_color Color, darkness_saturation float64) Color {
+	if darkness_saturation == 1 {
+		return passed_color
 	}
 	// apply scaling
-	ds = math.Pow(ds, 3)
-	c[0] *= ds
-	c[1] *= ds
-	c[2] *= ds
-	return c
+	darkness_saturation = math.Pow(darkness_saturation, 3)
+	passed_color[0] *= darkness_saturation
+	passed_color[1] *= darkness_saturation
+	passed_color[2] *= darkness_saturation
+	return passed_color
 }
 
 // Shift the hue of pixels (HSV)
-func HueShiftPixels(p Pixels, hs float64) {
-	for i := range p {
-		p[i][0] += hs
+func HueShiftPixels(passed_pixels Pixels, hue_shift_value float64) {
+	for pixel := range passed_pixels {
+		passed_pixels[pixel][0] += hue_shift_value
 	}
 }
 
 // This doesn't take into account white channel temperature or relative brightness, but it'll do for now.
 // Pixels should be RGB.
-func (p Pixels) ToRGBW(out PixelsRGBW) {
-	for i := 0; i < len(p); i++ {
-		r, g, b := p[i][0], p[i][1], p[i][2]
+func (passed_pixels Pixels) ToRGBW(output_pixels PixelsRGBW) {
+	for pixel := 0; pixel < len(passed_pixels); pixel++ {
+		r, g, b := passed_pixels[pixel][0], passed_pixels[pixel][1], passed_pixels[pixel][2]
 		if r+g+b == 0 {
-			out[i] = ColorRGBW{0, 0, 0, 0}
+			output_pixels[pixel] = ColorRGBW{0, 0, 0, 0}
 		}
 
 		// calculate luminance
 		lum := math.Min(r, math.Min(g, b))
-		out[i][0] = r - lum
-		out[i][1] = g - lum
-		out[i][2] = b - lum
-		out[i][3] = lum
+		output_pixels[pixel][0] = r - lum
+		output_pixels[pixel][1] = g - lum
+		output_pixels[pixel][2] = b - lum
+		output_pixels[pixel][3] = lum
 	}
 }
 
 // fils a colour between two indexes. use base.pixelScaler to convert 0-1 floats to integer index
-func FillBetween(p Pixels, start, stop int, col Color, blend bool) {
+func FillBetween(passed_pixels Pixels, start, stop int, col Color, blend bool) {
 	// make sure ascending indexes
 	if start > stop {
 		start, stop = stop, start
 	}
 	for i := start; i <= stop; i++ {
 		if blend {
-			p[i][0] = (p[i][0] + col[0]) / 2
-			p[i][1] = (p[i][1] + col[1]) / 2
-			p[i][2] = (p[i][2] + col[2]) / 2
+			passed_pixels[i][0] = (passed_pixels[i][0] + col[0]) / 2
+			passed_pixels[i][1] = (passed_pixels[i][1] + col[1]) / 2
+			passed_pixels[i][2] = (passed_pixels[i][2] + col[2]) / 2
 		} else {
-			p[i] = col
+			passed_pixels[i] = col
 		}
 	}
 }
@@ -122,24 +122,25 @@ func FromBufSliceSum(_ float64) string {
 }
 
 // Linear pixel interpolation. Scale input pixels onto output pixels
-func Interpolate(in Pixels, out Pixels) error {
-	if len(in) < 2 || len(out) < 2 {
+func Interpolate(passed_pixels Pixels, output_pixels Pixels) error {
+	if len(passed_pixels) < 2 || len(output_pixels) < 2 {
 		return errors.New("cannot interpolate using less than two pixels")
 	}
 	// handle trivial case same size in and out
-	if len(in) == len(out) {
-		copy(out, in)
+	if len(passed_pixels) == len(output_pixels) {
+		copy(output_pixels, passed_pixels)
 		return nil
 	}
-	out[len(out)-1] = in[len(in)-1]
+	output_pixels[len(output_pixels)-1] = passed_pixels[len(passed_pixels)-1]
 
-	ratio := float64(len(in)-1) / float64(len(out)-1)
-	for i := 0; i < len(out)-1; i++ {
-		x, f := math.Modf(ratio * float64(i))
+	ratio := float64(len(passed_pixels)-1) / float64(len(output_pixels)-1)
+	for pixel := 0; pixel < len(output_pixels)-1; pixel++ {
+		// What on earth are x, f and i?
+		x, f := math.Modf(ratio * float64(pixel))
 		ix := int(x)
-		out[i][0] = in[ix][0] + in[ix+1][0]*f
-		out[i][1] = in[ix][1] + in[ix+1][1]*f
-		out[i][2] = in[ix][2] + in[ix+1][2]*f
+		output_pixels[pixel][0] = passed_pixels[ix][0] + passed_pixels[ix+1][0]*f
+		output_pixels[pixel][1] = passed_pixels[ix][1] + passed_pixels[ix+1][1]*f
+		output_pixels[pixel][2] = passed_pixels[ix][2] + passed_pixels[ix+1][2]*f
 	}
 
 	return nil

@@ -20,7 +20,7 @@ func Saturation(passed_color Color, saturation float64) Color {
 		return passed_color
 	}
 	// apply scaling
-	s = math.Sqrt(s)
+	saturation = math.Sqrt(saturation)
 	// find brightest channel of color
 	var max float64 = math.Max(passed_color[0], math.Max(passed_color[1], passed_color[2]))
 	// scale each channel accordingly

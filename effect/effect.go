@@ -207,7 +207,7 @@ func (e *Effect) Render(p color.Pixels) {
 
 	// Overwrite the incoming frame (RGB) with the last frame (HSV) while applying temporal decay
 	// for formula explanation, see: https://www.desmos.com/calculator/5qk6xql8bn
-	decay := math.Pow(-math.Log((e.Config.Decay*math.E-e.Config.Decay+1)/math.E), 10*e.deltaPrevFrame.Seconds())
+	decay := math.Pow(-math.Log(((1-e.Config.Decay)*math.E-(1-e.Config.Decay)+1)/math.E), 10*e.deltaPrevFrame.Seconds())
 	for i := 0; i < e.pixelCount; i++ {
 		e.prevFrame[i][2] *= decay
 		p[i] = e.prevFrame[i]

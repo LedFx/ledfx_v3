@@ -94,6 +94,6 @@ func Unzip(path, dest string) error {
 			return err
 		}
 	}
-	return os.Rename(filepath.Join(tempDir, "ledfx_frontend_v2"), dest)
+	return os.Rename(filepath.Join(tempDir, "frontend_v3"), dest)
 
 }

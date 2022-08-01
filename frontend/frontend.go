@@ -25,7 +25,7 @@ func Update() {
 	logger.Logger.WithField("context", "Frontend Updater").Info("Checking for frontend updates...")
 	latestFrontend := config.FrontendConfig{}
 	// Check if the frontend has a new release
-	resp, err := http.Get("https://api.github.com/repos/YeonV/LedFx-Frontend-v2/releases/latest")
+	resp, err := http.Get("https://api.github.com/repos/LedFx/frontend_v3/releases/latest")
 	if err != nil || resp.StatusCode != 200 {
 		logger.Logger.WithField("context", "Frontend Updater").Error(err)
 		return
@@ -47,7 +47,7 @@ func Update() {
 	}
 
 	// If an update is available, download it
-	resp2, err := http.Get("https://github.com/YeonV/LedFx-Frontend-v2/releases/latest/download/ledfx_frontend_v2.zip")
+	resp2, err := http.Get("https://github.com/LedFx/frontend_v3/releases/latest/download/frontend_v3.zip")
 	if err != nil || resp2.StatusCode != 200 {
 		logger.Logger.WithField("context", "Frontend Updater").Error(err)
 		return

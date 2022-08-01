@@ -17,8 +17,8 @@ type ArtNet struct {
 }
 
 type ArtNetConfig struct {
-	IP       string `mapstructure:"ip" json:"ip" description:"Device IP address on the LAN" validate:"required,ip"`
-	Port     int    `mapstructure:"port" json:"port" description:"Port number the device is listening on" default:"21324" validate:"gte=0,lte=65535"`
+	IP       string `mapstructure:"ip" json:"ip" description:"Device IP address on the LAN. You can find this in your router's device list." validate:"required,ip"`
+	Port     int    `mapstructure:"port" json:"port" description:"Port number the device is listening on" default:"6454" validate:"gte=0,lte=65535"`
 	Universe int    `mapstructure:"universe" json:"universe" description:"Starting universe for ArtDMX data" default:"0" validate:"gte=0,lte=16"`
 	// TODO ArtSync?
 }

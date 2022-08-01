@@ -67,6 +67,21 @@ func NewAPI(mux *http.ServeMux) {
 			}
 			writer.Write(b)
 			return
+		case http.MethodDelete:
+			// Delete a device
+			data := config.DeviceEntry{}
+			keys, ok := request.URL.Query()["id"]
+			if !ok || len(keys) == 0 {
+				err := json.NewDecoder(request.Body).Decode(&data)
+				if util.BadRequest("Devices API", err, writer) {
+					return
+				}
+			} else {
+				data.ID = keys[0]
+			}
+			Destroy(data.ID)
+			return
+
 		default:
 			writer.WriteHeader(http.StatusNotImplemented)
 		}

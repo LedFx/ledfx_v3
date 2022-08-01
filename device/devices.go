@@ -22,7 +22,7 @@ var deviceTypes = map[string]deviceInfo{
 	"udp_stream": {
 		Name:      "UDP Stream",
 		Info:      "Stream pixel data over the network. Recommended for WLED",
-		Protocols: []string{"WARLS", "DRGB", "DRGBW", "DNRGB", "DDP"},
+		Protocols: []string{"WARLS", "DRGB", "DRGBW", "DNRGB", "DDP", "WLED"},
 	},
 	"usb_serial": {
 		Name:      "USB Serial",

@@ -66,23 +66,38 @@ jobs:
     - name: Package LedFx
       run: |
          export CYGPATH=$(cygpath -m /)
-         mkdir LedFx_Builds/
+         mkdir -p LedFx_Builds/licenses/
          mv LedFx.exe LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libgcc_s_seh-1.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libstdc++-6.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libaubio-5.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libportaudio.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libfftw3f-3.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libFLAC.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libogg-0.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libopus-0.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libsamplerate-0.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libsndfile-1.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libssp-0.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libvorbis-0.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libvorbisenc-2.dll LedFx_Builds/
-         cp $CYGPATH/mingw64/bin/libwinpthread-1.dll LedFx_Builds/
-
+         mv $CYGPATH/mingw64/bin/libgcc_s_seh-1.dll LedFx_Builds/
+         mv $CYGPATH/mingw64/bin/libstdc++-6.dll LedFx_Builds/
+         mv $CYGPATH/mingw64/bin/libaubio-5.dll LedFx_Builds/
+         mv $CYGPATH/mingw64/bin/libportaudio.dll LedFx_Builds/
+         mv $CYGPATH/mingw64/bin/libfftw3f-3.dll LedFx_Builds/
+         mv $CYGPATH/mingw64/bin/libFLAC.dll LedFx_Builds/
+         mv $CYGPATH/mingw64/bin/libogg-0.dll LedFx_Builds/
+         mv $CYGPATH/mingw64/bin/libopus-0.dll LedFx_Builds/
+         mv $CYGPATH/mingw64/bin/libsamplerate-0.dll LedFx_Builds/
+         mv $CYGPATH/mingw64/bin/libsndfile-1.dll LedFx_Builds/
+         mv $CYGPATH/mingw64/bin/libssp-0.dll LedFx_Builds/
+         mv $CYGPATH/mingw64/bin/libvorbis-0.dll LedFx_Builds/
+         mv $CYGPATH/mingw64/bin/libvorbisenc-2.dll LedFx_Builds/
+         mv $CYGPATH/mingw64/bin/libwinpthread-1.dll LedFx_Builds/
+         echo "Packaging Licenses"
+         mv $CYGPATH/mingw64/share/licenses/gcc-libs/ LedFx_Builder/licenses/
+         mv $CYGPATH/mingw64/share/licenses/aubio/ LedFx_Builder/licenses/
+         mv $CYGPATH/mingw64/share/doc/portaudio/ LedFx_Builder/licenses/
+         mv $CYGPATH/mingw64/share/info/fftw3.info-1.gz LedFx_Builder/licenses/fftw-license.gz
+         mv $CYGPATH/mingw64/share/licenses/flac/ LedFx_Builder/licenses/
+         mv $CYGPATH/mingw64/share/licenses/libogg/ LedFx_Builder/licenses/
+         curl -so vorbis-license.txt https://raw.githubusercontent.com/xiph/vorbis/master/COPYING
+         mv vorbis-license.txt LedFx_Builder/licenses/
+         curl -so opus-license.txt https://raw.githubusercontent.com/xiph/opus/master/COPYING
+         mv opus-license.txt LedFx_Builder/licenses/
+         curl -so libsamplerate-license.txt https://raw.githubusercontent.com/libsndfile/libsamplerate/master/COPYING
+         mv libsamplerate-license.txt LedFx_Builder/licenses/
+         mv $CYGPATH/mingw64/share/licenses/libsndfile/ LedFx_Builder/licenses/
+         mv $CYGPATH/mingw64/share/licenses/libwinpthread/ LedFx_Builder/licenses/
+  
     - name: Build AIP
       uses: caphyon/advinst-github-action@v1.0
       with:
@@ -91,15 +106,21 @@ jobs:
         aip-path: ${{ github.workspace }}\LedFx Installer.aip
         aip-build-name: DefaultBuild
         aip-package-name: LedFx Installer.exe
-        aip-output-dir:  ${{ github.workspace }}\LedFx_Builds
+        aip-output-dir:  ${{ github.workspace }}\
         aip-commands: |
           SetProperty github_sha="${{ github.sha }}"
           SetVersion 6.6.6
-    - name: Publish all windows artifacts
+    - name: Publish portable windows artifact
       uses: actions/upload-artifact@v3
       with:
-        name: Upload Windows Artifacts
+        name: LedFx Portable
         path: LedFx_Builds/
+
+    - name: Publish windows installer
+      uses: actions/upload-artifact@v3
+      with:
+        name: LedFx Installer.exe
+        path: LedFx Installer.exe
 
   build_macos:
     name: Build macos Binary's

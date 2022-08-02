@@ -85,8 +85,10 @@ jobs:
          mv $CYGPATH/mingw64/bin/libwinpthread-1.dll LedFx_Builds/
          echo "Packaging Licenses"
          mv $CYGPATH/mingw64/share/licenses/gcc-libs/ LedFx_Builds/licenses/
-         mv $CYGPATH/mingw64/share/licenses/aubio/ LedFx_Builds/licenses/
-         mv $CYGPATH/mingw64/share/doc/portaudio/ LedFx_Builds/licenses/
+         curl -so aubio-license.txt https://raw.githubusercontent.com/aubio/aubio/master/COPYING
+         mv aubio-license.txt LedFx_Builds/licenses/
+         curl -so portaudio-license.txt https://raw.githubusercontent.com/PortAudio/portaudio/master/LICENSE.txt
+         mv portaudio-license.txt LedFx_Builds/licenses/
          mv $CYGPATH/mingw64/share/info/fftw3.info-1.gz LedFx_Builds/licenses/fftw-license.gz
          mv $CYGPATH/mingw64/share/licenses/flac/ LedFx_Builds/licenses/
          mv $CYGPATH/mingw64/share/licenses/libogg/ LedFx_Builds/licenses/

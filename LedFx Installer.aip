@@ -101,7 +101,8 @@
     <ROW TimeStampUrl="http://timestamp.digicert.com" SignerDescription="[|ProductName]" SignOptions="0" SignTool="0" UseSha256="1"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.ExpandArchiveComponent">
-    <ROW ExpandArchive="ExpandArchive" DestFolder="data_Dir" SourcePath="[#licenses.zip]" Flags="57"/>
+    <ROW ExpandArchive="ExpandArchive" DestFolder="data_Dir" SourcePath="[#licenses.zip]" Flags="56"/>
+    <ATTRIBUTE name="ImpersonateUser" value="true"/>
   </COMPONENT>
   <COMPONENT cid="caphyon.advinst.msicomp.FragmentComponent">
     <ROW Fragment="CommonUI.aip" Path="&lt;AI_FRAGS&gt;CommonUI.aip"/>
@@ -184,10 +185,10 @@
     <ROW Action="AI_DeleteRLzma" Type="1281" Source="lzmaextractor.dll" Target="DeleteLZMAFiles"/>
     <ROW Action="AI_DpiContentScale" Type="1" Source="aicustact.dll" Target="DpiContentScale"/>
     <ROW Action="AI_EnableDebugLog" Type="321" Source="aicustact.dll" Target="EnableDebugLog"/>
-    <ROW Action="AI_ExpandArchConfig" Type="11265" Source="FileOperations.dll" Target="OnExpandArchConfig" WithoutSeq="true"/>
+    <ROW Action="AI_ExpandArchConfig" Type="9217" Source="FileOperations.dll" Target="OnExpandArchConfig" WithoutSeq="true"/>
     <ROW Action="AI_ExpandArchInstall" Type="1" Source="FileOperations.dll" Target="OnExpandArchInstall"/>
-    <ROW Action="AI_ExpandArchRemove" Type="11265" Source="FileOperations.dll" Target="OnExpandArchRemove" WithoutSeq="true"/>
-    <ROW Action="AI_ExpandArchRollback" Type="11521" Source="FileOperations.dll" Target="OnExpandArchRollback" WithoutSeq="true"/>
+    <ROW Action="AI_ExpandArchRemove" Type="9217" Source="FileOperations.dll" Target="OnExpandArchRemove" WithoutSeq="true"/>
+    <ROW Action="AI_ExpandArchRollback" Type="9473" Source="FileOperations.dll" Target="OnExpandArchRollback" WithoutSeq="true"/>
     <ROW Action="AI_ExpandArchUninstall" Type="1" Source="FileOperations.dll" Target="OnExpandArchUninstall"/>
     <ROW Action="AI_ExtractCadLzma" Type="51" Source="AI_ExtractLzma" Target="[AI_SETUPEXEPATH]"/>
     <ROW Action="AI_ExtractFiles" Type="1" Source="Prereq.dll" Target="ExtractSourceFiles" AdditionalSeq="AI_DATA_SETTER"/>

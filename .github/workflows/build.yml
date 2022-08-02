@@ -24,6 +24,7 @@ jobs:
         install: |
             git
             make
+            zip
             unzip
             base-devel
             mingw-w64-x86_64-gcc
@@ -83,20 +84,22 @@ jobs:
          mv $CYGPATH/mingw64/bin/libvorbisenc-2.dll LedFx_Builds/
          mv $CYGPATH/mingw64/bin/libwinpthread-1.dll LedFx_Builds/
          echo "Packaging Licenses"
-         mv $CYGPATH/mingw64/share/licenses/gcc-libs/ LedFx_Builder/licenses/
-         mv $CYGPATH/mingw64/share/licenses/aubio/ LedFx_Builder/licenses/
-         mv $CYGPATH/mingw64/share/doc/portaudio/ LedFx_Builder/licenses/
-         mv $CYGPATH/mingw64/share/info/fftw3.info-1.gz LedFx_Builder/licenses/fftw-license.gz
-         mv $CYGPATH/mingw64/share/licenses/flac/ LedFx_Builder/licenses/
-         mv $CYGPATH/mingw64/share/licenses/libogg/ LedFx_Builder/licenses/
+         mv $CYGPATH/mingw64/share/licenses/gcc-libs/ LedFx_Builds/licenses/
+         mv $CYGPATH/mingw64/share/licenses/aubio/ LedFx_Builds/licenses/
+         mv $CYGPATH/mingw64/share/doc/portaudio/ LedFx_Builds/licenses/
+         mv $CYGPATH/mingw64/share/info/fftw3.info-1.gz LedFx_Builds/licenses/fftw-license.gz
+         mv $CYGPATH/mingw64/share/licenses/flac/ LedFx_Builds/licenses/
+         mv $CYGPATH/mingw64/share/licenses/libogg/ LedFx_Builds/licenses/
          curl -so vorbis-license.txt https://raw.githubusercontent.com/xiph/vorbis/master/COPYING
-         mv vorbis-license.txt LedFx_Builder/licenses/
+         mv vorbis-license.txt LedFx_Builds/licenses/
          curl -so opus-license.txt https://raw.githubusercontent.com/xiph/opus/master/COPYING
-         mv opus-license.txt LedFx_Builder/licenses/
+         mv opus-license.txt LedFx_Builds/licenses/
          curl -so libsamplerate-license.txt https://raw.githubusercontent.com/libsndfile/libsamplerate/master/COPYING
-         mv libsamplerate-license.txt LedFx_Builder/licenses/
-         mv $CYGPATH/mingw64/share/licenses/libsndfile/ LedFx_Builder/licenses/
-         mv $CYGPATH/mingw64/share/licenses/libwinpthread/ LedFx_Builder/licenses/
+         mv libsamplerate-license.txt LedFx_Builds/licenses/
+         mv $CYGPATH/mingw64/share/licenses/libsndfile/ LedFx_Builds/licenses/
+         mv $CYGPATH/mingw64/share/licenses/libwinpthread/ LedFx_Builds/licenses/
+         mv LICENSE LedFx_Builds/licenses/LedFx-license.txt
+         zip LedFx_Builds/licenses.zip LedFx_Builds/licenses/
   
     - name: Build AIP
       uses: caphyon/advinst-github-action@v1.0

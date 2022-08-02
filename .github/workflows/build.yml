@@ -101,7 +101,8 @@ jobs:
          mv $CYGPATH/mingw64/share/licenses/libsndfile/ LedFx_Builds/licenses/
          mv $CYGPATH/mingw64/share/licenses/libwinpthread/ LedFx_Builds/licenses/
          mv LICENSE LedFx_Builds/licenses/LedFx-license.txt
-         zip LedFx_Builds/licenses.zip LedFx_Builds/licenses/
+         cd LedFx_Builds/
+         zip licenses.zip licenses/*
   
     - name: Build AIP
       uses: caphyon/advinst-github-action@v1.0

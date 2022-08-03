@@ -17,8 +17,45 @@ func NewServer(mux *http.ServeMux) {
 	serveFrontend := http.FileServer(http.Dir(path))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		logger.Logger.WithField("context", "Frontend").Debugf("Serving HTTP for path: %s", r.URL.Path)
+		SetContentTypeFromFilepath(r.URL.Path, w)
 		serveFrontend.ServeHTTP(w, r)
 	})
+}
+
+func SetContentTypeFromFilepath(fp string, w http.ResponseWriter) {
+	switch filepath.Ext(fp) {
+	case ".html":
+		w.Header().Set("Content-Type", "text/html")
+	case ".js":
+		w.Header().Set("Content-Type", "text/javascript")
+	case ".json":
+		w.Header().Set("Content-Type", "application/json")
+	case ".png":
+		w.Header().Set("Content-Type", "image/png")
+	case ".jpeg", ".jpg":
+		w.Header().Set("Content-Type", "image/jpeg")
+	case ".mp3":
+		w.Header().Set("Content-Type", "audio/mpeg")
+	case ".mp4":
+		w.Header().Set("Content-Type", "video/mp4")
+	case ".mpeg":
+		w.Header().Set("Content-Type", "video/mpeg")
+	case ".svg":
+		w.Header().Set("Content-Type", "image/svg+xml")
+	case ".wav":
+		w.Header().Set("Content-Type", "audio/wav")
+	case ".webm":
+		w.Header().Set("Content-Type", "video/webm")
+	case ".webp":
+		w.Header().Set("Content-Type", "image/webp")
+	case ".xml":
+		w.Header().Set("Content-Type", "application/xml")
+	case ".ico":
+		w.Header().Set("Content-Type", "image/x-icon")
+	default:
+		logger.Logger.WithField("context", "Frontend").Errorf("Could not determine content type of '%s', using default", fp)
+		w.Header().Set("Content-Type", "text/plain")
+	}
 }
 
 func Update() {

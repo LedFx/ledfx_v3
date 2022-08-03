@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func NewServer(mux *http.ServeMux) {
@@ -23,6 +24,11 @@ func NewServer(mux *http.ServeMux) {
 }
 
 func SetContentTypeFromFilepath(fp string, w http.ResponseWriter) {
+	if strings.HasSuffix(fp, "/") {
+		w.Header().Set("Content-Type", "text/html")
+		return
+	}
+	
 	switch filepath.Ext(fp) {
 	case ".html":
 		w.Header().Set("Content-Type", "text/html")

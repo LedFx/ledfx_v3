@@ -34,7 +34,7 @@ func SetContentTypeFromFilepath(fp string, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "text/html")
 	case ".js":
 		w.Header().Set("Content-Type", "text/javascript")
-	case ".json":
+	case ".map", ".json":
 		w.Header().Set("Content-Type", "application/json")
 	case ".css":
 		w.Header().Set("Content-Type", "text/css")
@@ -61,7 +61,7 @@ func SetContentTypeFromFilepath(fp string, w http.ResponseWriter) {
 	case ".ico":
 		w.Header().Set("Content-Type", "image/x-icon")
 	default:
-		logger.Logger.WithField("context", "Frontend").Errorf("Could not determine content type of '%s', using default", fp)
+		logger.Logger.WithField("context", "Frontend").Errorf("Could not determine content type of '%s', using default. ('text/plain')", fp)
 		w.Header().Set("Content-Type", "text/plain")
 	}
 }

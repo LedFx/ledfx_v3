@@ -28,7 +28,7 @@ func SetContentTypeFromFilepath(fp string, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "text/html")
 		return
 	}
-	
+
 	switch filepath.Ext(fp) {
 	case ".html":
 		w.Header().Set("Content-Type", "text/html")
@@ -36,6 +36,8 @@ func SetContentTypeFromFilepath(fp string, w http.ResponseWriter) {
 		w.Header().Set("Content-Type", "text/javascript")
 	case ".json":
 		w.Header().Set("Content-Type", "application/json")
+	case ".css":
+		w.Header().Set("Content-Type", "text/css")
 	case ".png":
 		w.Header().Set("Content-Type", "image/png")
 	case ".jpeg", ".jpg":

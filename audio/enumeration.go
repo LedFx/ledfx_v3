@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"ledfx/config"
 	"ledfx/logger"
+	"strings"
 	"text/tabwriter"
 
 	"github.com/gordonklaus/portaudio"
@@ -111,5 +112,39 @@ func GetDeviceByID(id string) (config.AudioDevice, error) {
 			return device, nil
 		}
 	}
-	return config.AudioDevice{}, fmt.Errorf("could not find audio device matching id: %s", id)
+
+	idList := make([]string, len(devices))
+	for i := range devices {
+		idList[i] = devices[i].Id
+	}
+
+	// In case the ID is actually the device name
+	tryByName, err := GetDeviceByName(id)
+	if err != nil {
+		logger.Logger.WithField("context", "Device Lookup").Warnf("Device ID/Name lookup failed!")
+	} else {
+		logger.Logger.WithField("context", "Device Lookup").Infof("Device ID lookup failed, but a name lookup worked!")
+		return tryByName, nil
+	}
+
+	return config.AudioDevice{}, fmt.Errorf("could not find audio device matching id '%s' out of [%s]", id, strings.Join(idList, ", "))
+}
+
+func GetDeviceByName(name string) (config.AudioDevice, error) {
+	devices, err := GetAudioDevices()
+	if err != nil {
+		return config.AudioDevice{}, err
+	}
+	for _, device := range devices {
+		if strings.EqualFold(device.Name, name) {
+			return device, nil
+		}
+	}
+
+	nameList := make([]string, len(devices))
+	for i := range devices {
+		nameList[i] = devices[i].Name
+	}
+
+	return config.AudioDevice{}, fmt.Errorf("could not find audio device matching id '%s' out of [%s]", name, strings.Join(nameList, ", "))
 }

@@ -93,14 +93,14 @@ func main() {
 	frontend.NewServer(mux)
 	websocket.Serve(mux)
 	bridgeServer, err := bridgeapi.NewServer(audio.Analyzer.BufferCallback, mux)
-
 	// Start audio bridge
 	if err != nil {
 		logger.Logger.WithField("context", "AudioBridge").Fatalf("Error initializing AudioBridge server: %v", err)
 	} else {
+		defer bridgeServer.Br.Stop()
 		logger.Logger.WithField("context", "AudioBridge").Info("Initialised AudioBridge server")
 	}
-	defer bridgeServer.Br.Stop()
+
 	if err := bridgeServer.Br.StartLocalInput(config.GetLocalInput()); err != nil {
 		logger.Logger.WithField("context", "AudioBridge").Errorf("Error starting local input: %v\n", err)
 	}

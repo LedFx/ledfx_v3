@@ -73,6 +73,24 @@ var effectTypes = map[string]EffectInfo{
 		Category:    "Audio reactive",
 		Preview:     []byte{},
 	},
+	"block_reflections": {
+		Description: "Morphing color animation which reacts to music",
+		GoodFor:     []string{"Calm", "Trippy", "Rock"},
+		Category:    "Audio reactive",
+		Preview:     []byte{},
+	},
+	"millipede": {
+		Description: "Color ripples drifting across the strip",
+		GoodFor:     []string{"Calm", "Trippy", "Rock"},
+		Category:    "Audio reactive",
+		Preview:     []byte{},
+	},
+	"glitch": {
+		Description: "Bright dancing bars of color",
+		GoodFor:     []string{"Calm", "Trippy", "Rock"},
+		Category:    "Audio reactive",
+		Preview:     []byte{},
+	},
 }
 
 // Creates a new effect and returns its unique id.
@@ -106,6 +124,18 @@ func New(new_id, effect_type string, pixelCount int, new_config interface{}) (ef
 	case "wavelength":
 		effect = &Effect{
 			pixelGenerator: &Wavelegth{},
+		}
+	case "block_reflections":
+		effect = &Effect{
+			pixelGenerator: &BlockReflections{},
+		}
+	case "millipede":
+		effect = &Effect{
+			pixelGenerator: &Millipede{},
+		}
+	case "glitch":
+		effect = &Effect{
+			pixelGenerator: &Glitch{},
 		}
 	default:
 		return effect, id, fmt.Errorf("'%s' is not a known effect type. Has it been registered in effects.go?", effect_type)

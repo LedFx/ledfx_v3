@@ -67,6 +67,12 @@ var effectTypes = map[string]EffectInfo{
 		Category:    "Non reactive",
 		Preview:     []byte{},
 	},
+	"wavelength": {
+		Description: "Displays the audio frequency spectrum using the color palette",
+		GoodFor:     []string{"Most music", "Simple audio visualisation"},
+		Category:    "Audio reactive",
+		Preview:     []byte{},
+	},
 }
 
 // Creates a new effect and returns its unique id.
@@ -96,6 +102,10 @@ func New(new_id, effect_type string, pixelCount int, new_config interface{}) (ef
 	case "strobe":
 		effect = &Effect{
 			pixelGenerator: &Strobe{},
+		}
+	case "wavelength":
+		effect = &Effect{
+			pixelGenerator: &Wavelegth{},
 		}
 	default:
 		return effect, id, fmt.Errorf("'%s' is not a known effect type. Has it been registered in effects.go?", effect_type)

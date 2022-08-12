@@ -64,37 +64,37 @@ var effectTypes = map[string]EffectInfo{
 	"pulse": {
 		Description: "Repeatedly flashes the full color palette",
 		GoodFor:     []string{"High intensity", "Building energy"},
-		Category:    "Non reactive",
+		Category:    "Non Reactive",
 		Preview:     []byte{},
 	},
 	"wavelength": {
 		Description: "Displays the audio frequency spectrum using the color palette",
 		GoodFor:     []string{"Most music", "Simple audio visualisation"},
-		Category:    "Audio reactive",
+		Category:    "Audio Reactive",
 		Preview:     []byte{},
 	},
 	"block_reflections": {
 		Description: "Morphing color animation which reacts to music",
 		GoodFor:     []string{"Calm", "Trippy", "Rock"},
-		Category:    "Audio reactive",
+		Category:    "Audio Reactive",
 		Preview:     []byte{},
 	},
 	"millipede": {
 		Description: "Color ripples drifting across the strip",
 		GoodFor:     []string{"Calm", "Trippy", "Rock"},
-		Category:    "Audio reactive",
+		Category:    "Audio Reactive",
 		Preview:     []byte{},
 	},
 	"glitch": {
 		Description: "Bright dancing bars of color",
 		GoodFor:     []string{"Calm", "Trippy", "Rock"},
-		Category:    "Audio reactive",
+		Category:    "Audio Reactive",
 		Preview:     []byte{},
 	},
 	"twinkle": {
 		Description: "Random twinkles of color",
 		GoodFor:     []string{"Calm", "Trippy", "Rock"},
-		Category:    "Audio reactive",
+		Category:    "Audio Reactive",
 		Preview:     []byte{},
 	},
 }

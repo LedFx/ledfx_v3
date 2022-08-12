@@ -7,22 +7,11 @@ import (
 	"math/rand"
 )
 
-/*
-Audio reactive port of PixelBlaze effect "Glitch Bands"
-Credit to Ben Henke for original concept & fantastic LED art
-https://electromage.com/patterns
-*/
-
 type Twinkle struct {
 	initialised bool
 	hues        []float64
 	periods     []float64
 }
-
-// movement speed based on beat
-// modify saturation by vocals/mids
-// make the bars/legs grow and shrink
-// modulate t1 with highs
 
 // Apply new pixels to an existing pixel array.
 func (e *Twinkle) assembleFrame(base *Effect, p color.Pixels) {

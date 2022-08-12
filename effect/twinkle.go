@@ -1,7 +1,9 @@
 package effect
 
 import (
+	"ledfx/audio"
 	"ledfx/color"
+	"ledfx/logger"
 	"math/rand"
 )
 
@@ -34,9 +36,25 @@ func (e *Twinkle) assembleFrame(base *Effect, p color.Pixels) {
 		e.initialised = true
 	}
 
+	mel, err := audio.Analyzer.GetMelbank(base.ID)
+	if err != nil {
+		logger.Logger.WithField("context", "Effect Energy").Error(err)
+		return
+	}
+
+	var value float64
 	for i := 0; i < len(p); i++ {
-		p[i][0] = e.hues[i]
+		hue := e.hues[i]
+		switch {
+		case hue < 0.3:
+			value = base.triangle(base.time(e.periods[i])) * mel.LowsAmplitude()
+		case hue < 0.6:
+			value = base.triangle(base.time(e.periods[i])) * mel.MidsAmplitude()
+		default:
+			value = base.triangle(base.time(e.periods[i])) * mel.HighAmplitude()
+		}
+		p[i][0] = hue
 		p[i][1] = 1
-		p[i][2] = base.triangle(base.time(e.periods[i]))
+		p[i][2] = value
 	}
 }

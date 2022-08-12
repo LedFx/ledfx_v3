@@ -37,9 +37,15 @@ func (e *Glitch) assembleFrame(base *Effect, p color.Pixels) {
 		s2 := base.triangle(math.Mod(t6-(fi-base.pixelScaler)/base.pixelScaler, 1))
 		s2 = math.Pow(s2, 4)
 		s := 1 - base.triangle(s1*s2)
+		v := 0.5
+		if s1 > s2 {
+			v = 1 - s1
+		} else {
+			v = 0.5 + s2
+		}
 
 		p[i][0] = h
 		p[i][1] = s
-		p[i][2] = 1
+		p[i][2] = v
 	}
 }

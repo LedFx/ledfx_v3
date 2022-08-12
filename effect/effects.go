@@ -91,6 +91,12 @@ var effectTypes = map[string]EffectInfo{
 		Category:    "Audio reactive",
 		Preview:     []byte{},
 	},
+	"twinkle": {
+		Description: "Random twinkles of color",
+		GoodFor:     []string{"Calm", "Trippy", "Rock"},
+		Category:    "Audio reactive",
+		Preview:     []byte{},
+	},
 }
 
 // Creates a new effect and returns its unique id.
@@ -136,6 +142,10 @@ func New(new_id, effect_type string, pixelCount int, new_config interface{}) (ef
 	case "glitch":
 		effect = &Effect{
 			pixelGenerator: &Glitch{},
+		}
+	case "twinkle":
+		effect = &Effect{
+			pixelGenerator: &Twinkle{},
 		}
 	default:
 		return effect, id, fmt.Errorf("'%s' is not a known effect type. Has it been registered in effects.go?", effect_type)

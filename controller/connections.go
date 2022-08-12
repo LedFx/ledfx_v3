@@ -15,11 +15,7 @@ var connectionsEffect = map[string]string{}
 // links device IDs to controller IDs
 var connectionsDevice = map[string]string{}
 
-var dontSave bool = false
-
 func LoadConnectionsFromConfig() {
-	dontSave = true
-	defer func() { dontSave = false }()
 	effects, devices := config.GetConnections()
 	for eID, vID := range effects {
 		err := ConnectEffect(eID, vID)
@@ -74,15 +70,13 @@ func ConnectEffect(effectID, controllerID string) error {
 	if len(v.Devices) != 0 {
 		v.Effect.UpdatePixelCount(v.PixelCount())
 	}
-	if !dontSave {
-		config.SetConnections(connectionsEffect, connectionsDevice)
-		// invoke event
-		event.Invoke(event.ConnectionsUpdate,
-			map[string]interface{}{
-				"effects": connectionsEffect,
-				"devices": connectionsDevice,
-			})
-	}
+	config.SetConnections(connectionsEffect, connectionsDevice)
+	// invoke event
+	event.Invoke(event.ConnectionsUpdate,
+		map[string]interface{}{
+			"effects": connectionsEffect,
+			"devices": connectionsDevice,
+		})
 	logger.Logger.WithField("context", "Controllers").Infof("Connected %s to %s", effectID, controllerID)
 	return nil
 }
@@ -113,15 +107,13 @@ func ConnectDevice(deviceID, controllerID string) error {
 	if v.Effect != nil {
 		v.Effect.UpdatePixelCount(v.PixelCount())
 	}
-	if !dontSave {
-		config.SetConnections(connectionsEffect, connectionsDevice)
-		// invoke event
-		event.Invoke(event.ConnectionsUpdate,
-			map[string]interface{}{
-				"effects": connectionsEffect,
-				"devices": connectionsDevice,
-			})
-	}
+	config.SetConnections(connectionsEffect, connectionsDevice)
+	// invoke event
+	event.Invoke(event.ConnectionsUpdate,
+		map[string]interface{}{
+			"effects": connectionsEffect,
+			"devices": connectionsDevice,
+		})
 	logger.Logger.WithField("context", "Controllers").Infof("Connected %s to %s", deviceID, controllerID)
 	return err
 }
@@ -144,15 +136,13 @@ func DisconnectEffect(effectID, controllerID string) error {
 	delete(connectionsEffect, effectID)
 	v.Stop()
 	v.Effect = nil
-	if !dontSave {
-		config.SetConnections(connectionsEffect, connectionsDevice)
-		// invoke event
-		event.Invoke(event.ConnectionsUpdate,
-			map[string]interface{}{
-				"effects": connectionsEffect,
-				"devices": connectionsDevice,
-			})
-	}
+	config.SetConnections(connectionsEffect, connectionsDevice)
+	// invoke event
+	event.Invoke(event.ConnectionsUpdate,
+		map[string]interface{}{
+			"effects": connectionsEffect,
+			"devices": connectionsDevice,
+		})
 	logger.Logger.WithField("context", "Controllers").Infof("Disconnected %s from %s", effectID, controllerID)
 	return err
 }
@@ -183,15 +173,13 @@ func DisconnectDevice(deviceID, controllerID string) error {
 	if len(v.Devices) == 0 {
 		v.Stop()
 	}
-	if !dontSave {
-		config.SetConnections(connectionsEffect, connectionsDevice)
-		// invoke event
-		event.Invoke(event.ConnectionsUpdate,
-			map[string]interface{}{
-				"effects": connectionsEffect,
-				"devices": connectionsDevice,
-			})
-	}
+	config.SetConnections(connectionsEffect, connectionsDevice)
+	// invoke event
+	event.Invoke(event.ConnectionsUpdate,
+		map[string]interface{}{
+			"effects": connectionsEffect,
+			"devices": connectionsDevice,
+		})
 	logger.Logger.WithField("context", "Controllers").Infof("Disconnected %s from %s", deviceID, controllerID)
 	return err
 }

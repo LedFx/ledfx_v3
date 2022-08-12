@@ -9,7 +9,7 @@ import (
 func BenchmarkEffects(t *testing.B) {
 	// Default config
 	c := map[string]interface{}{}
-	for eType, _ := range effectTypes {
+	for eType := range effectTypes {
 		for _, p := range color.TestPixels {
 			// Make a new effect
 			effect, _, err := New("", eType, len(p), c)
@@ -54,7 +54,7 @@ func TestEffects(t *testing.T) {
 		},
 	}
 
-	for eType, _ := range effectTypes {
+	for eType := range effectTypes {
 		for _, p := range color.TestPixels {
 			// Make a new effect
 			effect, _, err := New("", eType, len(p), blank_c)

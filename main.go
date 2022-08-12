@@ -60,7 +60,7 @@ func main() {
 	}
 
 	// TODO: handle profiler flags
-
+	config.AllowSaving = false
 	err := effect.LoadFromConfig()
 	if err != nil {
 		logger.Logger.WithField("context", "Load Effects from Config").Fatal(err)
@@ -75,6 +75,7 @@ func main() {
 	}
 	controller.LoadConnectionsFromConfig()
 	controller.LoadStatesFromConfig()
+	config.AllowSaving = true
 
 	// Handle WLED scanning
 	if !settings.NoScan {

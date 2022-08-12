@@ -30,6 +30,7 @@ var (
 	logLevelArg int
 )
 
+var AllowSaving bool = true
 var mu sync.Mutex = sync.Mutex{}
 var validate *validator.Validate = validator.New()
 var store *config = &config{
@@ -184,6 +185,9 @@ func ensureConfigFile() error {
 }
 
 func saveConfig() error {
+	if !AllowSaving {
+		return nil
+	}
 	file, _ := json.MarshalIndent(store, "", "  ")
 	err := ioutil.WriteFile(configPath, file, 0644)
 	if err != nil {

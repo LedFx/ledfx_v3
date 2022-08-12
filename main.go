@@ -162,8 +162,11 @@ func shutdown() {
 	audio.Analyzer.Cleanup()
 
 	// kill systray
-	logger.Logger.WithField("context", "Shutdown Handler").Info("Shutting down Systray")
-	systray.Quit()
+	if !config.GetSettings().NoTray {
+		logger.Logger.WithField("context", "Shutdown Handler").Info("Shutting down Systray")
+		systray.Quit()
+	}
+	os.Exit(0)
 }
 
 func setHeaders(h http.Handler) http.Handler {

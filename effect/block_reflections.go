@@ -31,6 +31,10 @@ func (e *BlockReflections) assembleFrame(base *Effect, p color.Pixels) {
 		return
 	}
 
+	lows := mel.LowsAmplitude()
+	mids := mel.HighAmplitude()
+	high := mel.HighAmplitude()
+
 	// t1 := base.time(0.1)
 	t2 := base.time(0.1) * math.Pi * 2
 	t3 := base.time(0.5)
@@ -38,14 +42,14 @@ func (e *BlockReflections) assembleFrame(base *Effect, p color.Pixels) {
 
 	for i := 0; i < len(p); i++ {
 		fi := float64(i)
-		m := (0.3 + base.triangle(t2)*0.2)
-		h := math.Sin(t2) + math.Mod(((fi-base.pixelScaler/2)/base.pixelScaler)*(base.triangle(t3)*10+4*math.Sin(t4)), m)
+		m := (0.3 + base.triangle(t2)*0.2 + (lows * base.Config.Intensity))
+		h := math.Sin(t2) + math.Mod(((fi-base.pixelScaler/2)/base.pixelScaler)*(base.triangle(t3)*10+4*math.Sin(t4)+(mids*base.Config.Intensity)), m)
 		v := math.Mod(math.Abs(h)+math.Abs(m), 1)
 		v = math.Pow(v, 2)
 
-		p[i][0] = h + mel.HighAmplitude()
-		p[i][1] = 1 - mel.LowsAmplitude()
-		p[i][2] = v + mel.MidsAmplitude()
+		p[i][0] = h + high
+		p[i][1] = 1 - (lows * base.Config.Intensity)
+		p[i][2] = v + (mids * base.Config.Intensity)
 		// p[i][0] = h + e.freezeFrame[i][0]
 		// p[i][1] = 1 - (mel.MidsAmplitude() + mel.HighAmplitude()) + e.freezeFrame[i][1]
 		// p[i][2] = v + e.freezeFrame[i][2]

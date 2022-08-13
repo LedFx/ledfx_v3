@@ -1,7 +1,9 @@
 package effect
 
 import (
+	"ledfx/audio"
 	"ledfx/color"
+	"ledfx/logger"
 	"math"
 )
 
@@ -11,20 +13,26 @@ Credit to Ben Henke for original concept & fantastic LED art
 https://electromage.com/patterns
 */
 
-type BlockReflections struct{}
+type BlockReflections struct {
+	// initialised bool
+	// freezeFrame color.Pixels
+}
 
 // Apply new pixels to an existing pixel array.
 func (e *BlockReflections) assembleFrame(base *Effect, p color.Pixels) {
-
-	// mel, err := audio.Analyzer.GetMelbank(base.ID)
-	// if err != nil {
-	// 	logger.Logger.WithField("context", "Effect Energy").Error(err)
-	// 	return
+	// if !e.initialised {
+	// 	e.freezeFrame = make(color.Pixels, base.pixelCount)
+	// 	e.initialised = true
 	// }
-	// lowsAmplitude := mel.LowsAmplitude()
+
+	mel, err := audio.Analyzer.GetMelbank(base.ID)
+	if err != nil {
+		logger.Logger.WithField("context", "Effect").Error(err)
+		return
+	}
 
 	// t1 := base.time(0.1)
-	t2 := base.time(0.1) * math.Pi * 2 // * lowsAmplitude
+	t2 := base.time(0.1) * math.Pi * 2
 	t3 := base.time(0.5)
 	t4 := base.time(0.2) * math.Pi * 2
 
@@ -34,8 +42,19 @@ func (e *BlockReflections) assembleFrame(base *Effect, p color.Pixels) {
 		h := math.Sin(t2) + math.Mod(((fi-base.pixelScaler/2)/base.pixelScaler)*(base.triangle(t3)*10+4*math.Sin(t4)), m)
 		v := math.Mod(math.Abs(h)+math.Abs(m), 1)
 		v = math.Pow(v, 2)
-		p[i][0] = h
-		p[i][1] = 1
-		p[i][2] = v
+
+		p[i][0] = h + mel.HighAmplitude()
+		p[i][1] = 1 - mel.LowsAmplitude()
+		p[i][2] = v + mel.MidsAmplitude()
+		// p[i][0] = h + e.freezeFrame[i][0]
+		// p[i][1] = 1 - (mel.MidsAmplitude() + mel.HighAmplitude()) + e.freezeFrame[i][1]
+		// p[i][2] = v + e.freezeFrame[i][2]
+		// if lowsAmplitude > 0.7 {
+		// 	e.freezeFrame[i] = p[i]
+		// }
+
+		// e.freezeFrame[i][0] *= 0.9
+		// e.freezeFrame[i][1] *= 0.9
+		// e.freezeFrame[i][2] *= 0.9
 	}
 }

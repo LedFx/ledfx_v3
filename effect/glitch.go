@@ -1,7 +1,9 @@
 package effect
 
 import (
+	"ledfx/audio"
 	"ledfx/color"
+	"ledfx/logger"
 	"math"
 )
 
@@ -20,6 +22,11 @@ type Glitch struct{}
 
 // Apply new pixels to an existing pixel array.
 func (e *Glitch) assembleFrame(base *Effect, p color.Pixels) {
+	mel, err := audio.Analyzer.GetMelbank(base.ID)
+	if err != nil {
+		logger.Logger.WithField("context", "Effect").Error(err)
+		return
+	}
 
 	t1 := base.time(0.1) * math.Pi * 2
 	t2 := base.time(0.1)
@@ -44,8 +51,8 @@ func (e *Glitch) assembleFrame(base *Effect, p color.Pixels) {
 			v = 0.5 + s2
 		}
 
-		p[i][0] = h
-		p[i][1] = s
-		p[i][2] = v
+		p[i][0] = h + mel.HighAmplitude()
+		p[i][1] = s - mel.LowsAmplitude()
+		p[i][2] = v + mel.MidsAmplitude()
 	}
 }

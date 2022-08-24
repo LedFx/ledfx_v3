@@ -41,18 +41,14 @@ func FileExists(location string) bool {
 	return err == nil
 }
 
-func Unzip(path, dest string) error {
+func Unzip(path, dest, name string) error {
 	archive, err := zip.OpenReader(path)
 	if err != nil {
 		return err
 	}
 	defer archive.Close()
 
-	ex, err := ExecDir()
-	if err != nil {
-		return err
-	}
-	tempDir := filepath.Join(ex, "temp")
+	tempDir := filepath.Join(dest, "unzip_temp")
 	defer os.RemoveAll(tempDir)
 
 	for _, f := range archive.File {
@@ -94,6 +90,6 @@ func Unzip(path, dest string) error {
 			return err
 		}
 	}
-	return os.Rename(filepath.Join(tempDir, "frontend_v3"), dest)
+	return os.Rename(filepath.Join(tempDir, name), filepath.Join(dest, name))
 
 }

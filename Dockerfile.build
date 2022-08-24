@@ -1,6 +1,6 @@
 # Dockerfile
 
-FROM golang:1.18-bullseye
+FROM golang:1.18-bullseye AS build
 
 WORKDIR /usr/src/app
 
@@ -28,5 +28,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends  \
 COPY  . . 
 
 RUN go build -o /usr/local/bin/
+
+FROM debian:bullseye-slim AS dist
+
+COPY --from=build /usr/local/bin/ledfx /usr/local/bin/ledfx
+
+RUN apt-get update && apt-get install -y --no-install-recommends  \
+    git \
+    pkg-config \
+    libportaudio2 \
+    aubio-tools \
+    libportaudio2 \
+    libportaudiocpp0 \
+    libsamplerate0 
 
 CMD ["/usr/local/bin/ledfx", "-t", "-l", "1"]

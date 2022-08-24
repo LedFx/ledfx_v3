@@ -43,7 +43,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/spiro-c/ledfx_v3:latest
-            ghcr.io/spiro-c/ledfx_v3:0.0.1
+            ghcr.io/spiro-c/ledfx_v3:0.0.2
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
       -

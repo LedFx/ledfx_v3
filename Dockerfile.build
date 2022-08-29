@@ -23,11 +23,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends  \
     libportaudiocpp0 \
     libsamplerate0 \
     libsamplerate0-dev \
-    libaubio-dev 
+    libaubio-dev
 
-COPY  . . 
+COPY  . .
 
-RUN go build -o /usr/local/bin/
+RUN go build -o /usr/local/bin/ github.com/LedFx/ledfx/cmd/ledfx
 
 FROM debian:bullseye-slim AS dist
 
@@ -39,7 +39,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends  \
     aubio-tools \
     libportaudio2 \
     libportaudiocpp0 \
-    libsamplerate0 
+    libsamplerate0
 
 COPY --from=build /usr/local/bin/ledfx /usr/local/bin/ledfx
 

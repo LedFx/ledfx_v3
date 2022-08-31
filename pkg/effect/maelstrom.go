@@ -1,9 +1,10 @@
 package effect
 
 import (
-	"ledfx/audio"
-	"ledfx/color"
 	"math"
+
+	"github.com/LedFx/ledfx/pkg/audio"
+	"github.com/LedFx/ledfx/pkg/color"
 )
 
 type Maelstrom struct{}

@@ -2,6 +2,7 @@ package audio
 
 import (
 	"fmt"
+	"math"
 	"sync"
 	"time"
 
@@ -11,9 +12,17 @@ import (
 )
 
 const (
+	// fft and buffer
 	fftSize         uint = 4096
 	sampleRate      uint = 44100
 	framesPerBuffer uint = sampleRate / 60
+	// volume normalisation streams
+	streamConstant     float64 = 0.1
+	streamPow          float64 = 1
+	normStreamSlowLen  int     = 60 * 3 // assumes 60 audio updates per second
+	normStreamFastLen  int     = 60 * 2
+	reactStreamSlowLen int     = 60 * 3
+	reactStreamFastLen int     = 60 * 0.05
 )
 
 // Singleton analyzer
@@ -21,54 +30,98 @@ var Analyzer *analyzer
 
 type analyzer struct {
 	mu          sync.Mutex
+	bufSize     int                 // size of buffer (mono, single channel)
 	buf         *aubio.SimpleBuffer // aubio buffer
-	data        []float32           // mono mix of left and right audio channels
+	data        []float32           // audio buffer as f32
 	eq          *aubio.Filter       // balances the volume across freqs. Stateless, only need one
 	onset       *aubio.Onset        // detects percussive onsets
 	pvoc        *aubio.PhaseVoc     // transforms audio data to fft
 	melbanks    map[string]*melbank // a melbank for each effect
-	RecentOnset time.Time           //  onset for effects
+	RecentOnset time.Time           // onset for effects
+	Vol         volumeStream        // volume stream source for effects. includes a normalised volume and a timestep.
 }
 
 func init() {
+	initialise(int(framesPerBuffer))
+}
+
+func initialise(bufSize int) {
+	uintBufSize := uint(bufSize)
 	Analyzer = &analyzer{
+		bufSize:     bufSize,
 		mu:          sync.Mutex{},
-		buf:         aubio.NewSimpleBuffer(framesPerBuffer),
-		data:        make([]float32, framesPerBuffer),
+		buf:         aubio.NewSimpleBuffer(uintBufSize),
+		data:        make([]float32, uintBufSize),
 		melbanks:    make(map[string]*melbank),
 		RecentOnset: time.Now(),
+		Vol:         NewVolumeStream(),
 	}
 	var err error
 
 	// Create EQ filter. Magic numbers to balance the audio. Boosts the bass and mid, dampens the highs.
-	if Analyzer.eq, err = aubio.NewFilterBiquad(1, -2, 1, -2, 1, framesPerBuffer); err != nil {
+	if Analyzer.eq, err = aubio.NewFilterBiquad(1, -2, 1, -2, 1, uintBufSize); err != nil {
 		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio EQ Filter: %v", err)
 	}
 
 	// Create onset
-	if Analyzer.onset, err = aubio.NewOnset(aubio.HFC, fftSize, framesPerBuffer, sampleRate); err != nil {
+	if Analyzer.onset, err = aubio.NewOnset(aubio.HFC, fftSize, uintBufSize, sampleRate); err != nil {
 		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Onset: %v", err)
 	}
 
 	// Create pvoc
-	if Analyzer.pvoc, err = aubio.NewPhaseVoc(fftSize, framesPerBuffer); err != nil {
+	if Analyzer.pvoc, err = aubio.NewPhaseVoc(fftSize, uintBufSize); err != nil {
 		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Pvoc: %v", err)
 	}
 
 }
 
+type melbankArgs struct {
+	min       uint
+	max       uint
+	intensity float64
+}
+
+func (a *analyzer) reinitialise(bufSize int) {
+	mels := make(map[string]melbankArgs)
+	for id := range a.melbanks {
+		mel := a.melbanks[id]
+		mels[id] = melbankArgs{
+			min:       uint(mel.Min),
+			max:       uint(mel.Max),
+			intensity: mel.Intensity,
+		}
+	}
+	a.Cleanup()
+	initialise(bufSize)
+	for id, args := range mels {
+		a.NewMelbank(id, args.min, args.max, args.intensity)
+	}
+
+}
+
+// Takes a mono audio buffer and performs analysis.
+// Should be called around 60fps for smooth audio data for effects to use
 func (a *analyzer) BufferCallback(buf Buffer) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	fpbint := int(framesPerBuffer)
 
-	// Get our left and right channels as float32
-	for i := 0; i < fpbint; i++ {
-		a.data[i] = float32(buf[i] + buf[i+fpbint])
+	// if the buffer changes size, we need to clean up and reinitialise
+	if len(buf) != a.bufSize {
+		log.Logger.WithField("context", "Audio Analyzer").Warn("Audio buffer changed size. Reinitialising.")
+		a.reinitialise(len(buf))
+		return
+	}
+
+	// Get our audio data as float32
+	for i := 0; i < a.bufSize; i++ {
+		a.data[i] = float32(buf[i])
 	}
 
 	// set the data of the aubio buffer (optimised)
 	a.buf.SetDataFast(a.data)
+
+	// update volume normaliser
+	a.Vol.update(aubio.DbSpl(a.buf))
 
 	// Perform FFT of each audio stream
 	a.eq.DoOutplace(a.buf)
@@ -133,10 +186,86 @@ func (a *analyzer) NewMelbank(id string, min_freq, max_freq uint, intensity floa
 		log.Logger.WithField("context", "Audio Analysis").Debugf("Effect %s attempted to create a new melbank but already has one registered", id)
 		a.DeleteMelbank(id)
 	}
-	mb, err := newMelbank(min_freq, max_freq, intensity)
+	mb, err := newMelbank(min_freq, max_freq, intensity, a.bufSize)
 	if err == nil {
 		log.Logger.WithField("context", "Audio Analysis").Debugf("Registered new melbank for effect %s", id)
 		a.melbanks[id] = mb
 	}
 	return err
+}
+
+type volumeStream struct {
+	reactStream stream
+	normStream  stream
+	Volume      float64
+	Timestep    float64
+}
+
+func NewVolumeStream() volumeStream {
+	return volumeStream{
+		reactStream: newStream(reactStreamFastLen, reactStreamSlowLen),
+		normStream:  newStream(normStreamFastLen, normStreamSlowLen),
+		Volume:      0,
+		Timestep:    0,
+	}
+}
+
+func (vs *volumeStream) update(volume float64) {
+	vs.reactStream.update(volume)
+	vs.normStream.update(volume)
+	vs.Volume = math.Min(vs.reactStream.volume*vs.normStream.volume+1e-5, 1) // 0 < vol <= 1
+	vs.Timestep = (vs.reactStream.timeStep + vs.reactStream.timeStep) / 40
+}
+
+type stream struct {
+	// volume normalisation
+	fastBuffer []float64
+	slowBuffer []float64
+	fastBufPos int
+	slowBufPos int
+	volume     float64
+	timeStep   float64
+}
+
+func newStream(fastBufLen, slowBufLen int) stream {
+	vs := stream{
+		fastBuffer: make([]float64, fastBufLen),
+		slowBuffer: make([]float64, slowBufLen),
+		fastBufPos: 0,
+		slowBufPos: 0,
+	}
+	return vs
+}
+
+func (s *stream) update(volume float64) {
+	// update the buffers
+	// rather than rolling, reallocating, etc, we just keep the index to update looping across the slice
+	s.fastBuffer[s.fastBufPos] = volume
+	s.slowBuffer[s.slowBufPos] = volume
+	s.fastBufPos = (s.fastBufPos + 1) % len(s.fastBuffer)
+	s.slowBufPos = (s.slowBufPos + 1) % len(s.slowBuffer)
+
+	// calculate mean and min of slow buffer
+	minSlow := 0.
+	avgSlow := 0.
+	for i := 0; i < len(s.slowBuffer); i++ {
+		val := s.slowBuffer[i]
+		if val > minSlow {
+			minSlow = val
+		}
+		avgSlow += val
+	}
+	avgSlow /= float64(len(s.slowBuffer))
+
+	// calculate mean of fast buffer
+	avgFast := 0.
+	for i := 0; i < len(s.fastBuffer); i++ {
+		avgFast += s.fastBuffer[i]
+	}
+	avgFast /= float64(len(s.fastBuffer))
+
+	// scale avgFast between mean and min of slow buffer
+	avgFast = (avgFast - minSlow) / (avgSlow - minSlow)
+	s.volume = math.Pow(avgFast, streamPow)
+	s.timeStep += math.Pow(s.volume, streamPow*3) + streamConstant
 }

@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-var testAudio Buffer = make(Buffer, framesPerBuffer*2)
+var testAudio Buffer = make(Buffer, 735)
 
 func TestAnalysis(t *testing.T) {
 	Analyzer.NewMelbank("totally_valid_id", uint(20), uint(20000), 0.7)

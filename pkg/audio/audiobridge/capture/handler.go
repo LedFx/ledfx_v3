@@ -42,12 +42,12 @@ func NewHandler(id string, byteWriter *audio.AsyncMultiWriter) (h *Handler, err 
 	switch p.Input.Channels {
 	case 1:
 		log.Logger.WithField("context", "Local Capture Init").Debugf("Opening stream with Mono2Stereo callback...")
-		if h.Stream, err = portaudio.OpenStream(p, h.mono2StereoCallback); err != nil {
+		if h.Stream, err = portaudio.OpenStream(p, h.monoCallback); err != nil {
 			return nil, fmt.Errorf("error opening mono Portaudio stream: %w", err)
 		}
 	case 2:
 		log.Logger.WithField("context", "Local Capture Init").Debugf("Opening stream with Stereo callback...")
-		if h.Stream, err = portaudio.OpenStream(p, h.stereoCallback); err != nil {
+		if h.Stream, err = portaudio.OpenStream(p, h.stereo2monoCallback); err != nil {
 			return nil, fmt.Errorf("error opening stereo Portaudio stream: %w", err)
 		}
 	default:
@@ -62,12 +62,12 @@ func NewHandler(id string, byteWriter *audio.AsyncMultiWriter) (h *Handler, err 
 	return h, nil
 }
 
-func (h *Handler) stereoCallback(in audio.Buffer) {
-	h.byteWriter.Write(in.AsBytes())
+func (h *Handler) stereo2monoCallback(in audio.Buffer) {
+	h.monoCallback(in.Stereo2Mono())
 }
 
-func (h *Handler) mono2StereoCallback(in audio.Buffer) {
-	h.stereoCallback(in.ChannelMultiplier(2))
+func (h *Handler) monoCallback(in audio.Buffer) {
+	h.byteWriter.Write(in.AsBytes())
 }
 
 func (h *Handler) Quit() {

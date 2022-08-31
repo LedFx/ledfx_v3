@@ -226,6 +226,15 @@ func (b Buffer) Mono2Stereo() Buffer {
 	return stereo
 }
 
+func (b Buffer) Stereo2Mono() Buffer {
+	monoLen := len(b) / 2
+	mono := Buffer(make([]int16, monoLen))
+	for i := 0; i < monoLen; i++ {
+		mono[i] = b[i] + b[i+monoLen]
+	}
+	return mono
+}
+
 func (b Buffer) WriteTo(filename string) error {
 	fi, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0777)
 	if err != nil {

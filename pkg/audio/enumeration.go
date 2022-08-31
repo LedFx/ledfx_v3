@@ -43,7 +43,7 @@ func LogDeviceType(deviceType malgo.DeviceType) {
 }
 
 // Get a malgo.DeviceInfo corresponding to a given ID
-func GetDeviceByID(id malgo.DeviceID) (malgo.DeviceInfo, malgo.DeviceType, error) {
+func GetDeviceByID(id string) (malgo.DeviceInfo, malgo.DeviceType, error) {
 	info, err := SearchDeviceTypeForID(malgo.Playback, id)
 	if err != nil {
 		return info, malgo.Playback, err
@@ -60,13 +60,13 @@ func GetDeviceByID(id malgo.DeviceID) (malgo.DeviceInfo, malgo.DeviceType, error
 	return info, malgo.Loopback, err
 }
 
-func SearchDeviceTypeForID(deviceType malgo.DeviceType, id malgo.DeviceID) (malgo.DeviceInfo, error) {
+func SearchDeviceTypeForID(deviceType malgo.DeviceType, id string) (malgo.DeviceInfo, error) {
 	devices, err := Context.Devices(deviceType)
 	if err != nil {
 		return malgo.DeviceInfo{}, err
 	}
 	for _, device := range devices {
-		if device.ID == id {
+		if device.ID.String() == id {
 			// return full device info
 			return Context.DeviceInfo(deviceType, device.ID, malgo.Shared)
 		}

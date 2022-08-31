@@ -14,7 +14,7 @@ type Handler struct {
 	stopped    bool
 }
 
-func NewHandler(id malgo.DeviceID, byteWriter *audio.AsyncMultiWriter) (h *Handler, err error) {
+func NewHandler(id string, byteWriter *audio.AsyncMultiWriter) (h *Handler, err error) {
 	deviceInfo, deviceType, err := audio.GetDeviceByID(id)
 	if err != nil {
 		return nil, err

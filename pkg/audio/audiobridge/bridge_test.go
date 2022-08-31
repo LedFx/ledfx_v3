@@ -26,12 +26,10 @@ func TestBridgeMic2Local(t *testing.T) {
 		t.Fatalf("Error getting available audio devices: %v\n", err)
 	}
 
-	var deviceId malgo.DeviceID
-	var matched bool = false
+	var deviceId string
 	for i := range devices {
 		if strings.Contains(strings.ToLower(devices[i].Name()), "mic") {
-			matched = true
-			deviceId = devices[i].ID
+			deviceId = devices[i].ID.String()
 			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Device: %s", devices[i].Name)
 			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Input Channels: %d - %d", devices[i].MinChannels, devices[i].MaxChannels)
 			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Sample Rate: %d - %d", devices[i].MinSampleRate, devices[i].MaxSampleRate)
@@ -39,7 +37,7 @@ func TestBridgeMic2Local(t *testing.T) {
 		}
 	}
 
-	if !matched {
+	if deviceId == "" {
 		t.Fatalf("Could not find input audio device containing string 'mic'\n")
 	}
 
@@ -159,12 +157,10 @@ func TestBridgeMic2AirPlay(t *testing.T) {
 		t.Fatalf("Error getting available audio devices: %v\n", err)
 	}
 
-	var deviceId malgo.DeviceID
-	var matched bool = false
+	var deviceId string
 	for i := range devices {
 		if strings.Contains(strings.ToLower(devices[i].Name()), "mic") {
-			matched = true
-			deviceId = devices[i].ID
+			deviceId = devices[i].ID.String()
 			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Device: %s", devices[i].Name)
 			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Input Channels: %d - %d", devices[i].MinChannels, devices[i].MaxChannels)
 			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Sample Rate: %d - %d", devices[i].MinSampleRate, devices[i].MaxSampleRate)
@@ -172,12 +168,8 @@ func TestBridgeMic2AirPlay(t *testing.T) {
 		}
 	}
 
-	if !matched {
+	if deviceId == "" {
 		t.Fatalf("Could not find input audio device containing string 'mic'\n")
-	}
-
-	if err := br.StartLocalInput(deviceId); err != nil {
-		t.Fatalf("Error starting local input: %v\n", err)
 	}
 
 	if err := br.AddAirPlayOutput("LedFX-AirPlay", AirPlaySearchByName); err != nil {

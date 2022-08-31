@@ -12,7 +12,6 @@ import (
 	"github.com/LedFx/ledfx/pkg/logger"
 
 	"github.com/creasty/defaults"
-	"github.com/gen2brain/malgo"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/pflag"
 )
@@ -66,7 +65,7 @@ type config struct {
 	ConnEffect    map[string]string          `mapstructure:"connections_effect" json:"connections_effect"`
 	ConnDevice    map[string]string          `mapstructure:"connections_device" json:"connections_device"`
 	VirtStates    map[string]bool            `mapstructure:"controller_states" json:"controller_states"`
-	LocalInput    malgo.DeviceID             `mapstructure:"local_input" json:"local_input"`
+	LocalInput    string                     `mapstructure:"local_input" json:"local_input"`
 	// Audio    AudioEntry              `mapstructure:"audio" json:"audio"`
 	// Audio    AudioConfig             `mapstructure:"audio" json:"audio"`
 }

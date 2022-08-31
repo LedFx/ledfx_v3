@@ -8,10 +8,10 @@ type AudioConfig struct {
 	FrameRate int              `mapstructure:"frame_rate" json:"frame_rate"`
 }
 
-func GetLocalInput() malgo.DeviceID {
+func GetLocalInput() string {
 	return store.LocalInput
 }
 
-func SetLocalInput(id malgo.DeviceID) {
+func SetLocalInput(id string) {
 	store.LocalInput = id
 }

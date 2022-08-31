@@ -45,7 +45,7 @@ func TestBridgeMic2LocalJSON(t *testing.T) {
 
 	// BEGIN INPUT CONFIG
 	inConf := LocalInputJSON{
-		DeviceID: deviceId,
+		DeviceID: deviceId.String(),
 	}
 	inConfBytes, err := inConf.AsJSON()
 	if err != nil {

@@ -27,10 +27,10 @@ type melbank struct {
 }
 
 // Specify the min and max frequencies
-func newMelbank(min, max uint, intensity float64) (*melbank, error) {
+func newMelbank(min, max uint, intensity float64, bufSize int) (*melbank, error) {
 
 	mb := &melbank{
-		fb:           aubio.NewFilterBank(melBins, framesPerBuffer),
+		fb:           aubio.NewFilterBank(melBins, uint(bufSize)),
 		Min:          int(min),
 		Max:          int(max),
 		Intensity:    intensity,

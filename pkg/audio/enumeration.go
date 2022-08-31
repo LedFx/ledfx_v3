@@ -45,15 +45,15 @@ func LogDeviceType(deviceType malgo.DeviceType) {
 // Get a malgo.DeviceInfo corresponding to a given ID
 func GetDeviceByID(id string) (malgo.DeviceInfo, malgo.DeviceType, error) {
 	info, err := SearchDeviceTypeForID(malgo.Playback, id)
-	if err != nil {
+	if err == nil {
 		return info, malgo.Playback, err
 	}
 	info, err = SearchDeviceTypeForID(malgo.Capture, id)
-	if err != nil {
+	if err == nil {
 		return info, malgo.Capture, err
 	}
 	info, err = SearchDeviceTypeForID(malgo.Duplex, id)
-	if err != nil {
+	if err == nil {
 		return info, malgo.Duplex, err
 	}
 	info, err = SearchDeviceTypeForID(malgo.Loopback, id)

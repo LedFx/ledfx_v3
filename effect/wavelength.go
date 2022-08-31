@@ -24,7 +24,7 @@ func (e *Wavelegth) assembleFrame(base *Effect, p color.Pixels) {
 	}
 
 	for i := 0; i < len(p); i++ {
-		p[i][0] = float64(i) / float64(len(p))
+		p[i][0] = float64(i) / base.pixelScaler
 		p[i][1] = 1
 		p[i][2] = scaled_mel[i]
 	}

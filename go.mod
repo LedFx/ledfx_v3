@@ -1,4 +1,4 @@
-module ledfx
+module github.com/LedFx/ledfx
 
 go 1.18
 

@@ -12,9 +12,6 @@ import (
 
 // NewBridge initializes a new bridge between a source and destination audio device.
 func NewBridge(bufferCallback func(buf audio.Buffer)) (br *Bridge, err error) {
-	if err := portaudio.Initialize(); err != nil {
-		return nil, fmt.Errorf("error initializing PortAudio: %w", err)
-	}
 	br = &Bridge{
 		bufferCallback: bufferCallback,
 		byteWriter:     audio.NewAsyncMultiWriter(),

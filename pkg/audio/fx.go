@@ -18,14 +18,14 @@ type FxHandler struct {
 
 func NewFxHandler() (fx *FxHandler, err error) {
 	fx = new(FxHandler)
-	if fx.pvoc, err = aubio.NewPhaseVoc(fftSize, framesPerBuffer); err != nil {
+	if fx.pvoc, err = aubio.NewPhaseVoc(FftSize, FramesPerBuffer); err != nil {
 		return nil, fmt.Errorf("error initializing new Aubio phase vocoder: %w", err)
 	}
 
-	fx.melbank = aubio.NewFilterBank(40, fftSize)
+	fx.melbank = aubio.NewFilterBank(40, FftSize)
 	fx.melbank.SetMelCoeffsSlaney(44100)
 
-	if fx.onset, err = aubio.NewOnset(aubio.Energy, fftSize, framesPerBuffer, sampleRate); err != nil {
+	if fx.onset, err = aubio.NewOnset(aubio.Energy, FftSize, FramesPerBuffer, SampleRate); err != nil {
 		return nil, fmt.Errorf("error initializing new Aubio onset: %w", err)
 	}
 

@@ -8,8 +8,26 @@ import (
 	"sync"
 	"unsafe"
 
+	"github.com/gen2brain/malgo"
+
 	log "github.com/LedFx/ledfx/pkg/logger"
 )
+
+var Context *malgo.AllocatedContext
+
+func init() {
+	var err error
+	Context, err = malgo.InitContext(nil, malgo.ContextConfig{}, nil)
+	if err != nil {
+		log.Logger.WithField("context", "Audio Initialisation").Error(err)
+		os.Exit(1)
+	}
+
+}
+func Cleanup() {
+	_ = Context.Uninit()
+	Context.Free()
+}
 
 type AsyncMultiWriter struct {
 	mu             *sync.Mutex

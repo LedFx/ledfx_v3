@@ -13,6 +13,7 @@ import (
 	"github.com/LedFx/ledfx/pkg/audio/audiobridge"
 	"github.com/LedFx/ledfx/pkg/bridgeapi/statpoll"
 	"github.com/LedFx/ledfx/pkg/logger"
+	"github.com/gen2brain/malgo"
 
 	"github.com/gorilla/websocket"
 )
@@ -262,7 +263,15 @@ func (s *Server) handleAddOutputLocal(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleGetLocalInputs(w http.ResponseWriter, r *http.Request) {
-	infos, err := audio.GetAudioDevices()
+	capture, err := audio.Context.Devices(malgo.Capture)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Logger.WithField("context", "AudioBridge").Errorf("Error generating input devices: %v", err)
+		w.Write(errToJson(err))
+		return
+	}
+	loopback, err := audio.Context.Devices(malgo.Loopback)
+	infos := append(capture, loopback...)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Logger.WithField("context", "AudioBridge").Errorf("Error generating input devices: %v", err)

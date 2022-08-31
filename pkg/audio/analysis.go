@@ -13,9 +13,9 @@ import (
 
 const (
 	// fft and buffer
-	fftSize         uint = 4096
-	sampleRate      uint = 44100
-	framesPerBuffer uint = sampleRate / 60
+	FftSize         uint = 4096
+	SampleRate      uint = 44100
+	FramesPerBuffer uint = SampleRate / 60
 	// volume normalisation streams
 	streamConstant     float64 = 0.1
 	streamPow          float64 = 1
@@ -42,7 +42,7 @@ type analyzer struct {
 }
 
 func init() {
-	initialise(int(framesPerBuffer))
+	initialise(int(FramesPerBuffer))
 }
 
 func initialise(bufSize int) {
@@ -64,12 +64,12 @@ func initialise(bufSize int) {
 	}
 
 	// Create onset
-	if Analyzer.onset, err = aubio.NewOnset(aubio.HFC, fftSize, uintBufSize, sampleRate); err != nil {
+	if Analyzer.onset, err = aubio.NewOnset(aubio.HFC, FftSize, uintBufSize, SampleRate); err != nil {
 		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Onset: %v", err)
 	}
 
 	// Create pvoc
-	if Analyzer.pvoc, err = aubio.NewPhaseVoc(fftSize, uintBufSize); err != nil {
+	if Analyzer.pvoc, err = aubio.NewPhaseVoc(FftSize, uintBufSize); err != nil {
 		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Pvoc: %v", err)
 	}
 

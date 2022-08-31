@@ -11,6 +11,7 @@ import (
 	"github.com/LedFx/ledfx/pkg/color"
 	"github.com/LedFx/ledfx/pkg/device"
 	"github.com/LedFx/ledfx/pkg/effect"
+	"github.com/gen2brain/malgo"
 )
 
 func TestController(t *testing.T) {
@@ -59,7 +60,7 @@ func TestController(t *testing.T) {
 	}
 	defer br.Stop()
 
-	if err := br.StartLocalInput("9f012a5ef29af5e7b226bae734a8cb2ad229f063"); err != nil { // get from config
+	if err := br.StartLocalInput(malgo.DeviceID{}); err != nil { // get from config
 		log.Fatalf("Error starting local input: %v\n", err)
 	}
 

@@ -3,6 +3,8 @@ package audiobridge
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/gen2brain/malgo"
 )
 
 type Wrapper interface {
@@ -32,7 +34,7 @@ func (a AirPlayOutputJSON) AsJSON() ([]byte, error) {
 
 // LocalInputJSON configures a local input (capture)
 type LocalInputJSON struct {
-	DeviceID string `json:"device_id,omitempty"`
+	DeviceID malgo.DeviceID `json:"device_id,omitempty"`
 }
 
 func (l LocalInputJSON) AsJSON() ([]byte, error) {

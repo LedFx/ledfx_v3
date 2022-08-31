@@ -5,77 +5,58 @@ import (
 
 	"github.com/LedFx/ledfx/pkg/audio"
 	log "github.com/LedFx/ledfx/pkg/logger"
-
-	"github.com/gordonklaus/portaudio"
+	"github.com/gen2brain/malgo"
 )
 
 type Handler struct {
-	*portaudio.Stream
+	*malgo.Device
 	byteWriter *audio.AsyncMultiWriter
 	stopped    bool
 }
 
-func NewHandler(id string, byteWriter *audio.AsyncMultiWriter) (h *Handler, err error) {
-	audioDevice, err := audio.GetDeviceByID(id)
+func NewHandler(id malgo.DeviceID, byteWriter *audio.AsyncMultiWriter) (h *Handler, err error) {
+	deviceInfo, deviceType, err := audio.GetDeviceByID(id)
 	if err != nil {
 		return nil, err
 	}
-	log.Logger.WithField("context", "Local Capture Init").Debugf("Getting info for device '%s'...", audioDevice.Name)
-	dev, err := audio.GetPaDeviceInfo(audioDevice)
-	if err != nil {
-		return nil, fmt.Errorf("error getting PortAudio device info: %w", err)
-	}
+	log.Logger.WithField("context", "Local Capture Init").Debugf("Getting info for device '%s'...", deviceInfo.Name)
 
-	p := portaudio.StreamParameters{
-		Input: portaudio.StreamDeviceParameters{
-			Device:   dev,
-			Channels: dev.MaxInputChannels,
-		},
-		SampleRate:      dev.DefaultSampleRate,
-		FramesPerBuffer: int(dev.DefaultSampleRate / 60),
-	}
+	config := malgo.DefaultDeviceConfig(deviceType)
+	config.SampleRate = uint32(audio.SampleRate)
+	config.PeriodSizeInFrames = uint32(audio.FramesPerBuffer)
+	config.Capture.DeviceID = deviceInfo.ID.Pointer()
+	config.Capture.Channels = 1
+	config.Capture.Format = malgo.FormatS16
 
 	h = &Handler{
 		byteWriter: byteWriter,
 	}
 
-	switch p.Input.Channels {
-	case 1:
-		log.Logger.WithField("context", "Local Capture Init").Debugf("Opening stream with Mono2Stereo callback...")
-		if h.Stream, err = portaudio.OpenStream(p, h.monoCallback); err != nil {
-			return nil, fmt.Errorf("error opening mono Portaudio stream: %w", err)
-		}
-	case 2:
-		log.Logger.WithField("context", "Local Capture Init").Debugf("Opening stream with Stereo callback...")
-		if h.Stream, err = portaudio.OpenStream(p, h.stereo2monoCallback); err != nil {
-			return nil, fmt.Errorf("error opening stereo Portaudio stream: %w", err)
-		}
-	default:
-		return nil, fmt.Errorf("%d channel audio is unsupported (LedFX only supports stereo/mono)", p.Input.Channels)
+	callbacks := malgo.DeviceCallbacks{
+		Data: func(pOutputSample []byte, pInputSamples []byte, framecount uint32) {
+			h.byteWriter.Write(pInputSamples)
+		},
+		Stop: func() {},
+	}
+
+	log.Logger.WithField("context", "Local Capture Init").Debug("Initialising device...")
+	h.Device, err = malgo.InitDevice(audio.Context.Context, config, callbacks)
+	if err != nil {
+		return nil, fmt.Errorf("error initialising stream: %w", err)
 	}
 
 	log.Logger.WithField("context", "Local Capture Init").Debugf("Starting stream...")
-	if err = h.Stream.Start(); err != nil {
-		return nil, fmt.Errorf("error starting capture stream: %w", err)
+	if err = h.Device.Start(); err != nil {
+		return nil, fmt.Errorf("error starting stream: %w", err)
 	}
 
 	return h, nil
 }
 
-func (h *Handler) stereo2monoCallback(in audio.Buffer) {
-	h.monoCallback(in.Stereo2Mono())
-}
-
-func (h *Handler) monoCallback(in audio.Buffer) {
-	h.byteWriter.Write(in.AsBytes())
-}
-
 func (h *Handler) Quit() {
 	h.stopped = true
-	log.Logger.WithField("context", "Capture Handler").Warnf("Aborting stream...")
-	h.Stream.Abort()
-	log.Logger.WithField("context", "Capture Handler").Warnf("Closing stream...")
-	h.Stream.Close()
+	log.Logger.WithField("context", "Capture Handler").Warnf("Stopping stream...")
+	h.Device.Stop()
 }
 
 func (h *Handler) Stopped() bool {

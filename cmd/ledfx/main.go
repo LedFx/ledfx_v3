@@ -107,7 +107,7 @@ func main() {
 	// if err := bridgeServer.Br.StartAirPlayInput("LedFx", 7000); err != nil {
 	// 	logger.Logger.WithField("context", "AudioBridge").Fatalf("Error initializing AirPlay: %v", err)
 	// }
-	if config.GetLocalInput() != "" {
+	if config.GetLocalInput().String() != "" {
 		err := bridgeServer.Br.StartLocalInput(config.GetLocalInput())
 		if err != nil {
 			logger.Logger.WithField("context", "AudioBridge").Errorf("Error starting local input: %v\n", err)
@@ -164,10 +164,11 @@ func main() {
 
 func shutdown() {
 	logger.Logger.WithField("context", "Shutdown Handler").Info("Shutting down LedFx")
-
 	logger.Logger.WithField("context", "Shutdown Handler").Info("Cleaning up audio analyzer")
 	// kill analyzer
 	audio.Analyzer.Cleanup()
+	// kill audio context
+	audio.Cleanup()
 
 	// kill systray
 	if !config.GetSettings().NoTray {

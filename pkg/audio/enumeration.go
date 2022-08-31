@@ -1,151 +1,71 @@
 package audio
 
 import (
-	"crypto/sha1"
-	"encoding/hex"
 	"fmt"
-	"strings"
-	"text/tabwriter"
 
-	"github.com/LedFx/ledfx/pkg/config"
 	"github.com/LedFx/ledfx/pkg/logger"
 
-	"github.com/gordonklaus/portaudio"
+	"github.com/gen2brain/malgo"
 )
 
-/*
-Creates a hash of hostapi idx and device name
-This ID should be the same regardless of device idx, meaning
-it won't change when other audio devices are added or removed
-*/
-func createId(i int, n string) string {
-	s := fmt.Sprintf("%d %s", i, n)
-	id := sha1.New()
-	id.Write([]byte(s))
-	return hex.EncodeToString(id.Sum(nil))
-}
-
-func GetPaDeviceInfo(ad config.AudioDevice) (d *portaudio.DeviceInfo, err error) {
-	hs, err := portaudio.HostApis()
-	if err != nil {
-		return
-	}
-	for i, h := range hs {
-		for _, d := range h.Devices {
-			// if d.MaxInputChannels < 1 {
-			// 	continue
-			// }
-			if ad.Id == createId(i, d.Name) {
-				return d, nil
-			}
-		}
-	}
-	logger.Logger.Warn("Saved audio input device cannot be found. Reverting to default device.")
-	d, err = portaudio.DefaultInputDevice()
-	if err != nil {
-		return &portaudio.DeviceInfo{}, err
-	}
-	return d, err
-}
-
-func GetAudioDevices() (infos []config.AudioDevice, err error) {
-	err = portaudio.Initialize()
-	if err != nil {
-		logger.Logger.Error(err)
-		return
-	}
-	defer portaudio.Terminate()
-
-	hs, err := portaudio.HostApis()
-	if err != nil {
-		logger.Logger.Error(err)
-		return
-	}
-	for i, h := range hs {
-		for _, d := range h.Devices {
-			// if d.MaxInputChannels < 1 {
-			// 	continue
-			// }
-			ad := config.AudioDevice{
-				Id:          createId(i, d.Name),
-				HostApi:     h.Name,
-				SampleRate:  d.DefaultSampleRate,
-				Name:        d.Name,
-				ChannelsIn:  d.MaxInputChannels,
-				ChannelsOut: d.MaxOutputChannels,
-				IsDefault:   d.Name == h.DefaultInputDevice.Name || d.Name == h.DefaultOutputDevice.Name,
-			}
-			infos = append(infos, ad)
-		}
-	}
-	return infos, err
-}
-
+// prints available audio devices to the console
 func LogAudioDevices() {
-	infos, err := GetAudioDevices()
+	fmt.Println("Playback Devices")
+	LogDeviceType(malgo.Playback)
+	fmt.Println()
+	fmt.Println("Capture Devices")
+	LogDeviceType(malgo.Capture)
+	fmt.Println()
+	fmt.Println("Loopback Devices")
+	LogDeviceType(malgo.Loopback)
+}
+
+func LogDeviceType(deviceType malgo.DeviceType) {
+	infos, err := Context.Devices(deviceType)
 	if err != nil {
-		logger.Logger.Error(err)
+		logger.Logger.WithField("context", "Audio Device Enumeration").Error(err)
 		return
 	}
-	w := tabwriter.NewWriter(logger.Logger.Out, 1, 1, 1, ' ', 0)
-
-	var icon rune
-
-	for _, info := range infos {
-		if info.IsDefault {
-			icon = '✓'
-		} else {
-			icon = '⨯'
+	fmt.Println("Capture Devices")
+	for i, info := range infos {
+		e := "ok"
+		full, err := Context.DeviceInfo(deviceType, info.ID, malgo.Shared)
+		if err != nil {
+			e = err.Error()
 		}
-		fmt.Fprintf(w, "%s:\t%s,\tChan In: %d,\tChan Out: %d,\tsamplerate: %f,\tdefault: %c\n",
-			info.HostApi, info.Name, info.ChannelsIn, info.ChannelsOut, info.SampleRate, icon)
+		fmt.Printf("    %d: %s, [%s], channels: %d-%d, samplerate: %d-%d\n",
+			i, info.Name(), e, full.MinChannels, full.MaxChannels, full.MinSampleRate, full.MaxSampleRate)
 	}
-	w.Flush()
 }
 
-func GetDeviceByID(id string) (config.AudioDevice, error) {
-	devices, err := GetAudioDevices()
+// Get a malgo.DeviceInfo corresponding to a given ID
+func GetDeviceByID(id malgo.DeviceID) (malgo.DeviceInfo, malgo.DeviceType, error) {
+	info, err := SearchDeviceTypeForID(malgo.Playback, id)
 	if err != nil {
-		return config.AudioDevice{}, err
+		return info, malgo.Playback, err
 	}
-	for _, device := range devices {
-		if device.Id == id {
-			return device, nil
-		}
-	}
-
-	idList := make([]string, len(devices))
-	for i := range devices {
-		idList[i] = devices[i].Id
-	}
-
-	// In case the ID is actually the device name
-	tryByName, err := GetDeviceByName(id)
+	info, err = SearchDeviceTypeForID(malgo.Capture, id)
 	if err != nil {
-		logger.Logger.WithField("context", "Device Lookup").Warnf("Device ID/Name lookup failed!")
-	} else {
-		logger.Logger.WithField("context", "Device Lookup").Infof("Device ID lookup failed, but a name lookup worked!")
-		return tryByName, nil
+		return info, malgo.Capture, err
 	}
-
-	return config.AudioDevice{}, fmt.Errorf("could not find audio device matching id '%s' out of [%s]", id, strings.Join(idList, ", "))
+	info, err = SearchDeviceTypeForID(malgo.Duplex, id)
+	if err != nil {
+		return info, malgo.Duplex, err
+	}
+	info, err = SearchDeviceTypeForID(malgo.Loopback, id)
+	return info, malgo.Loopback, err
 }
 
-func GetDeviceByName(name string) (config.AudioDevice, error) {
-	devices, err := GetAudioDevices()
+func SearchDeviceTypeForID(deviceType malgo.DeviceType, id malgo.DeviceID) (malgo.DeviceInfo, error) {
+	devices, err := Context.Devices(deviceType)
 	if err != nil {
-		return config.AudioDevice{}, err
+		return malgo.DeviceInfo{}, err
 	}
 	for _, device := range devices {
-		if strings.EqualFold(device.Name, name) {
-			return device, nil
+		if device.ID == id {
+			// return full device info
+			return Context.DeviceInfo(deviceType, device.ID, malgo.Shared)
 		}
 	}
-
-	nameList := make([]string, len(devices))
-	for i := range devices {
-		nameList[i] = devices[i].Name
-	}
-
-	return config.AudioDevice{}, fmt.Errorf("could not find audio device matching id '%s' out of [%s]", name, strings.Join(nameList, ", "))
+	return malgo.DeviceInfo{}, fmt.Errorf("could not find audio device matching id '%s'", id)
 }

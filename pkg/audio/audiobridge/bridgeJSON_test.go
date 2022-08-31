@@ -7,6 +7,7 @@ import (
 
 	"github.com/LedFx/ledfx/pkg/audio"
 	log "github.com/LedFx/ledfx/pkg/logger"
+	"github.com/gen2brain/malgo"
 )
 
 func TestBridgeMic2LocalJSON(t *testing.T) {
@@ -18,23 +19,25 @@ func TestBridgeMic2LocalJSON(t *testing.T) {
 	}
 	defer br.Stop()
 
-	devices, err := audio.GetAudioDevices()
+	devices, err := audio.Context.Devices(malgo.Capture)
 	if err != nil {
 		t.Fatalf("Error getting available audio devices: %v\n", err)
 	}
 
-	var deviceId string
+	var deviceId malgo.DeviceID
+	var matched bool = false
 	for i := range devices {
-		if strings.Contains(strings.ToLower(devices[i].Name), "mic") {
-			deviceId = devices[i].Id
+		if strings.Contains(strings.ToLower(devices[i].Name()), "mic") {
+			matched = true
+			deviceId = devices[i].ID
 			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Device: %s", devices[i].Name)
-			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Input Channels: %d", devices[i].ChannelsIn)
-			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Sample Rate: %f", devices[i].SampleRate)
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Input Channels: %d - %d", devices[i].MinChannels, devices[i].MaxChannels)
+			log.Logger.WithField("context", "Mic2Speaker").Infof("Mic Sample Rate: %d - %d", devices[i].MinSampleRate, devices[i].MaxSampleRate)
 			break
 		}
 	}
 
-	if deviceId == "" {
+	if !matched {
 		t.Fatalf("Could not find input audio device containing string 'mic'\n")
 	}
 

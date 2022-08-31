@@ -7,6 +7,7 @@ import (
 	"github.com/LedFx/ledfx/pkg/audio/audiobridge/playback"
 	"github.com/LedFx/ledfx/pkg/config"
 	log "github.com/LedFx/ledfx/pkg/logger"
+	"github.com/gen2brain/malgo"
 )
 
 type LocalHandler struct {
@@ -18,7 +19,7 @@ func newLocalHandler() *LocalHandler {
 	return &LocalHandler{}
 }
 
-func (br *Bridge) StartLocalInput(id string) (err error) {
+func (br *Bridge) StartLocalInput(id malgo.DeviceID) (err error) {
 	if br.inputType != -1 {
 		br.closeInput()
 	}

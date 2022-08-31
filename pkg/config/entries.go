@@ -63,8 +63,6 @@ func AddEntry(id string, entry interface{}) (err error) {
 	if err != nil {
 		return err
 	}
-	logger.Logger.WithField("context", "Config").Debugf("Saved %s to config", id)
-	logger.Logger.WithField("context", "Config").Debug(entry)
 	return saveConfig()
 }
 

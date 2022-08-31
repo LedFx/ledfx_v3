@@ -19,7 +19,7 @@ func NewHandler(id string, byteWriter *audio.AsyncMultiWriter) (h *Handler, err 
 	if err != nil {
 		return nil, err
 	}
-	log.Logger.WithField("context", "Local Capture Init").Debugf("Getting info for device '%s'...", deviceInfo.Name)
+	log.Logger.WithField("context", "Local Capture Init").Debugf("Getting info for device '%s'...", deviceInfo.Name())
 
 	config := malgo.DefaultDeviceConfig(deviceType)
 	config.SampleRate = uint32(audio.SampleRate)

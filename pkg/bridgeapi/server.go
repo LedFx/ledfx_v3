@@ -29,6 +29,16 @@ type Server struct {
 	upgrader   *websocket.Upgrader
 }
 
+type AudioDeviceInfo struct {
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	IsDefault     bool   `json:"isDefault"`
+	MinChannels   int    `json:"minChannels"`
+	MaxChannels   int    `json:"maxChannels"`
+	MinSampleRate int    `json:"minSampleRate"`
+	MaxSampleRate int    `json:"maxSampleRate"`
+}
+
 func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (s *Server, err error) {
 	s = &Server{
 		mux: mux,
@@ -278,7 +288,19 @@ func (s *Server) handleGetLocalInputs(w http.ResponseWriter, r *http.Request) {
 		w.Write(errToJson(err))
 		return
 	}
-	infoBytes, err := json.Marshal(infos)
+	audioDeviceInfos := []AudioDeviceInfo{}
+	for _, info := range infos {
+		audioDeviceInfos = append(audioDeviceInfos, AudioDeviceInfo{
+			ID:            info.ID.String(),
+			Name:          info.Name(),
+			IsDefault:     info.IsDefault != 0,
+			MinChannels:   int(info.MinChannels),
+			MaxChannels:   int(info.MaxChannels),
+			MinSampleRate: int(info.MinSampleRate),
+			MaxSampleRate: int(info.MaxSampleRate),
+		})
+	}
+	infoBytes, err := json.Marshal(audioDeviceInfos)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Logger.WithField("context", "AudioBridge").Errorf("Error marshalling input devices: %v", err)

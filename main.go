@@ -49,6 +49,8 @@ func main() {
 	logger.Logger.Info("Info message logging enabled")
 	logger.Logger.Debug("Debug message logging enabled")
 
+	audio.LogAudioDevices()
+
 	// subscribe to shutdown event
 	event.Subscribe(event.Shutdown, func(e *event.Event) { shutdown() })
 
@@ -101,9 +103,14 @@ func main() {
 		defer bridgeServer.Br.Stop()
 		logger.Logger.WithField("context", "AudioBridge").Info("Initialised AudioBridge server")
 	}
-
-	if err := bridgeServer.Br.StartLocalInput(config.GetLocalInput()); err != nil {
-		logger.Logger.WithField("context", "AudioBridge").Errorf("Error starting local input: %v\n", err)
+	// if err := bridgeServer.Br.StartAirPlayInput("LedFx", 7000); err != nil {
+	// 	logger.Logger.WithField("context", "AudioBridge").Fatalf("Error initializing AirPlay: %v", err)
+	// }
+	if config.GetLocalInput() != "" {
+		err := bridgeServer.Br.StartLocalInput(config.GetLocalInput())
+		if err != nil {
+			logger.Logger.WithField("context", "AudioBridge").Errorf("Error starting local input: %v\n", err)
+		}
 	}
 
 	// Start web server

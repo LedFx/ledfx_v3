@@ -162,11 +162,12 @@ func New(new_id, effect_type string, pixelCount int, new_config interface{}) (ef
 	}
 	effect.Type = effect_type
 
-	// if the id exists and has already been registered, overwrite the existing effect with that id
-	if _, exists := effectInstances[new_id]; exists && new_id != "" {
-		id = new_id
-		Destroy(id)
-		effectInstances[id] = effect
+	if new_id != "" { // if an id is given, use it
+		// if effect already exists with that id, destroy it
+		if _, exists := effectInstances[new_id]; exists {
+			Destroy(new_id)
+		}
+		effectInstances[new_id] = effect
 	} else { // otherwise, generate a new id
 		for i := 0; ; i++ {
 			id = effect_type + strconv.Itoa(i)

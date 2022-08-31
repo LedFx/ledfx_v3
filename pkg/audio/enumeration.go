@@ -18,6 +18,7 @@ func LogAudioDevices() {
 	fmt.Println()
 	fmt.Println("Loopback Devices")
 	LogDeviceType(malgo.Loopback)
+	fmt.Println()
 }
 
 func LogDeviceType(deviceType malgo.DeviceType) {
@@ -26,8 +27,11 @@ func LogDeviceType(deviceType malgo.DeviceType) {
 		logger.Logger.WithField("context", "Audio Device Enumeration").Error(err)
 		return
 	}
-	fmt.Println("Capture Devices")
 	for i, info := range infos {
+		// prevent malgo bug causing sigsegv
+		if info.MaxChannels == 0 {
+			continue
+		}
 		e := "ok"
 		full, err := Context.DeviceInfo(deviceType, info.ID, malgo.Shared)
 		if err != nil {

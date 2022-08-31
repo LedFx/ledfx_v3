@@ -2,7 +2,7 @@ package audio
 
 import (
 	"fmt"
-	log "ledfx/logger"
+	"ledfx/logger"
 	"math"
 	"sync"
 	"time"
@@ -29,8 +29,9 @@ var Analyzer *analyzer
 
 type analyzer struct {
 	mu          sync.Mutex
+	bufSize     int                 // size of buffer (mono, single channel)
 	buf         *aubio.SimpleBuffer // aubio buffer
-	data        []float32           // mono mix of left and right audio channels
+	data        []float32           // audio buffer as f32
 	eq          *aubio.Filter       // balances the volume across freqs. Stateless, only need one
 	onset       *aubio.Onset        // detects percussive onsets
 	pvoc        *aubio.PhaseVoc     // transforms audio data to fft
@@ -40,10 +41,16 @@ type analyzer struct {
 }
 
 func init() {
+	initialise(int(framesPerBuffer))
+}
+
+func initialise(bufSize int) {
+	uintBufSize := uint(bufSize)
 	Analyzer = &analyzer{
+		bufSize:     bufSize,
 		mu:          sync.Mutex{},
-		buf:         aubio.NewSimpleBuffer(framesPerBuffer),
-		data:        make([]float32, framesPerBuffer),
+		buf:         aubio.NewSimpleBuffer(uintBufSize),
+		data:        make([]float32, uintBufSize),
 		melbanks:    make(map[string]*melbank),
 		RecentOnset: time.Now(),
 		Vol:         NewVolumeStream(),
@@ -51,30 +58,62 @@ func init() {
 	var err error
 
 	// Create EQ filter. Magic numbers to balance the audio. Boosts the bass and mid, dampens the highs.
-	if Analyzer.eq, err = aubio.NewFilterBiquad(1, -2, 1, -2, 1, framesPerBuffer); err != nil {
-		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio EQ Filter: %v", err)
+	if Analyzer.eq, err = aubio.NewFilterBiquad(1, -2, 1, -2, 1, uintBufSize); err != nil {
+		logger.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio EQ Filter: %v", err)
 	}
 
 	// Create onset
-	if Analyzer.onset, err = aubio.NewOnset(aubio.HFC, fftSize, framesPerBuffer, sampleRate); err != nil {
-		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Onset: %v", err)
+	if Analyzer.onset, err = aubio.NewOnset(aubio.HFC, fftSize, uintBufSize, sampleRate); err != nil {
+		logger.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Onset: %v", err)
 	}
 
 	// Create pvoc
-	if Analyzer.pvoc, err = aubio.NewPhaseVoc(fftSize, framesPerBuffer); err != nil {
-		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Pvoc: %v", err)
+	if Analyzer.pvoc, err = aubio.NewPhaseVoc(fftSize, uintBufSize); err != nil {
+		logger.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Pvoc: %v", err)
 	}
 
 }
 
+type melbankArgs struct {
+	min       uint
+	max       uint
+	intensity float64
+}
+
+func (a *analyzer) reinitialise(bufSize int) {
+	mels := make(map[string]melbankArgs)
+	for id := range a.melbanks {
+		mel := a.melbanks[id]
+		mels[id] = melbankArgs{
+			min:       uint(mel.Min),
+			max:       uint(mel.Max),
+			intensity: mel.Intensity,
+		}
+	}
+	a.Cleanup()
+	initialise(bufSize)
+	for id, args := range mels {
+		a.NewMelbank(id, args.min, args.max, args.intensity)
+	}
+
+}
+
+// Takes a mono audio buffer and performs analysis.
+// Should be called around 60fps for smooth audio data for effects to use
 func (a *analyzer) BufferCallback(buf Buffer) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	fpbint := int(framesPerBuffer)
 
-	// Get our left and right channels as float32
-	for i := 0; i < fpbint; i++ {
-		a.data[i] = float32(buf[i] + buf[i+fpbint])
+	// if the buffer changes size, we need to clean up and reinitialise
+	if len(buf) != a.bufSize {
+		logger.Logger.WithField("context", "Audio Analyzer").Warn("Audio buffer changed size. Reinitialising.")
+		a.reinitialise(len(buf))
+		return
+	}
+
+	// Get our audio data as float32
+	for i := 0; i < a.bufSize; i++ {
+		a.data[i] = float32(buf[i])
 	}
 
 	// set the data of the aubio buffer (optimised)
@@ -132,7 +171,7 @@ func (a *analyzer) DeleteMelbank(id string) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if mb, ok := a.melbanks[id]; ok {
-		log.Logger.WithField("context", "Audio Analysis").Debugf("Deleted melbank for effect %s", id)
+		logger.Logger.WithField("context", "Audio Analysis").Debugf("Deleted melbank for effect %s", id)
 		mb.Free()
 		delete(a.melbanks, id)
 	}
@@ -143,12 +182,12 @@ func (a *analyzer) NewMelbank(id string, min_freq, max_freq uint, intensity floa
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if _, ok := a.melbanks[id]; ok {
-		log.Logger.WithField("context", "Audio Analysis").Debugf("Effect %s attempted to create a new melbank but already has one registered", id)
+		logger.Logger.WithField("context", "Audio Analysis").Debugf("Effect %s attempted to create a new melbank but already has one registered", id)
 		a.DeleteMelbank(id)
 	}
-	mb, err := newMelbank(min_freq, max_freq, intensity)
+	mb, err := newMelbank(min_freq, max_freq, intensity, a.bufSize)
 	if err == nil {
-		log.Logger.WithField("context", "Audio Analysis").Debugf("Registered new melbank for effect %s", id)
+		logger.Logger.WithField("context", "Audio Analysis").Debugf("Registered new melbank for effect %s", id)
 		a.melbanks[id] = mb
 	}
 	return err
@@ -173,7 +212,7 @@ func NewVolumeStream() volumeStream {
 func (vs *volumeStream) update(volume float64) {
 	vs.reactStream.update(volume)
 	vs.normStream.update(volume)
-	vs.Volume = vs.reactStream.volume * vs.normStream.volume
+	vs.Volume = math.Min(vs.reactStream.volume*vs.normStream.volume+1e-5, 1) // 0 < vol <= 1
 	vs.Timestep = (vs.reactStream.timeStep + vs.reactStream.timeStep) / 40
 }
 

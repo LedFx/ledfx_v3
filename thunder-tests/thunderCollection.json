@@ -7,21 +7,21 @@
     "folders": [
       {
         "_id": "267f424a-15cd-4aae-a8ac-c2692994ab52",
-        "name": "Virtuals",
+        "name": "Controllers",
         "containerId": "",
         "created": "2022-06-24T09:19:03.629Z",
         "sortNum": 10000
       },
       {
         "_id": "8abf63bb-fbfd-4164-a2c7-d74baddcd377",
-        "name": "Virtual States",
+        "name": "Controller States",
         "containerId": "",
         "created": "2022-06-24T09:19:30.495Z",
         "sortNum": 20000
       },
       {
         "_id": "2e83502f-f3d6-4cc6-afc8-6f8edfc2ca85",
-        "name": "Virtual Connections",
+        "name": "Controller Connections",
         "containerId": "",
         "created": "2022-06-24T09:19:59.985Z",
         "sortNum": 15000

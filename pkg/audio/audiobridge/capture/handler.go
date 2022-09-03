@@ -29,41 +29,27 @@ func NewHandler(id string, byteWriter *audio.AsyncMultiWriter) (h *Handler, err 
 	p := portaudio.StreamParameters{
 		Input: portaudio.StreamDeviceParameters{
 			Device:   dev,
-			Channels: dev.MaxInputChannels,
+			Channels: 1, // force mono
 		},
-		SampleRate:      dev.DefaultSampleRate,
-		FramesPerBuffer: int(dev.DefaultSampleRate / 60),
+		SampleRate:      44100, // force 44100? we should resample. // dev.DefaultSampleRate,
+		FramesPerBuffer: 735,   // int(dev.DefaultSampleRate / 60),
 	}
 
 	h = &Handler{
 		byteWriter: byteWriter,
 	}
 
-	switch p.Input.Channels {
-	case 1:
-		log.Logger.WithField("context", "Local Capture Init").Debugf("Opening stream with Mono2Stereo callback...")
-		if h.Stream, err = portaudio.OpenStream(p, h.monoCallback); err != nil {
-			return nil, fmt.Errorf("error opening mono Portaudio stream: %w", err)
-		}
-	case 2:
-		log.Logger.WithField("context", "Local Capture Init").Debugf("Opening stream with Stereo callback...")
-		if h.Stream, err = portaudio.OpenStream(p, h.stereo2monoCallback); err != nil {
-			return nil, fmt.Errorf("error opening stereo Portaudio stream: %w", err)
-		}
-	default:
-		return nil, fmt.Errorf("%d channel audio is unsupported (LedFX only supports stereo/mono)", p.Input.Channels)
+	log.Logger.WithField("context", "Local Capture Init").Debugf("Opening stream...")
+	if h.Stream, err = portaudio.OpenStream(p, h.monoCallback); err != nil {
+		return nil, fmt.Errorf("error opening stream: %w", err)
 	}
 
 	log.Logger.WithField("context", "Local Capture Init").Debugf("Starting stream...")
 	if err = h.Stream.Start(); err != nil {
-		return nil, fmt.Errorf("error starting capture stream: %w", err)
+		return nil, fmt.Errorf("error starting stream: %w", err)
 	}
 
 	return h, nil
-}
-
-func (h *Handler) stereo2monoCallback(in audio.Buffer) {
-	h.monoCallback(in.Stereo2Mono())
 }
 
 func (h *Handler) monoCallback(in audio.Buffer) {

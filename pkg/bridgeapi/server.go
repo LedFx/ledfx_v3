@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/LedFx/ledfx/pkg/audio"
@@ -30,13 +31,14 @@ type Server struct {
 }
 
 type AudioDeviceInfo struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	IsDefault     bool   `json:"isDefault"`
-	MinChannels   int    `json:"minChannels"`
-	MaxChannels   int    `json:"maxChannels"`
-	MinSampleRate int    `json:"minSampleRate"`
-	MaxSampleRate int    `json:"maxSampleRate"`
+	ID            string           `json:"id"`
+	Name          string           `json:"name"`
+	Type          malgo.DeviceType `json:"type"`
+	IsDefault     bool             `json:"isDefault"`
+	MinChannels   int              `json:"minChannels"`
+	MaxChannels   int              `json:"maxChannels"`
+	MinSampleRate int              `json:"minSampleRate"`
+	MaxSampleRate int              `json:"maxSampleRate"`
 }
 
 func NewServer(callback func(buf audio.Buffer), mux *http.ServeMux) (s *Server, err error) {
@@ -272,27 +274,13 @@ func (s *Server) handleAddOutputLocal(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (s *Server) handleGetLocalInputs(w http.ResponseWriter, r *http.Request) {
-	capture, err := audio.Context.Devices(malgo.Capture)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Logger.WithField("context", "AudioBridge").Errorf("Error generating input devices: %v", err)
-		w.Write(errToJson(err))
-		return
-	}
-	loopback, err := audio.Context.Devices(malgo.Loopback)
-	infos := append(capture, loopback...)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		logger.Logger.WithField("context", "AudioBridge").Errorf("Error generating input devices: %v", err)
-		w.Write(errToJson(err))
-		return
-	}
-	audioDeviceInfos := []AudioDeviceInfo{}
-	for _, info := range infos {
-		audioDeviceInfos = append(audioDeviceInfos, AudioDeviceInfo{
+func generateDeviceInfos(deviceType malgo.DeviceType) (infos []AudioDeviceInfo, err error) {
+	devices, err := audio.GetDevicesInfo(deviceType)
+	for _, info := range devices {
+		infos = append(infos, AudioDeviceInfo{
 			ID:            info.ID.String(),
-			Name:          info.Name(),
+			Type:          deviceType,
+			Name:          strings.ReplaceAll(info.Name(), "\x00", ""), // TODO this will be fixed soon in malgo
 			IsDefault:     info.IsDefault != 0,
 			MinChannels:   int(info.MinChannels),
 			MaxChannels:   int(info.MaxChannels),
@@ -300,7 +288,27 @@ func (s *Server) handleGetLocalInputs(w http.ResponseWriter, r *http.Request) {
 			MaxSampleRate: int(info.MaxSampleRate),
 		})
 	}
-	infoBytes, err := json.Marshal(audioDeviceInfos)
+	return infos, err
+}
+
+func (s *Server) handleGetLocalInputs(w http.ResponseWriter, r *http.Request) {
+	captures, err := generateDeviceInfos(malgo.Capture)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		logger.Logger.WithField("context", "AudioBridge").Errorf("Error generating input devices: %v", err)
+		w.Write(errToJson(err))
+		return
+	}
+	// // Loopback full info causing errors...
+	// loopbacks, err := generateDeviceInfos(malgo.Loopback)
+	// infos := append(captures, loopbacks...)
+	// if err != nil {
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// 	logger.Logger.WithField("context", "AudioBridge").Errorf("Error generating input devices: %v", err)
+	// 	w.Write(errToJson(err))
+	// 	return
+	// }
+	infoBytes, err := json.Marshal(captures)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		logger.Logger.WithField("context", "AudioBridge").Errorf("Error marshalling input devices: %v", err)

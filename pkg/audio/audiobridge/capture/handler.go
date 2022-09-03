@@ -24,6 +24,7 @@ func NewHandler(id string, byteWriter *audio.AsyncMultiWriter) (h *Handler, err 
 	config := malgo.DefaultDeviceConfig(deviceType)
 	config.SampleRate = uint32(audio.SampleRate)
 	config.PeriodSizeInFrames = uint32(audio.FramesPerBuffer)
+	config.Periods = 1
 	config.Capture.DeviceID = deviceInfo.ID.Pointer()
 	config.Capture.Channels = 1
 	config.Capture.Format = malgo.FormatS16
@@ -56,7 +57,7 @@ func NewHandler(id string, byteWriter *audio.AsyncMultiWriter) (h *Handler, err 
 func (h *Handler) Quit() {
 	h.stopped = true
 	log.Logger.WithField("context", "Capture Handler").Warnf("Stopping stream...")
-	h.Device.Stop()
+	h.Device.Uninit()
 }
 
 func (h *Handler) Stopped() bool {

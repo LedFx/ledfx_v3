@@ -31,6 +31,9 @@ func (e *Maelstrom) assembleFrame(base *Effect, p color.Pixels) {
 		if math.IsNaN(s) {
 			s = 0
 		}
+		if math.IsNaN(v) {
+			v = 0
+		}
 		p[i][0] = h
 		p[i][1] = s
 		p[i][2] = v

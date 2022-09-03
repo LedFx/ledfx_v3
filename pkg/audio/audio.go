@@ -18,12 +18,15 @@ var Context *malgo.AllocatedContext
 func init() {
 	var err error
 	Context, err = malgo.InitContext(nil, malgo.ContextConfig{}, nil)
+	Context.SetLogProc(func(message string) {
+		log.Logger.WithField("context", "Audio Subsystem").Debug(message)
+	})
 	if err != nil {
 		log.Logger.WithField("context", "Audio Initialisation").Error(err)
 		os.Exit(1)
 	}
-
 }
+
 func Cleanup() {
 	_ = Context.Uninit()
 	Context.Free()

@@ -3,7 +3,6 @@ package audio
 import (
 	"fmt"
 	"math"
-	"sync"
 	"time"
 
 	log "github.com/LedFx/ledfx/pkg/logger"
@@ -29,7 +28,6 @@ const (
 var Analyzer *analyzer
 
 type analyzer struct {
-	mu          sync.Mutex
 	bufSize     int                 // size of buffer (mono, single channel)
 	buf         *aubio.SimpleBuffer // aubio buffer
 	data        []float32           // audio buffer as f32
@@ -49,7 +47,6 @@ func initialise(bufSize int) {
 	uintBufSize := uint(bufSize)
 	Analyzer = &analyzer{
 		bufSize:     bufSize,
-		mu:          sync.Mutex{},
 		buf:         aubio.NewSimpleBuffer(uintBufSize),
 		data:        make([]float32, uintBufSize),
 		melbanks:    make(map[string]*melbank),
@@ -91,7 +88,13 @@ func (a *analyzer) reinitialise(bufSize int) {
 			intensity: mel.Intensity,
 		}
 	}
-	a.Cleanup()
+	a.eq.Free()
+	a.buf.Free()
+	a.onset.Free()
+	a.pvoc.Free()
+	for id := range a.melbanks {
+		a.DeleteMelbank(id)
+	}
 	initialise(bufSize)
 	for id, args := range mels {
 		a.NewMelbank(id, args.min, args.max, args.intensity)
@@ -102,13 +105,11 @@ func (a *analyzer) reinitialise(bufSize int) {
 // Takes a mono audio buffer and performs analysis.
 // Should be called around 60fps for smooth audio data for effects to use
 func (a *analyzer) BufferCallback(buf Buffer) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-
 	// if the buffer changes size, we need to clean up and reinitialise
 	if len(buf) != a.bufSize {
-		log.Logger.WithField("context", "Audio Analyzer").Warn("Audio buffer changed size. Reinitialising.")
+		log.Logger.WithField("context", "Audio Analyzer").Warnf("Audio buffer changed size [%d->%d]. Reinitialising.", len(buf), a.bufSize)
 		a.reinitialise(len(buf))
+		log.Logger.WithField("context", "Audio Analyzer").Debug("Reinitialised.")
 		return
 	}
 
@@ -140,12 +141,10 @@ func (a *analyzer) BufferCallback(buf Buffer) {
 }
 
 func (a *analyzer) Cleanup() {
-	a.mu.Lock()
 	a.eq.Free()
 	a.buf.Free()
 	a.onset.Free()
 	a.pvoc.Free()
-	a.mu.Unlock()
 
 	for id := range a.melbanks {
 		a.DeleteMelbank(id)
@@ -159,8 +158,6 @@ func (a *analyzer) GetMelbankData(id string) ([]float64, error) {
 }
 
 func (a *analyzer) GetMelbank(id string) (mb *melbank, err error) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
 	mb, ok := a.melbanks[id]
 	if !ok {
 		err = fmt.Errorf("cannot find melbank registered for effect %s", id)
@@ -169,8 +166,6 @@ func (a *analyzer) GetMelbank(id string) (mb *melbank, err error) {
 }
 
 func (a *analyzer) DeleteMelbank(id string) {
-	a.mu.Lock()
-	defer a.mu.Unlock()
 	if mb, ok := a.melbanks[id]; ok {
 		log.Logger.WithField("context", "Audio Analysis").Debugf("Deleted melbank for effect %s", id)
 		mb.Free()
@@ -180,8 +175,6 @@ func (a *analyzer) DeleteMelbank(id string) {
 
 func (a *analyzer) NewMelbank(id string, min_freq, max_freq uint, intensity float64) error {
 	// if a melbank is already registered to this effect id, kill it and warn
-	a.mu.Lock()
-	defer a.mu.Unlock()
 	if _, ok := a.melbanks[id]; ok {
 		log.Logger.WithField("context", "Audio Analysis").Debugf("Effect %s attempted to create a new melbank but already has one registered", id)
 		a.DeleteMelbank(id)

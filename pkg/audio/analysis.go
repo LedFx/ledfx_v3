@@ -40,19 +40,18 @@ type analyzer struct {
 }
 
 func init() {
+	Analyzer = &analyzer{}
 	initialise(int(framesPerBuffer))
 }
 
 func initialise(bufSize int) {
 	uintBufSize := uint(bufSize)
-	Analyzer = &analyzer{
-		bufSize:     bufSize,
-		buf:         aubio.NewSimpleBuffer(uintBufSize),
-		data:        make([]float32, uintBufSize),
-		melbanks:    make(map[string]*melbank),
-		RecentOnset: time.Now(),
-		Vol:         NewVolumeStream(),
-	}
+	Analyzer.bufSize = bufSize
+	Analyzer.buf = aubio.NewSimpleBuffer(uintBufSize)
+	Analyzer.data = make([]float32, uintBufSize)
+	Analyzer.melbanks = make(map[string]*melbank)
+	Analyzer.RecentOnset = time.Now()
+	Analyzer.Vol = NewVolumeStream()
 	var err error
 
 	// Create EQ filter. Magic numbers to balance the audio. Boosts the bass and mid, dampens the highs.

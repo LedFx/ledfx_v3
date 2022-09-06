@@ -45,7 +45,7 @@ func (v *Controller) Initialize(id string, c map[string]interface{}) (err error)
 		},
 	)
 	v.Devices = map[string]*device.Device{}
-	v.pixels, err = pixelgroup.NewPixelGroup(v.Devices)
+	v.pixels, err = pixelgroup.NewPixelGroup(v.Devices, []string{})
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func (v *Controller) Start() error {
 		}
 	}
 	var err error
-	v.pixels, err = pixelgroup.NewPixelGroup(v.Devices)
+	v.pixels, err = pixelgroup.NewPixelGroup(v.Devices, []string{})
 	if err != nil {
 		logger.Logger.WithField("context", "Controller").Errorf("failed to start %s: %s", v.ID, err)
 	}

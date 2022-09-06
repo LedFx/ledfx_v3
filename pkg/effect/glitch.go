@@ -4,8 +4,8 @@ import (
 	"math"
 
 	"github.com/LedFx/ledfx/pkg/audio"
-	"github.com/LedFx/ledfx/pkg/color"
 	"github.com/LedFx/ledfx/pkg/logger"
+	"github.com/LedFx/ledfx/pkg/pixelgroup"
 )
 
 /*
@@ -22,7 +22,10 @@ type Glitch struct{}
 // modulate t1 with highs
 
 // Apply new pixels to an existing pixel array.
-func (e *Glitch) assembleFrame(base *Effect, p color.Pixels) {
+func (e *Glitch) assembleFrame(base *Effect, pg *pixelgroup.PixelGroup) {
+	// operate on the largest pixel output in group, then clone to others
+	p := pg.Group[pg.Largest]
+
 	mel, err := audio.Analyzer.GetMelbank(base.ID)
 	if err != nil {
 		logger.Logger.WithField("context", "Effect").Error(err)
@@ -60,4 +63,5 @@ func (e *Glitch) assembleFrame(base *Effect, p color.Pixels) {
 		p[i][1] = s + mids
 		p[i][2] = v + lows
 	}
+	pg.CloneToAll(pg.Largest)
 }

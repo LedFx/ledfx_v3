@@ -2,15 +2,18 @@ package effect
 
 import (
 	"github.com/LedFx/ledfx/pkg/audio"
-	"github.com/LedFx/ledfx/pkg/color"
 	"github.com/LedFx/ledfx/pkg/logger"
 	"github.com/LedFx/ledfx/pkg/math_utils"
+	"github.com/LedFx/ledfx/pkg/pixelgroup"
 )
 
 type Wavelegth struct{}
 
 // Apply new pixels to an existing pixel array.
-func (e *Wavelegth) assembleFrame(base *Effect, p color.Pixels) {
+func (e *Wavelegth) assembleFrame(base *Effect, pg *pixelgroup.PixelGroup) {
+	// operate on the largest pixel output in group, then clone to others
+	p := pg.Group[pg.Largest]
+
 	mel, err := audio.Analyzer.GetMelbank(base.ID)
 	if err != nil {
 		logger.Logger.WithField("context", "Effect Wavelength").Error(err)
@@ -28,4 +31,5 @@ func (e *Wavelegth) assembleFrame(base *Effect, p color.Pixels) {
 		p[i][1] = 1
 		p[i][2] = scaled_mel[i]
 	}
+	pg.CloneToAll(pg.Largest)
 }

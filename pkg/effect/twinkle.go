@@ -4,8 +4,8 @@ import (
 	"math/rand"
 
 	"github.com/LedFx/ledfx/pkg/audio"
-	"github.com/LedFx/ledfx/pkg/color"
 	"github.com/LedFx/ledfx/pkg/logger"
+	"github.com/LedFx/ledfx/pkg/pixelgroup"
 )
 
 type Twinkle struct {
@@ -15,7 +15,10 @@ type Twinkle struct {
 }
 
 // Apply new pixels to an existing pixel array.
-func (e *Twinkle) assembleFrame(base *Effect, p color.Pixels) {
+func (e *Twinkle) assembleFrame(base *Effect, pg *pixelgroup.PixelGroup) {
+	// operate on the largest pixel output in group, then clone to others
+	p := pg.Group[pg.Largest]
+
 	if !e.initialised {
 		e.hues = make([]float64, len(p))
 		e.periods = make([]float64, len(p))
@@ -47,4 +50,5 @@ func (e *Twinkle) assembleFrame(base *Effect, p color.Pixels) {
 		p[i][1] = 1
 		p[i][2] = value
 	}
+	pg.CloneToAll(pg.Largest)
 }

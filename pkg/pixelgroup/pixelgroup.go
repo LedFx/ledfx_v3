@@ -8,11 +8,12 @@ import (
 
 // A group of device's pixels. Effects render onto a pixel group.
 type PixelGroup struct {
-	Group    map[string]color.Pixels // the group of pixels. maps device id to pixels
-	Order    []string                // defines the order of the pixels in the group
-	Largest  string                  // the id of the largest pixel output in the group
-	Smallest string                  // the id of the smallest pixel output in the group
-	TotalPx  int                     // total number of pixels
+	Group      map[string]color.Pixels // the group of pixels. maps device id to pixels
+	Order      []string                // defines the order of the pixels in the group
+	Largest    string                  // the id of the largest pixel output in the group
+	Smallest   string                  // the id of the smallest pixel output in the group
+	LargestLen int                     // length of the largest pixel output in the group
+	TotalLen   int                     // total number of pixels
 }
 
 // creates a pixel group for a slice of device IDs
@@ -33,7 +34,10 @@ func NewPixelGroup(devices map[string]*device.Device, order []string) (pg *Pixel
 		}
 		// add pixels to group
 		pg.Group[id] = make(color.Pixels, d.Config.PixelCount)
-		pg.TotalPx += d.Config.PixelCount
+		if d.Config.PixelCount > pg.LargestLen {
+			pg.LargestLen = d.Config.PixelCount
+		}
+		pg.TotalLen += d.Config.PixelCount
 	}
 	// determine largest and smallest
 	for id, px := range pg.Group {

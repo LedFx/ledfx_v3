@@ -4,8 +4,8 @@ import (
 	"math"
 
 	"github.com/LedFx/ledfx/pkg/audio"
-	"github.com/LedFx/ledfx/pkg/color"
 	"github.com/LedFx/ledfx/pkg/logger"
+	"github.com/LedFx/ledfx/pkg/pixelgroup"
 )
 
 /*
@@ -14,17 +14,12 @@ Credit to Ben Henke for original concept & fantastic LED art
 https://electromage.com/patterns
 */
 
-type BlockReflections struct {
-	// initialised bool
-	// freezeFrame color.Pixels
-}
+type BlockReflections struct{}
 
 // Apply new pixels to an existing pixel array.
-func (e *BlockReflections) assembleFrame(base *Effect, p color.Pixels) {
-	// if !e.initialised {
-	// 	e.freezeFrame = make(color.Pixels, base.pixelCount)
-	// 	e.initialised = true
-	// }
+func (e *BlockReflections) assembleFrame(base *Effect, pg *pixelgroup.PixelGroup) {
+	// operate on the largest pixel output in group, then clone to others
+	p := pg.Group[pg.Largest]
 
 	mel, err := audio.Analyzer.GetMelbank(base.ID)
 	if err != nil {
@@ -51,15 +46,7 @@ func (e *BlockReflections) assembleFrame(base *Effect, p color.Pixels) {
 		p[i][0] = h + high
 		p[i][1] = 1 - (lows * base.Config.Intensity)
 		p[i][2] = v + (mids * base.Config.Intensity)
-		// p[i][0] = h + e.freezeFrame[i][0]
-		// p[i][1] = 1 - (mel.MidsAmplitude() + mel.HighAmplitude()) + e.freezeFrame[i][1]
-		// p[i][2] = v + e.freezeFrame[i][2]
-		// if lowsAmplitude > 0.7 {
-		// 	e.freezeFrame[i] = p[i]
-		// }
-
-		// e.freezeFrame[i][0] *= 0.9
-		// e.freezeFrame[i][1] *= 0.9
-		// e.freezeFrame[i][2] *= 0.9
 	}
+
+	pg.CloneToAll(pg.Largest)
 }

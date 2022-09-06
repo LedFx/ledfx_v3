@@ -6,6 +6,7 @@ import (
 	"github.com/LedFx/ledfx/pkg/audio"
 	"github.com/LedFx/ledfx/pkg/color"
 	"github.com/LedFx/ledfx/pkg/logger"
+	"github.com/LedFx/ledfx/pkg/pixelgroup"
 )
 
 type Weave struct {
@@ -15,7 +16,10 @@ type Weave struct {
 }
 
 // Apply new pixels to an existing pixel array.
-func (e *Weave) assembleFrame(base *Effect, p color.Pixels) {
+func (e *Weave) assembleFrame(base *Effect, pg *pixelgroup.PixelGroup) {
+	// operate on the largest pixel output in group, then clone to others
+	p := pg.Group[pg.Largest]
+
 	mel, err := audio.Analyzer.GetMelbank(base.ID)
 	if err != nil {
 		logger.Logger.WithField("context", "Effect Weave").Error(err)
@@ -43,6 +47,8 @@ func (e *Weave) assembleFrame(base *Effect, p color.Pixels) {
 	e.lowsPos = lowsNew
 	e.midsPos = midsNew
 	e.highPos = highNew
+
+	pg.CloneToAll(pg.Largest)
 }
 
 // Position function. https://www.desmos.com/calculator/pacgvrebds

@@ -4,18 +4,15 @@ import (
 	"math"
 
 	"github.com/LedFx/ledfx/pkg/audio"
-	"github.com/LedFx/ledfx/pkg/color"
+	"github.com/LedFx/ledfx/pkg/pixelgroup"
 )
 
 type Maelstrom struct{}
 
 // Apply new pixels to an existing pixel array.
-func (e *Maelstrom) assembleFrame(base *Effect, p color.Pixels) {
-	// mel, err := audio.Analyzer.GetMelbank(base.ID)
-	// if err != nil {
-	// 	logger.Logger.WithField("context", "Effect").Error(err)
-	// 	return
-	// }
+func (e *Maelstrom) assembleFrame(base *Effect, pg *pixelgroup.PixelGroup) {
+	// operate on the largest pixel output in group, then clone to others
+	p := pg.Group[pg.Largest]
 
 	volume := audio.Analyzer.Vol.Volume
 	timestep := audio.Analyzer.Vol.Timestep
@@ -38,4 +35,6 @@ func (e *Maelstrom) assembleFrame(base *Effect, p color.Pixels) {
 		p[i][1] = s
 		p[i][2] = v
 	}
+
+	pg.CloneToAll(pg.Largest)
 }

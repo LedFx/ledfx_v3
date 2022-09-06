@@ -3,12 +3,12 @@ package controller
 import (
 	"time"
 
-	"github.com/LedFx/ledfx/pkg/color"
 	"github.com/LedFx/ledfx/pkg/config"
 	"github.com/LedFx/ledfx/pkg/device"
 	"github.com/LedFx/ledfx/pkg/effect"
 	"github.com/LedFx/ledfx/pkg/event"
 	"github.com/LedFx/ledfx/pkg/logger"
+	"github.com/LedFx/ledfx/pkg/pixelgroup"
 
 	"github.com/creasty/defaults"
 	"github.com/mitchellh/mapstructure"
@@ -22,7 +22,7 @@ type Controller struct {
 	Config  config.ControllerConfig
 	ticker  *time.Ticker
 	done    chan bool
-	pixels  color.Pixels
+	pixels  *pixelgroup.PixelGroup
 }
 
 func (v *Controller) Initialize(id string, c map[string]interface{}) (err error) {
@@ -45,6 +45,10 @@ func (v *Controller) Initialize(id string, c map[string]interface{}) (err error)
 		},
 	)
 	v.Devices = map[string]*device.Device{}
+	v.pixels, err = pixelgroup.NewPixelGroup(v.Devices)
+	if err != nil {
+		return err
+	}
 	// invoke event
 	event.Invoke(event.ControllerUpdate,
 		map[string]interface{}{
@@ -55,14 +59,11 @@ func (v *Controller) Initialize(id string, c map[string]interface{}) (err error)
 	return err
 }
 
-// gets the largest device pixel count
+// gets the sum of device pixel counts
 func (v *Controller) PixelCount() int {
 	pc := 0
 	for _, d := range v.Devices {
-		dpc := d.Config.PixelCount
-		if dpc > pc {
-			pc = dpc
-		}
+		pc += d.Config.PixelCount
 	}
 	return pc
 }
@@ -76,14 +77,7 @@ func (v *Controller) renderLoop() {
 			}
 			v.Effect.Render(v.pixels) // todo catch errors in send?
 			for _, d := range v.Devices {
-				if d.Config.PixelCount != len(v.pixels) {
-					// todo maybe dont make new buffer every frame
-					p := make(color.Pixels, d.Config.PixelCount)
-					color.Interpolate(v.pixels, p)
-					d.Send(p)
-				} else {
-					d.Send(v.pixels)
-				}
+				d.Send(v.pixels.Group[d.ID])
 			}
 			// if err != nil {
 			// 	logger.Logger.WithField("context", "Controller").Error(err)
@@ -108,7 +102,11 @@ func (v *Controller) Start() error {
 			go d.Connect()
 		}
 	}
-	v.pixels = make(color.Pixels, v.PixelCount())
+	var err error
+	v.pixels, err = pixelgroup.NewPixelGroup(v.Devices)
+	if err != nil {
+		logger.Logger.WithField("context", "Controller").Errorf("failed to start %s: %s", v.ID, err)
+	}
 	v.ticker = time.NewTicker(time.Duration(1000/v.Config.FrameRate) * time.Millisecond)
 	v.done = make(chan bool)
 	go v.renderLoop()

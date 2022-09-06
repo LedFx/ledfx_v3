@@ -11,6 +11,7 @@ import (
 	"github.com/LedFx/ledfx/pkg/color"
 	"github.com/LedFx/ledfx/pkg/config"
 	"github.com/LedFx/ledfx/pkg/event"
+	"github.com/LedFx/ledfx/pkg/pixelgroup"
 
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
@@ -23,7 +24,7 @@ Effects must be computed in HSV space. The color is abstracted and handled outsi
 using the effect's palette. Post processing will handle conversion to RGB but requires HSV space
 */
 type PixelGenerator interface {
-	assembleFrame(base *Effect, colors color.Pixels)
+	assembleFrame(base *Effect, pixelGroup pixelgroup.PixelGroup)
 }
 
 type AudioPixelGenerator interface {
@@ -195,10 +196,11 @@ func (e *Effect) updateStoredProperties(newConfig BaseEffectConfig) {
 
 // Render a new frame of pixels. Give the previous frame as argument.
 // This handles assembling a new frame, then applying mirrors, blur, filters, etc
-func (e *Effect) Render(p color.Pixels) {
-	if !e.Ready || len(p) != e.pixelCount {
+func (e *Effect) Render(pg pixelgroup.PixelGroup) {
+	if !e.Ready {
 		return
 	}
+
 	// These timing variables ensure that temporal effects and filters run at constant
 	// speed, irrespective of the effect framerate.
 	now := time.Now()
@@ -209,44 +211,59 @@ func (e *Effect) Render(p color.Pixels) {
 	// Overwrite the incoming frame (RGB) with the last frame (HSV) while applying temporal decay
 	// for formula explanation, see: https://www.desmos.com/calculator/5qk6xql8bn
 	decay := math.Pow(-math.Log(((1-e.Config.Decay)*math.E-(1-e.Config.Decay)+1)/math.E), 10*e.deltaPrevFrame.Seconds())
-	for i := 0; i < e.pixelCount; i++ {
-		e.prevFrame[i][2] *= decay
-		p[i] = e.prevFrame[i]
+	// Previous frame is a color.Pixels of the entire pixel group for efficiency.
+	i := 0
+	for _, id := range pg.Order {
+		for j := range pg.Group[id] {
+			e.prevFrame[i][2] *= decay
+			pg.Group[id][j] = e.prevFrame[i]
+			i++
+		}
 	}
 	// Assemble new pixels onto the frame
-	e.pixelGenerator.assembleFrame(e, p)
-
-	// save the frame to prevFrame
-	for i := 0; i < e.pixelCount; i++ {
-		e.prevFrame[i] = p[i]
+	e.pixelGenerator.assembleFrame(e, pg)
+	// Sanitise frame
+	for _, p := range pg.Group {
+		e.sanitise(p)
 	}
 
-	// HSV processes
-	e.applyFlip(p)
-	e.applyMirror(p)
-	color.HueShiftPixels(p, e.Config.HueShift*e.deltaStart.Seconds())
-
-	// convert p from HSV to RGB using the palette
-	for i := 0; i < e.pixelCount; i++ {
-		s := p[i][1]
-		v := p[i][2]
-		p[i] = e.palette.Get(p[i][0])
-		p[i] = color.Saturation(p[i], s)
-		p[i] = color.Value(p[i], v)
+	// Save the frame to prevFrame
+	i = 0
+	for _, id := range pg.Order {
+		for j := range pg.Group[id] {
+			e.prevFrame[i] = pg.Group[id][j]
+			i++
+		}
 	}
 
-	// RGB processes
-	e.applyBkg(p)
-	for i := range p {
-		p[i] = color.Saturation(p[i], e.Config.Saturation)
-		p[i] = color.Value(p[i], e.Config.Brightness)
+	for _, p := range pg.Group {
+		// HSV processes
+		e.applyFlip(p)
+		e.applyMirror(p)
+		color.HueShiftPixels(p, e.Config.HueShift*e.deltaStart.Seconds())
+
+		// convert p from HSV to RGB using the palette
+		for i := 0; i < len(p); i++ {
+			s := p[i][1]
+			v := p[i][2]
+			p[i] = e.palette.Get(p[i][0])
+			p[i] = color.Saturation(p[i], s)
+			p[i] = color.Value(p[i], v)
+		}
+
+		// RGB processes
+		e.applyBkg(p)
+		for i := range p {
+			p[i] = color.Saturation(p[i], e.Config.Saturation)
+			p[i] = color.Value(p[i], e.Config.Brightness)
+		}
+		e.applyBlur(p)
 	}
-	e.applyBlur(p)
-	e.clamp(p)
+
 	event.Invoke(
 		event.EffectRender,
 		map[string]interface{}{
-			"pixels": p,
+			"pixels": pg,
 		},
 	)
 }
@@ -299,17 +316,26 @@ func (e *Effect) applyBkg(p color.Pixels) {
 		p[i][1] += e.bkgColor[1] * e.Config.BackgroundBrightness
 		p[i][2] += e.bkgColor[2] * e.Config.BackgroundBrightness
 	}
+
 }
 
 // makes sure all pixel values are between 0-1
-func (e *Effect) clamp(p color.Pixels) {
-	for i := 0; i < e.pixelCount; i++ {
+func (e *Effect) sanitise(p color.Pixels) {
+	for i := 0; i < len(p); i++ {
 		for k := 0; k < 3; k++ {
-			if p[i][k] > 1 {
+			switch {
+			case p[i][k] > 1:
 				p[i][k] = 1
-			}
-			if p[i][k] < 0 {
+				continue
+			case p[i][k] < 0:
 				p[i][k] = 0
+				continue
+			case math.IsNaN(p[i][k]):
+				p[i][k] = 0
+				continue
+			case math.IsInf(p[i][k], 0):
+				p[i][k] = 1
+				continue
 			}
 		}
 	}

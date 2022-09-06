@@ -19,9 +19,11 @@ func New(new_id string, config map[string]interface{}) (controller *Controller, 
 	controller = &Controller{}
 
 	// if the id exists and has already been registered, overwrite the existing controller with that id
-	if _, exists := controllerInstances[new_id]; exists && new_id != "" {
+	if new_id != "" {
 		id = new_id
-		Destroy(id)
+		if _, exists := controllerInstances[new_id]; exists {
+			Destroy(id)
+		}
 		controllerInstances[id] = controller
 	} else { // otherwise, generate a new id
 		for i := 0; ; i++ {

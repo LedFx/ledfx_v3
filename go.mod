@@ -70,8 +70,8 @@ require (
 
 require (
 	github.com/Hundemeier/go-sacn/sacn v0.0.0-20191003133642-c4680a71fa22
+	github.com/LedFx/portaudio v0.0.0-20220904153216-3555838c5db4
 	github.com/creasty/defaults v1.6.0
-	github.com/gen2brain/malgo v0.10.35
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/maghul/alac v0.0.0-20161106215514-129591bceef4
 	github.com/maghul/go.alac v0.0.0-20161106215514-129591bceef4 // indirect

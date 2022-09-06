@@ -44,7 +44,7 @@ func (e *BlockReflections) assembleFrame(base *Effect, p color.Pixels) {
 	for i := 0; i < len(p); i++ {
 		fi := float64(i)
 		m := (0.3 + base.triangle(t2)*0.2 + (lows * base.Config.Intensity))
-		h := math.Sin(t2) + math.Mod(((fi-base.pixelScaler/2)/base.pixelScaler)*(base.triangle(t3)*10+4*math.Sin(t4)+(mids*base.Config.Intensity)), m)
+		h := math.Sin(t2) + math.Mod(((fi-base.pixelScaler/2)/base.pixelScaler)*(base.triangle(t3)*10+4*math.Sin(t4)+(lows*base.Config.Intensity)), m)
 		v := math.Mod(math.Abs(h)+math.Abs(m), 1)
 		v = math.Pow(v, 2)
 

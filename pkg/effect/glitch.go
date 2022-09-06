@@ -43,10 +43,10 @@ func (e *Glitch) assembleFrame(base *Effect, p color.Pixels) {
 	for i := 0; i < len(p); i++ {
 		fi := float64(i)
 		m := (0.3 + base.triangle(t2)*0.2)
-		h := math.Sin(t1) + math.Mod(((fi-base.pixelScaler/2)/base.pixelScaler)*(base.triangle(t3)*10+4*math.Sin(t4)), m)
+		h := math.Sin(t1) + math.Mod(((fi-base.pixelScaler/2)/base.pixelScaler)*(lows*base.triangle(t3)*10+4*math.Sin(t4)), m)
 		s1 := base.triangle(math.Mod(t5+fi/base.pixelScaler*5, 1))
 		s1 = math.Pow(s1, 2)
-		s2 := base.triangle(math.Mod(t6-(fi-base.pixelScaler)/base.pixelScaler+mids, 1))
+		s2 := base.triangle(math.Mod(t6-(fi-base.pixelScaler)/base.pixelScaler+lows, 1))
 		s2 = math.Pow(s2, 4)
 		s := 1 - base.triangle(s1*s2)
 		v := 0.5
@@ -57,7 +57,7 @@ func (e *Glitch) assembleFrame(base *Effect, p color.Pixels) {
 		}
 
 		p[i][0] = h + high
-		p[i][1] = s - lows
-		p[i][2] = v + mids
+		p[i][1] = s + mids
+		p[i][2] = v + lows
 	}
 }

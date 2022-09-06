@@ -493,12 +493,12 @@
     "method": "POST",
     "sortNum": 20000,
     "created": "2022-06-25T11:18:48.008Z",
-    "modified": "2022-09-03T21:18:52.777Z",
+    "modified": "2022-09-05T13:26:31.811Z",
     "headers": [],
     "params": [],
     "body": {
       "type": "json",
-      "raw": "{\n    \"device_id\": \"616c73615f696e7075742e7063692d303030305f30305f31662e332e616e616c6f672d73746572656f\"\n}",
+      "raw": "{\n    \"device_id\": \"52198c2931090fa402183f753504cd90e671262d\"\n}",
       "form": []
     },
     "tests": []

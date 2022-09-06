@@ -8,7 +8,7 @@ import (
 	log "github.com/LedFx/ledfx/pkg/logger"
 	"github.com/LedFx/ledfx/pkg/util"
 
-	"github.com/gordonklaus/portaudio"
+	"github.com/LedFx/portaudio"
 )
 
 type WindowsHandler struct {

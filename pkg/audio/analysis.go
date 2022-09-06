@@ -106,7 +106,7 @@ func (a *analyzer) reinitialise(bufSize int) {
 func (a *analyzer) BufferCallback(buf Buffer) {
 	// if the buffer changes size, we need to clean up and reinitialise
 	if len(buf) != a.bufSize {
-		log.Logger.WithField("context", "Audio Analyzer").Warnf("Audio buffer changed size [%d->%d]. Reinitialising.", len(buf), a.bufSize)
+		log.Logger.WithField("context", "Audio Analyzer").Warnf("Audio buffer changed size [%d->%d]. Reinitialising.", a.bufSize, len(buf))
 		a.reinitialise(len(buf))
 		log.Logger.WithField("context", "Audio Analyzer").Debug("Reinitialised.")
 		return

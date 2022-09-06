@@ -10,7 +10,6 @@ require (
 	github.com/carterpeel/ffmpeg-go v0.4.1-0.20220226201032-e6786be815f4
 	github.com/carterpeel/go.alac v0.0.0-20220120210858-abcf099555b4
 	github.com/fatih/color v1.13.0
-	github.com/gordonklaus/portaudio v0.0.0-20220320131553-cc649ad523c1
 	github.com/gorilla/websocket v1.5.0
 	github.com/grandcat/zeroconf v1.0.0
 	github.com/grantmd/go-airplay v0.0.0-20150101054745-99b46766924c

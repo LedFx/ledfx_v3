@@ -12,16 +12,20 @@ import (
 
 const (
 	// fft and buffer
-	fftSize         uint = 4096
-	sampleRate      uint = 44100
-	framesPerBuffer uint = sampleRate / 60
+	FftSize     uint    = 4096
+	BufferSize  uint    = 1024
+	SampleRate  uint    = 44100
+	RefreshRate float64 = float64(SampleRate) / float64(BufferSize)
 	// volume normalisation streams
-	streamConstant     float64 = 0.1
-	streamPow          float64 = 1
-	normStreamSlowLen  int     = 60 * 3 // assumes 60 audio updates per second
-	normStreamFastLen  int     = 60 * 2
-	reactStreamSlowLen int     = 60 * 3
-	reactStreamFastLen int     = 60 * 0.05
+	streamConstant float64 = 0.1
+	streamPow      float64 = 1
+)
+
+var (
+	normStreamSlowLen  float64 = RefreshRate * 3
+	normStreamFastLen  float64 = RefreshRate * 2
+	reactStreamSlowLen float64 = RefreshRate * 3
+	reactStreamFastLen float64 = RefreshRate * 0.05
 )
 
 // Singleton analyzer
@@ -41,7 +45,7 @@ type analyzer struct {
 
 func init() {
 	Analyzer = &analyzer{}
-	initialise(int(framesPerBuffer))
+	initialise(int(BufferSize))
 }
 
 func initialise(bufSize int) {
@@ -60,12 +64,12 @@ func initialise(bufSize int) {
 	}
 
 	// Create onset
-	if Analyzer.onset, err = aubio.NewOnset(aubio.HFC, fftSize, uintBufSize, sampleRate); err != nil {
+	if Analyzer.onset, err = aubio.NewOnset(aubio.HFC, FftSize, uintBufSize, SampleRate); err != nil {
 		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Onset: %v", err)
 	}
 
 	// Create pvoc
-	if Analyzer.pvoc, err = aubio.NewPhaseVoc(fftSize, uintBufSize); err != nil {
+	if Analyzer.pvoc, err = aubio.NewPhaseVoc(FftSize, uintBufSize); err != nil {
 		log.Logger.WithField("context", "Audio Analyzer Init").Fatalf("Error creating new Aubio Pvoc: %v", err)
 	}
 
@@ -195,8 +199,8 @@ type volumeStream struct {
 
 func NewVolumeStream() volumeStream {
 	return volumeStream{
-		reactStream: newStream(reactStreamFastLen, reactStreamSlowLen),
-		normStream:  newStream(normStreamFastLen, normStreamSlowLen),
+		reactStream: newStream(int(reactStreamFastLen), int(reactStreamSlowLen)),
+		normStream:  newStream(int(normStreamFastLen), int(normStreamSlowLen)),
 		Volume:      0,
 		Timestep:    0,
 	}

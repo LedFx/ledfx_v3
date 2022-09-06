@@ -12,7 +12,7 @@ import (
 const (
 	melBins uint = 24
 	melMin  uint = 20
-	melMax  uint = sampleRate / 2
+	melMax  uint = 20000
 )
 
 // Wrapper for filterbank which handles initialisation, normalisation
@@ -57,7 +57,7 @@ func newMelbank(min, max uint, intensity float64, bufSize int) (*melbank, error)
 		freqs[i] = MelToHz(freqs[i])
 	}
 	// set and normalise the bands
-	mb.fb.SetTriangleBands(aubio.NewSimpleBufferData(melBins+2, freqs), sampleRate)
+	mb.fb.SetTriangleBands(aubio.NewSimpleBufferData(melBins+2, freqs), SampleRate)
 	mb.fb.NormalizeCoeffs()
 	// save the freqs for reference
 	mb.Freqs = freqs

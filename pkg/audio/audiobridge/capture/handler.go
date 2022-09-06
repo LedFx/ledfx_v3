@@ -29,10 +29,13 @@ func NewHandler(id string, byteWriter *audio.AsyncMultiWriter) (h *Handler, err 
 	p := portaudio.StreamParameters{
 		Input: portaudio.StreamDeviceParameters{
 			Device:   dev,
-			Channels: 1, // force mono
+			Channels: 1,
+			Latency:  0,
 		},
-		SampleRate:      44100, // force 44100? we should resample. // dev.DefaultSampleRate,
-		FramesPerBuffer: 1024,  // int(dev.DefaultSampleRate / 60),
+		Output:          portaudio.StreamDeviceParameters{},
+		SampleRate:      dev.DefaultSampleRate,
+		FramesPerBuffer: int(audio.BufferSize),
+		Flags:           portaudio.NeverDropInput,
 	}
 
 	h = &Handler{
@@ -58,10 +61,11 @@ func (h *Handler) monoCallback(in audio.Buffer) {
 
 func (h *Handler) Quit() {
 	h.stopped = true
-	log.Logger.WithField("context", "Capture Handler").Warnf("Aborting stream...")
+	log.Logger.WithField("context", "Capture Handler").Debug("Aborting stream...")
 	h.Stream.Abort()
-	log.Logger.WithField("context", "Capture Handler").Warnf("Closing stream...")
+	log.Logger.WithField("context", "Capture Handler").Debug("Closing stream...")
 	h.Stream.Close()
+	log.Logger.WithField("context", "Capture Handler").Info("Closed stream")
 }
 
 func (h *Handler) Stopped() bool {

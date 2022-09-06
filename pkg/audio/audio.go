@@ -9,7 +9,22 @@ import (
 	"unsafe"
 
 	log "github.com/LedFx/ledfx/pkg/logger"
+	"github.com/LedFx/portaudio"
 )
+
+func init() {
+	err := portaudio.Initialize()
+	if err != nil {
+		log.Logger.Fatalf("PortAudio Initialization: %w", err)
+	}
+}
+
+func Terminate() {
+	err := portaudio.Terminate()
+	if err != nil {
+		log.Logger.Error(err)
+	}
+}
 
 type AsyncMultiWriter struct {
 	mu             *sync.Mutex

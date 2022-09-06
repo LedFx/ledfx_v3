@@ -50,8 +50,6 @@ func main() {
 	logger.Logger.Info("Info message logging enabled")
 	logger.Logger.Debug("Debug message logging enabled")
 
-	audio.LogAudioDevices()
-
 	// subscribe to shutdown event
 	event.Subscribe(event.Shutdown, func(e *event.Event) { shutdown() })
 
@@ -145,6 +143,8 @@ func main() {
 	fmt.Println()
 	fmt.Println()
 
+	audio.LogAudioDevices()
+
 	// Open the browser
 	if settings.OpenUi {
 		util.OpenBrowser(url)
@@ -168,6 +168,7 @@ func shutdown() {
 	logger.Logger.WithField("context", "Shutdown Handler").Info("Cleaning up audio analyzer")
 	// kill analyzer
 	audio.Analyzer.Cleanup()
+	audio.Terminate()
 
 	// kill systray
 	if !config.GetSettings().NoTray {

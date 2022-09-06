@@ -6,7 +6,7 @@ import (
 	"github.com/LedFx/ledfx/pkg/audio"
 	log "github.com/LedFx/ledfx/pkg/logger"
 
-	"github.com/gordonklaus/portaudio"
+	"github.com/LedFx/portaudio"
 )
 
 type Handler struct {
@@ -32,7 +32,7 @@ func NewHandler(id string, byteWriter *audio.AsyncMultiWriter) (h *Handler, err 
 			Channels: 1, // force mono
 		},
 		SampleRate:      44100, // force 44100? we should resample. // dev.DefaultSampleRate,
-		FramesPerBuffer: 735,   // int(dev.DefaultSampleRate / 60),
+		FramesPerBuffer: 1024,  // int(dev.DefaultSampleRate / 60),
 	}
 
 	h = &Handler{

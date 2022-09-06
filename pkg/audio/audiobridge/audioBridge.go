@@ -6,15 +6,10 @@ import (
 	"github.com/LedFx/ledfx/pkg/audio"
 	"github.com/LedFx/ledfx/pkg/audio/audiobridge/assets"
 	log "github.com/LedFx/ledfx/pkg/logger"
-
-	"github.com/gordonklaus/portaudio"
 )
 
 // NewBridge initializes a new bridge between a source and destination audio device.
 func NewBridge(bufferCallback func(buf audio.Buffer)) (br *Bridge, err error) {
-	if err := portaudio.Initialize(); err != nil {
-		return nil, fmt.Errorf("error initializing PortAudio: %w", err)
-	}
 	br = &Bridge{
 		bufferCallback: bufferCallback,
 		byteWriter:     audio.NewAsyncMultiWriter(),
@@ -66,9 +61,6 @@ func (br *Bridge) Stop() {
 		log.Logger.WithField("context", "Audio Bridge").Warnf("Stopping local audio handler...")
 		br.local.Stop()
 	}
-
-	log.Logger.WithField("context", "Audio Bridge").Warnf("Terminating PortAudio...")
-	_ = portaudio.Terminate()
 }
 
 func (br *Bridge) closeInput() {

@@ -3,23 +3,27 @@ package audio
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"errors"
 	"fmt"
-	"strings"
+	"regexp"
 	"text/tabwriter"
 
 	"github.com/LedFx/ledfx/pkg/config"
 	"github.com/LedFx/ledfx/pkg/logger"
 
-	"github.com/gordonklaus/portaudio"
+	"github.com/LedFx/portaudio"
 )
 
 /*
-Creates a hash of hostapi idx and device name
+Creates a hash of hostapi and device name, and the channels in and out.
 This ID should be the same regardless of device idx, meaning
-it won't change when other audio devices are added or removed
+it won't change when other audio devices are added or removed.
+Numbers and symbols are removed from the device name.
 */
-func createId(i int, n string) string {
-	s := fmt.Sprintf("%d %s", i, n)
+func createId(hostapi string, device string, chanIn, chanOut int) string {
+	reg := regexp.MustCompile("[^a-zA-Z]+")
+	cleanDevice := reg.ReplaceAllString(device, "")
+	s := fmt.Sprintf("%s%s%d%d", hostapi, cleanDevice, chanIn, chanOut)
 	id := sha1.New()
 	id.Write([]byte(s))
 	return hex.EncodeToString(id.Sum(nil))
@@ -30,12 +34,9 @@ func GetPaDeviceInfo(ad config.AudioDevice) (d *portaudio.DeviceInfo, err error)
 	if err != nil {
 		return
 	}
-	for i, h := range hs {
+	for _, h := range hs {
 		for _, d := range h.Devices {
-			// if d.MaxInputChannels < 1 {
-			// 	continue
-			// }
-			if ad.Id == createId(i, d.Name) {
+			if ad.Id == createId(h.Name, d.Name, d.MaxInputChannels, d.MaxOutputChannels) {
 				return d, nil
 			}
 		}
@@ -49,25 +50,15 @@ func GetPaDeviceInfo(ad config.AudioDevice) (d *portaudio.DeviceInfo, err error)
 }
 
 func GetAudioDevices() (infos []config.AudioDevice, err error) {
-	err = portaudio.Initialize()
-	if err != nil {
-		logger.Logger.Error(err)
-		return
-	}
-	defer portaudio.Terminate()
-
 	hs, err := portaudio.HostApis()
 	if err != nil {
 		logger.Logger.Error(err)
 		return
 	}
-	for i, h := range hs {
+	for _, h := range hs {
 		for _, d := range h.Devices {
-			// if d.MaxInputChannels < 1 {
-			// 	continue
-			// }
 			ad := config.AudioDevice{
-				Id:          createId(i, d.Name),
+				Id:          createId(h.Name, d.Name, d.MaxInputChannels, d.MaxOutputChannels),
 				HostApi:     h.Name,
 				SampleRate:  d.DefaultSampleRate,
 				Name:        d.Name,
@@ -87,20 +78,25 @@ func LogAudioDevices() {
 		logger.Logger.Error(err)
 		return
 	}
-	w := tabwriter.NewWriter(logger.Logger.Out, 1, 1, 1, ' ', 0)
+	fmt.Println()
+	fmt.Println("Audio Devices:")
+	fmt.Println()
+
+	w := tabwriter.NewWriter(logger.Logger.Out, 1, 1, 3, ' ', 0)
 
 	var icon rune
-
+	fmt.Fprint(w, "HostAPI\tDevice Name\tChannels In\tChannels Out\tSamplerate\tDefault\n")
 	for _, info := range infos {
 		if info.IsDefault {
 			icon = '✓'
 		} else {
 			icon = '⨯'
 		}
-		fmt.Fprintf(w, "%s:\t%s,\tChan In: %d,\tChan Out: %d,\tsamplerate: %f,\tdefault: %c\n",
+		fmt.Fprintf(w, "%s\t%s\t%d\t%d\t%f\t%c\n",
 			info.HostApi, info.Name, info.ChannelsIn, info.ChannelsOut, info.SampleRate, icon)
 	}
 	w.Flush()
+	fmt.Println()
 }
 
 func GetDeviceByID(id string) (config.AudioDevice, error) {
@@ -114,38 +110,5 @@ func GetDeviceByID(id string) (config.AudioDevice, error) {
 		}
 	}
 
-	idList := make([]string, len(devices))
-	for i := range devices {
-		idList[i] = devices[i].Id
-	}
-
-	// In case the ID is actually the device name
-	tryByName, err := GetDeviceByName(id)
-	if err != nil {
-		logger.Logger.WithField("context", "Device Lookup").Warnf("Device ID/Name lookup failed!")
-	} else {
-		logger.Logger.WithField("context", "Device Lookup").Infof("Device ID lookup failed, but a name lookup worked!")
-		return tryByName, nil
-	}
-
-	return config.AudioDevice{}, fmt.Errorf("could not find audio device matching id '%s' out of [%s]", id, strings.Join(idList, ", "))
-}
-
-func GetDeviceByName(name string) (config.AudioDevice, error) {
-	devices, err := GetAudioDevices()
-	if err != nil {
-		return config.AudioDevice{}, err
-	}
-	for _, device := range devices {
-		if strings.EqualFold(device.Name, name) {
-			return device, nil
-		}
-	}
-
-	nameList := make([]string, len(devices))
-	for i := range devices {
-		nameList[i] = devices[i].Name
-	}
-
-	return config.AudioDevice{}, fmt.Errorf("could not find audio device matching id '%s' out of [%s]", name, strings.Join(nameList, ", "))
+	return config.AudioDevice{}, errors.New("could not find saved audio device")
 }

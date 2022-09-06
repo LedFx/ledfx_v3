@@ -35,7 +35,6 @@ func NewHandler(id string, byteWriter *audio.AsyncMultiWriter) (h *Handler, err 
 		Output:          portaudio.StreamDeviceParameters{},
 		SampleRate:      dev.DefaultSampleRate,
 		FramesPerBuffer: int(audio.BufferSize),
-		Flags:           portaudio.NeverDropInput,
 	}
 
 	h = &Handler{

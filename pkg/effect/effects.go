@@ -104,6 +104,12 @@ var effectTypes = map[string]EffectInfo{
 		Category:    "Volume Reactive",
 		Preview:     []byte{},
 	},
+	"scroll": {
+		Description: "Trailing colors across the strip",
+		GoodFor:     []string{"High Dynamic Range", "Smooth", "Fluid"},
+		Category:    "Audio Reactive",
+		Preview:     []byte{},
+	},
 }
 
 // Creates a new effect and returns its unique id.
@@ -157,6 +163,10 @@ func New(new_id, effect_type string, pixelCount int, new_config interface{}) (ef
 	case "maelstrom":
 		effect = &Effect{
 			pixelGenerator: &Maelstrom{},
+		}
+	case "scroll":
+		effect = &Effect{
+			pixelGenerator: &Scroll{},
 		}
 	default:
 		return effect, id, fmt.Errorf("'%s' is not a known effect type. Has it been registered in effects.go?", effect_type)

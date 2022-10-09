@@ -5,7 +5,7 @@ import (
 
 	"github.com/LedFx/ledfx/pkg/audio"
 	"github.com/LedFx/ledfx/pkg/logger"
-	"github.com/LedFx/ledfx/pkg/pixelgroup"
+	"github.com/LedFx/ledfx/pkg/render"
 )
 
 type Twinkle struct {
@@ -15,7 +15,7 @@ type Twinkle struct {
 }
 
 // Apply new pixels to an existing pixel array.
-func (e *Twinkle) assembleFrame(base *Effect, pg *pixelgroup.PixelGroup) {
+func (e *Twinkle) assembleFrame(base *Effect, pg *render.PixelGroup) {
 	// operate on the largest pixel output in group, then clone to others
 	p := pg.Group[pg.Largest]
 

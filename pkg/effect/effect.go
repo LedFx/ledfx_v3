@@ -11,7 +11,7 @@ import (
 	"github.com/LedFx/ledfx/pkg/color"
 	"github.com/LedFx/ledfx/pkg/config"
 	"github.com/LedFx/ledfx/pkg/event"
-	"github.com/LedFx/ledfx/pkg/pixelgroup"
+	"github.com/LedFx/ledfx/pkg/render"
 
 	"github.com/creasty/defaults"
 	"github.com/go-playground/validator/v10"
@@ -24,7 +24,7 @@ Effects must be computed in HSV space. The color is abstracted and handled outsi
 using the effect's palette. Post processing will handle conversion to RGB but requires HSV space
 */
 type PixelGenerator interface {
-	assembleFrame(base *Effect, pixelGroup *pixelgroup.PixelGroup)
+	assembleFrame(base *Effect, pixelGroup *render.PixelGroup)
 }
 
 type Effect struct {
@@ -191,7 +191,7 @@ func (e *Effect) updateStoredProperties(newConfig BaseEffectConfig) {
 
 // Render a new frame of pixels. Give the previous frame as argument.
 // This handles assembling a new frame, then applying mirrors, blur, filters, etc
-func (e *Effect) Render(pg *pixelgroup.PixelGroup) {
+func (e *Effect) Render(pg *render.PixelGroup) {
 	if !e.Ready {
 		return
 	}

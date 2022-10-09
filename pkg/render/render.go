@@ -1,4 +1,4 @@
-package pixelgroup
+package render
 
 import (
 	"github.com/LedFx/ledfx/pkg/color"

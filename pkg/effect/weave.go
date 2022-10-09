@@ -6,7 +6,7 @@ import (
 	"github.com/LedFx/ledfx/pkg/audio"
 	"github.com/LedFx/ledfx/pkg/color"
 	"github.com/LedFx/ledfx/pkg/logger"
-	"github.com/LedFx/ledfx/pkg/pixelgroup"
+	"github.com/LedFx/ledfx/pkg/render"
 )
 
 type Weave struct {
@@ -16,7 +16,7 @@ type Weave struct {
 }
 
 // Apply new pixels to an existing pixel array.
-func (e *Weave) assembleFrame(base *Effect, pg *pixelgroup.PixelGroup) {
+func (e *Weave) assembleFrame(base *Effect, pg *render.PixelGroup) {
 	// operate on the largest pixel output in group, then clone to others
 	p := pg.Group[pg.Largest]
 

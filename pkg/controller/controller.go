@@ -8,7 +8,7 @@ import (
 	"github.com/LedFx/ledfx/pkg/effect"
 	"github.com/LedFx/ledfx/pkg/event"
 	"github.com/LedFx/ledfx/pkg/logger"
-	"github.com/LedFx/ledfx/pkg/pixelgroup"
+	"github.com/LedFx/ledfx/pkg/render"
 
 	"github.com/creasty/defaults"
 	"github.com/mitchellh/mapstructure"
@@ -22,7 +22,7 @@ type Controller struct {
 	Config  config.ControllerConfig
 	ticker  *time.Ticker
 	done    chan bool
-	pixels  *pixelgroup.PixelGroup
+	pixels  *render.PixelGroup
 }
 
 func (v *Controller) Initialize(id string, c map[string]interface{}) (err error) {
@@ -45,7 +45,7 @@ func (v *Controller) Initialize(id string, c map[string]interface{}) (err error)
 		},
 	)
 	v.Devices = map[string]*device.Device{}
-	v.pixels, err = pixelgroup.NewPixelGroup(v.Devices, []string{})
+	v.pixels, err = render.NewPixelGroup(v.Devices, []string{})
 	if err != nil {
 		return err
 	}
@@ -103,7 +103,7 @@ func (v *Controller) Start() error {
 		}
 	}
 	var err error
-	v.pixels, err = pixelgroup.NewPixelGroup(v.Devices, []string{})
+	v.pixels, err = render.NewPixelGroup(v.Devices, []string{})
 	if err != nil {
 		logger.Logger.WithField("context", "Controller").Errorf("failed to start %s: %s", v.ID, err)
 	}

@@ -5,13 +5,13 @@ import (
 
 	"github.com/LedFx/ledfx/pkg/audio"
 	"github.com/LedFx/ledfx/pkg/color"
-	"github.com/LedFx/ledfx/pkg/pixelgroup"
+	"github.com/LedFx/ledfx/pkg/render"
 )
 
 type Strobe struct{}
 
 // Apply new pixels to an existing pixel array.
-func (e *Strobe) assembleFrame(base *Effect, pg *pixelgroup.PixelGroup) {
+func (e *Strobe) assembleFrame(base *Effect, pg *render.PixelGroup) {
 	// operate on the largest pixel output in group, then clone to others
 	p := pg.Group[pg.Largest]
 
@@ -20,7 +20,7 @@ func (e *Strobe) assembleFrame(base *Effect, pg *pixelgroup.PixelGroup) {
 		return
 	}
 	// set full strip to colour if bass
-	if mel.LowsAmplitude() > 0.7 {
+	if mel.LowsAmplitude() > 0.6 {
 		for i := range p {
 			p[i] = color.Full
 		}

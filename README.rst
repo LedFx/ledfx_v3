@@ -8,18 +8,21 @@
 LedFx website: https://ledfx.app/
 ----------------------------------
 
-What is LedFx?
-----------------
+What is LedFx? Music to Light!
+------------------------------
 
-**Music to Light!**
+LedFx makes a live light show from your music, creating a more immersive experience for you.
 
-LedFx instantaneously transforms audio input into a realtime light show.
-No need to spend hours on syncing your LEDs to music - LedFx will do this all for you!
+LedFx is written for LED strips, but can also work with bulbs and LED panels.
 
-LedFx is a real-time music visualization program that streams audio reactive effects to networked LED strips.
-LedFx can control multiple devices and works great with cheap ESP8266/ESP32 nodes, allowing for cost effective synchronized effects across your entire house!
+A cut above the rest
+--------------------
 
-We're currently rebuilding LedFx in Go - we'd love your help!
+Off-the-shelf music reactive LED strips have poor quality microphones and lazy music processing algorithms. The result is jerky and uncomfortable lighting that doesn't match the atmosphere of your music.
+
+The other option is to pre-program your lights for your music, like a concert. This requires a lot of effort to get good looking results.
+
+LedFx solves both of these issues, performing tonal and rhythmic analysis on your music before it even leaves your speakers. The result is an effortlessly stunning light show for you to enjoy. 
 
 .. |Discord| image:: https://img.shields.io/badge/chat-on%20discord-7289da.svg
    :target: https://discord.gg/xyyHEquZKQ

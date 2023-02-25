@@ -21,7 +21,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	go.uber.org/atomic v1.9.0
 	golang.org/x/image v0.0.0-20220601225756-64ec528b34cd
-	golang.org/x/text v0.3.8-0.20211105212822-18b340fc7af2
+	golang.org/x/text v0.7.0
 )
 
 require (
@@ -50,11 +50,9 @@ require (
 	github.com/tevino/abool v1.2.0 // indirect
 	github.com/u2takey/go-utils v0.3.1 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
-	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
-	golang.org/x/sync v0.0.0-20220601150217-0de741cfad7f // indirect
-	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
-	golang.org/x/tools v0.1.11-0.20220413170336-afc6aad76eb1 // indirect
-	golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df // indirect
+	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
+	golang.org/x/term v0.5.0 // indirect
+	golang.org/x/tools v0.1.12 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
@@ -63,8 +61,8 @@ require (
 	github.com/kkdai/youtube/v2 v2.7.15
 	github.com/schollz/progressbar/v3 v3.8.6
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
-	golang.org/x/net v0.0.0-20220531201128-c960675eff93 // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
 )
 
 require (
